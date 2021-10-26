@@ -38,6 +38,10 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
+# Other generated R files
 .DS_Store
 
 *.Rproj
+
+# Additional file types to ignore (such as data / outputs)
+*.xlsx
