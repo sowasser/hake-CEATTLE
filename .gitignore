@@ -45,3 +45,5 @@ vignettes/*.pdf
 
 # Additional file types to ignore (such as data / outputs)
 *.xlsx
+
+*.pdf
