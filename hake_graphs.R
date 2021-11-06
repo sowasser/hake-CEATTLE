@@ -52,18 +52,27 @@ weight_length <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Weight_kg)) +
 
 # Age composition -------------------------------------------------------------
 us_cp_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-cp-age-data.csv")
-us_cp_age_data <- melt(us_cp_age_data, id.vars = c("year", "n.fish", "n.hauls"))
-colnames(us_cp_age_data) <- c("year", "n.fish", "n.hauls", "age", "proportion")
-us_cp_age_data <- cbind(us_cp_age_data, catch=(us_cp_age_data$n.fish * us_cp_age_data$proportion))
+us_ms_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-ms-age-data.csv")
+us_shore_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-shore-age-data.csv")
 
-catch_age_comp <- ggplot(us_cp_age_data, aes(x=year, y=catch, fill=age)) +
+us_cp_age_data <- cbind(us_cp_age_data[, -3], source=rep("cp", length(us_cp_age_data[, 1])))
+us_ms_age_data <- cbind(us_ms_age_data[, -3], source=rep("ms", length(us_ms_age_data[, 1])))
+us_shore_age_data <- cbind(us_shore_age_data[, -3], source=rep("shore", length(us_shore_age_data[, 1])))
+age_data_wide <- rbind(us_cp_age_data, us_ms_age_data, us_shore_age_data)
+
+age_data <- melt(age_data_wide, id.vars = c("year", "n.fish", "source"))
+colnames(age_data) <- c("year", "n.fish", "source", "age", "proportion")
+age_data <- cbind(age_data, catch=(age_data$n.fish * age_data$proportion))
+
+catch_age_comp <- ggplot(age_data, aes(x=year, y=catch, fill=age)) +
   geom_bar(position = "stack", stat = "identity") +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE) 
+  scale_fill_viridis(discrete = TRUE) +
+  facet_wrap(~source)
 # catch_age_comp
 
 ggsave(filename="plots/catch_age_comp.pdf", catch_age_comp,
-       width=150, height=100, units="mm", dpi=300)
+       width=300, height=100, units="mm", dpi=300)
 
 
 # Catch rates -----------------------------------------------------------------
