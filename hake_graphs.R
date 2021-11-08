@@ -49,6 +49,15 @@ weight_length <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Weight_kg)) +
 # ggsave(filename="plots/weight_length.pdf", weight_length,
 #        width=150, height=100, units="mm", dpi=300)
 
+# Age and maturity
+age_maturity <- ggplot(maturity_table, aes(x=age, y=maturity)) +
+  geom_point() +
+  theme_sleek() 
+# age_maturity
+
+ggsave(filename="plots/age_maturity.pdf", age_maturity,
+       width=150, height=100, units="mm", dpi=300)
+
 
 # Age composition -------------------------------------------------------------
 us_cp_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-cp-age-data.csv")
