@@ -49,6 +49,8 @@ weight_length <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Weight_kg)) +
 # ggsave(filename="plots/weight_length.pdf", weight_length,
 #        width=150, height=100, units="mm", dpi=300)
 
+
+# Maturity --------------------------------------------------------------------
 # Age and maturity
 age_maturity <- ggplot(maturity_table, aes(x=age, y=maturity)) +
   geom_point() +
@@ -57,6 +59,16 @@ age_maturity <- ggplot(maturity_table, aes(x=age, y=maturity)) +
 
 ggsave(filename="plots/age_maturity.pdf", age_maturity,
        width=150, height=100, units="mm", dpi=300)
+
+# Maturity ogives
+maturity_ogives_wide <- read.csv("~/Desktop/Local/hake-assessment-master/data/maturity-ogives.csv")
+maturity_ogives <- melt(maturity_ogives_wide, id.vars = "length.cm",
+                        variable.name = "source", value.name = "ogive")
+
+ogives <- ggplot(maturity_ogives, aes(x=length.cm, y=ogive, color=source)) +
+  geom_point() +
+  theme_sleek() 
+ogives
 
 
 # Age composition -------------------------------------------------------------
@@ -68,9 +80,8 @@ us_cp_age_data <- cbind(us_cp_age_data[, -3], source=rep("cp", length(us_cp_age_
 us_ms_age_data <- cbind(us_ms_age_data[, -3], source=rep("ms", length(us_ms_age_data[, 1])))
 us_shore_age_data <- cbind(us_shore_age_data[, -3], source=rep("shore", length(us_shore_age_data[, 1])))
 age_data_wide <- rbind(us_cp_age_data, us_ms_age_data, us_shore_age_data)
-
-age_data <- melt(age_data_wide, id.vars = c("year", "n.fish", "source"))
-colnames(age_data) <- c("year", "n.fish", "source", "age", "proportion")
+age_data <- melt(age_data_wide, id.vars = c("year", "n.fish", "source"),
+                 variable.name = "age", value.name = "proportion")
 age_data <- cbind(age_data, catch=(age_data$n.fish * age_data$proportion))
 
 catch_age_comp <- ggplot(age_data, aes(x=year, y=catch, fill=age)) +
