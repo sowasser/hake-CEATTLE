@@ -6,10 +6,11 @@ library(ggsidekick)
 library(reshape2)
 library(viridis)
 
+path <- "~/Desktop/Local/hake-assessment-master/data/"
 
 # Weight & length at age ------------------------------------------------------
-maturity_table <- read.csv("~/Desktop/Local/hake-assessment-master/data/maturity-table.csv")
-hake_maturity_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/hake-maturity-data.csv")
+maturity_table <- read.csv(paste0(path, "maturity-table.csv"))
+hake_maturity_data <- read.csv(paste0(path, "hake-maturity-data.csv"))
 
 # Weight at age
 weight_age <- ggplot(maturity_table, aes(x=age, y=avg.wt)) +
@@ -61,20 +62,20 @@ ggsave(filename="plots/age_maturity.pdf", age_maturity,
        width=150, height=100, units="mm", dpi=300)
 
 # Maturity ogives
-maturity_ogives_wide <- read.csv("~/Desktop/Local/hake-assessment-master/data/maturity-ogives.csv")
+maturity_ogives_wide <- read.csv(paste0(path, "maturity-ogives.csv"))
 maturity_ogives <- melt(maturity_ogives_wide, id.vars = "length.cm",
                         variable.name = "source", value.name = "ogive")
 
 ogives <- ggplot(maturity_ogives, aes(x=length.cm, y=ogive, color=source)) +
   geom_point() +
   theme_sleek() 
-ogives
+# ogives
 
 
 # Age composition -------------------------------------------------------------
-us_cp_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-cp-age-data.csv")
-us_ms_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-ms-age-data.csv")
-us_shore_age_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-shore-age-data.csv")
+us_cp_age_data <- read.csv(paste0(path, "us-cp-age-data.csv"))
+us_ms_age_data <- read.csv(paste0(path, "us-ms-age-data.csv"))
+us_shore_age_data <- read.csv(paste0(path, "us-shore-age-data.csv"))
 
 us_cp_age_data <- cbind(us_cp_age_data[, -3], source=rep("cp", length(us_cp_age_data[, 1])))
 us_ms_age_data <- cbind(us_ms_age_data[, -3], source=rep("ms", length(us_ms_age_data[, 1])))
@@ -96,7 +97,12 @@ ggsave(filename="plots/catch_age_comp.pdf", catch_age_comp,
 
 
 # Catch rates -----------------------------------------------------------------
-us_catch_by_month <- read.csv("~/Desktop/Local/hake-assessment-master/data/us-catch-by-month.csv")
+can_ft_catch_by_month <- read.csv(paste0(path, "can-ft-catch-by-month.csv"))
+can_jv_catch_by_month <- read.csv(paste0(path, "can-jv-catch-by-month.csv"))
+can_ss_catch_by_month <- read.csv(paste0(path, "can-ss-catch-by-month.csv"))
+
+us_catch_by_month <- read.csv(paste0(path, "us-catch-by-month.csv"))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 
 monthly_catch <- ggplot(us_catch_by_month, aes(y=Catch.MT, x=month)) +
   geom_bar(position = "dodge", stat = "identity") +
@@ -106,3 +112,16 @@ monthly_catch <- ggplot(us_catch_by_month, aes(y=Catch.MT, x=month)) +
 
 ggsave(filename="plots/monthly_catch.pdf", monthly_catch,
        width=300, height=300, units="mm", dpi=300)
+
+# Survey ----------------------------------------------------------------------
+survey_history <- read.csv(paste0(path, "survey-history.csv"))
+survey_history$year <- as.factor(survey_history$year)
+
+survey_biomass <- ggplot(survey_history, aes(y=biomass, x=year)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin=biomass-cv, ymax=biomass+cv), width=.2) +
+  theme_sleek()
+# survey_biomass
+
+ggsave(filename="plots/survey_biomass.pdf", survey_biomass,
+       width=150, height=100, units="mm", dpi=300)
