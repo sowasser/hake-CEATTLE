@@ -132,11 +132,17 @@ monthly_catch <- rbind(catch_data("can-ft-catch-by-month.csv", "Canada", "freeze
                        catch_data("us-cp-catch-by-month.csv", "US", "catcher-processor"),
                        catch_data("us-ms-catch-by-month.csv", "US", "mothership"),
                        catch_data("us-research-catch-by-month.csv", "US", "research"),
-                       catch_data("us-shore-catch-by-month.csv", "US", "shore-based"),
+                       catch_data("us-shore-catch-by-month.csv", "US", "shoreside"),
                        us_unid)
+
 monthly_catch$catch <- as.numeric(monthly_catch$catch)
 all_catch <- monthly_catch %>% group_by(year, nation, source) %>%
   summarize(total_catch = sum(catch))
+
+all_catch$source <- factor(all_catch$source, 
+                           levels = c("freezer-trawler", "JV", "shoreside",
+                                      "catcher-processor", "mothership", 
+                                      "research", "unidentified"))
 
 catch <- ggplot(all_catch, aes(y=total_catch, x=year, fill=source)) +
   geom_bar(stat = "identity") +
