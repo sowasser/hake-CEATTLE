@@ -48,8 +48,8 @@ weight_length <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Weight_kg)) +
   theme_sleek()
 # weight_length
 
-# ggsave(filename="plots/weight_length.pdf", weight_length,
-#        width=150, height=100, units="mm", dpi=300)
+ggsave(filename="plots/weight_length.pdf", weight_length,
+       width=150, height=100, units="mm", dpi=300)
 
 
 # Maturity --------------------------------------------------------------------
@@ -153,6 +153,11 @@ catch <- ggplot(all_catch, aes(y=total_catch, x=year, fill=source)) +
 
 ggsave(filename="plots/catch.pdf", catch,
        width=400, height=200, units="mm", dpi=300)
+
+yearly_catch <- all_catch %>% group_by(year) %>%
+  summarize(catch = sum(total_catch))
+
+write.csv(yearly_catch, "data/yearly_catch.csv")
 
 
 # Survey ----------------------------------------------------------------------
