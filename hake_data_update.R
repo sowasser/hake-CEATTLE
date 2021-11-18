@@ -85,3 +85,25 @@ can_age <- melt(can_age_wide, id.vars = c("year", "n.hauls", "source"),
 us_age <- cbind(us_age, catch=(us_age$n.fish * us_age$proportion))
 
 write.csv(age_data, "data/age_comp.csv")
+
+
+# Weight/length at age & maturity ---------------------------------------------
+# Attempt to get wide format for weight at age - will only be empirical
+hake_maturity_data <- read.csv(paste0(path, "hake-maturity-data.csv"))
+weight_age_long <- na.omit(hake_maturity_data[, c(2, 10, 12)])
+
+weight_age_wide <- dcast(weight_age_long, Year ~ Age, value.var = "Weight_kg", 
+                         fun.aggregate = mean)
+
+write.csv(weight_age_wide, "data/empirical_weight_age.csv")
+
+# Length at age
+length_age_all <- na.omit(hake_maturity_data[, 11:12])
+lengths <- unique(length_age_all$Length_cm)
+mean_lengths <- length_age_all %>% group_by(Age) %>% 
+  summarise(Length = mean(Length_cm))
+
+write.csv(mean_lengths, "data/length_at_age.csv")
+
+# Percentage mature at age
+maturity <- na.omit(hake_maturity_data[, c(10, )])
