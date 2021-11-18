@@ -74,17 +74,7 @@ ogives <- ggplot(maturity_ogives, aes(x=length.cm, y=ogive, color=source)) +
 
 
 # Age composition -------------------------------------------------------------
-us_cp_age_data <- read.csv(paste0(path, "us-cp-age-data.csv"))
-us_ms_age_data <- read.csv(paste0(path, "us-ms-age-data.csv"))
-us_shore_age_data <- read.csv(paste0(path, "us-shore-age-data.csv"))
-
-us_cp_age_data <- cbind(us_cp_age_data[, -3], source=rep("cp", length(us_cp_age_data[, 1])))
-us_ms_age_data <- cbind(us_ms_age_data[, -3], source=rep("ms", length(us_ms_age_data[, 1])))
-us_shore_age_data <- cbind(us_shore_age_data[, -3], source=rep("shore", length(us_shore_age_data[, 1])))
-age_data_wide <- rbind(us_cp_age_data, us_ms_age_data, us_shore_age_data)
-age_data <- melt(age_data_wide, id.vars = c("year", "n.fish", "source"),
-                 variable.name = "age", value.name = "proportion")
-age_data <- cbind(age_data, catch=(age_data$n.fish * age_data$proportion))
+age_data <- read.csv("data/age_comp.csv")
 
 catch_age_comp <- ggplot(age_data, aes(x=year, y=catch, fill=age)) +
   geom_bar(position = "stack", stat = "identity") +

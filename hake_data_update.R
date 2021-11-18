@@ -52,3 +52,36 @@ all_catch <- monthly_catch %>% group_by(year, nation, source) %>%
   summarize(total_catch = sum(catch))
 
 write.csv(all_catch, "data/all_catch.csv")
+
+
+# Age composition -------------------------------------------------------------
+# US data
+us_cp_age <- read.csv(paste0(path, "us-cp-age-data.csv"))
+us_ms_age <- read.csv(paste0(path, "us-ms-age-data.csv"))
+us_shore_age <- read.csv(paste0(path, "us-shore-age-data.csv"))
+
+us_cp_age <- cbind(us_cp_age, source=rep("cp", length(us_cp_age[, 1])))
+us_ms_age <- cbind(us_ms_age, source=rep("ms", length(us_ms_age[, 1])))
+us_shore_age <- cbind(us_shore_age, source=rep("shore", length(us_shore_age[, 1])))
+colnames(us_shore_age)[3] <- "n.hauls"
+
+us_age_wide <- rbind(us_cp_age, us_ms_age, us_shore_age)
+us_age <- melt(us_age_wide, id.vars = c("year", "n.fish", "n.hauls", "source"),
+               variable.name = "age", value.name = "proportion")
+
+# Canadian data
+can_age_all <- read.csv(paste0(path, "can-age-data.csv"), skip=1)
+can_shore_age <- cbind(can_age_all[1:27,], can_age_all[65:91,2], rep("shore", length(27)))
+colnames(can_shore_age) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "n.hauls", "source")
+can_ft_age <- cbind(can_age_all[29:43,], can_age_all[93:107, 2], rep("ft", length(15)))
+colnames(can_ft_age) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "n.hauls", "source")
+can_jv_age <- cbind(can_age_all[45:63,], can_age_all[109:127, 2], rep("jv", length(19)))
+colnames(can_jv_age) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "n.hauls", "source")
+
+can_age_wide <- rbind(can_shore_age, can_ft_age, can_jv_age)
+can_age <- melt(can_age_wide, id.vars = c("year", "n.hauls", "source"),
+                variable.name = "age", value.name = "proportion")
+
+us_age <- cbind(us_age, catch=(us_age$n.fish * us_age$proportion))
+
+write.csv(age_data, "data/age_comp.csv")
