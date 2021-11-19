@@ -44,8 +44,8 @@ monthly_catch <- rbind(catch_data("can-ft-catch-by-month.csv", "Canada", "freeze
                        catch_data("us-cp-catch-by-month.csv", "US", "catcher-processor"),
                        catch_data("us-ms-catch-by-month.csv", "US", "mothership"),
                        catch_data("us-research-catch-by-month.csv", "US", "research"),
-                       catch_data("us-shore-catch-by-month.csv", "US", "shoreside"),
-                       us_unid)
+                       catch_data("us-shore-catch-by-month.csv", "US", "shoreside"))
+                       # us_unid)
 
 monthly_catch$catch <- as.numeric(monthly_catch$catch)
 all_catch <- monthly_catch %>% group_by(year, nation, source) %>%

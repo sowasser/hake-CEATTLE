@@ -103,7 +103,7 @@ catch <- ggplot(all_catch, aes(y=total_catch, x=year, fill=source)) +
   facet_wrap(~nation, ncol=2)
 
 ggsave(filename="plots/catch.pdf", catch,
-       width=400, height=200, units="mm", dpi=300)
+       width=300, height=150, units="mm", dpi=300)
 
 
 # Survey ----------------------------------------------------------------------
