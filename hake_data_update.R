@@ -38,20 +38,26 @@ us_unid <- as.data.frame(cbind(year = us_unid[, 3],
                                month = us_unid[, 2], 
                                catch = us_unid[, 4]))
 
-monthly_catch <- rbind(catch_data("can-ft-catch-by-month.csv", "Canada", "freezer-trawler"),
-                       catch_data("can-jv-catch-by-month.csv", "Canada", "JV"),
-                       catch_data("can-ss-catch-by-month.csv", "Canada", "shoreside"),
-                       catch_data("us-cp-catch-by-month.csv", "US", "catcher-processor"),
-                       catch_data("us-ms-catch-by-month.csv", "US", "mothership"),
-                       catch_data("us-research-catch-by-month.csv", "US", "research"),
-                       catch_data("us-shore-catch-by-month.csv", "US", "shoreside"))
-                       # us_unid)
+catch_all <- rbind(catch_data("can-ft-catch-by-month.csv", "Canada", "freezer-trawler"),
+                   catch_data("can-jv-catch-by-month.csv", "Canada", "JV"),
+                   catch_data("can-ss-catch-by-month.csv", "Canada", "shoreside"),
+                   catch_data("us-cp-catch-by-month.csv", "US", "catcher-processor"),
+                   catch_data("us-ms-catch-by-month.csv", "US", "mothership"),
+                   catch_data("us-research-catch-by-month.csv", "US", "research"),
+                   catch_data("us-shore-catch-by-month.csv", "US", "shoreside"))
+                 # us_unid)
 
-monthly_catch$catch <- as.numeric(monthly_catch$catch)
-all_catch <- monthly_catch %>% group_by(year, nation, source) %>%
+catch_all$catch <- as.numeric(catch_all$catch)
+
+monthly_catch <- catch_all %>% group_by(nation, year, month) %>%
   summarize(total_catch = sum(catch))
 
-write.csv(all_catch, "data/all_catch.csv")
+write.csv(monthly_catch, "data/monthly_catch.csv")
+
+catch_source <- catch_all %>% group_by(year, nation, source) %>%
+  summarize(total_catch = sum(catch))
+
+write.csv(all_catch, "data/catch_source.csv")
 
 
 # Age composition -------------------------------------------------------------
