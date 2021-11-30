@@ -118,3 +118,16 @@ survey_biomass <- ggplot(survey_history, aes(y=biomass, x=year)) +
 
 ggsave(filename="plots/survey_biomass.pdf", survey_biomass,
        width=150, height=100, units="mm", dpi=300)
+
+# Age - Length transition matrix ----------------------------------------------
+# Pollock from Grant's CEATTLE implementation
+test_data <- read.csv("data/age_trans.csv")
+
+test2 <- melt(test_data, id.vars = "Age", 
+              variable.name = "length_cat", value.name = "prop")
+
+age_trans <- ggplot(test2, aes(x=length_cat, y=prop)) +
+  geom_point() +
+  theme_sleek() +
+  facet_wrap(~Age, ncol=2)
+age_trans
