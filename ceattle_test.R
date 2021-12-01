@@ -7,7 +7,7 @@
 TMB::runExample(all = TRUE)  # see if TMB works
 
 # Install Rceattle - https://github.com/grantdadams/Rceattle
-# devtools::install_github("grantdadams/Rceattle")
+devtools::install_github("grantdadams/Rceattle")
 library(Rceattle)
 
 # Single-species implementation -----------------------------------------------
@@ -40,8 +40,8 @@ ss_run <- Rceattle::fit_mod(data_list = mydata,
                             debug = FALSE, # Estimate
                             random_rec = FALSE, # No random recruitment
                             msmMode = 0, # Single species mode
-                            phase = "default",
-                            silent = TRUE)
+                            phase = "default")
+                          # silent = TRUE) # now getting an "unused argument" error here
 
 # Estimate pollock M
 mydata_M <- mydata
@@ -52,8 +52,8 @@ ss_run_M <- Rceattle::fit_mod(data_list = mydata_M,
                               debug = FALSE, # Estimate
                               random_rec = FALSE, # No random recruitment
                               msmMode = 0, # Single species mode
-                              phase = "default",
-                              silent = TRUE )
+                              phase = "default" )
+                            # silent = TRUE )  # now getting an "unused argument" error here
                             # recompile = FALSE)  # get an "unused argument" error if this is included
 
 # The you can plot the model results using using
