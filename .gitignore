@@ -47,3 +47,6 @@ vignettes/*.pdf
 *.xlsx
 
 *.pdf
+
+# Ignore folders that don't need to be tracked on git
+AEP_class/
