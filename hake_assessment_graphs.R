@@ -74,7 +74,7 @@ ogives <- ggplot(maturity_ogives, aes(x=length.cm, y=ogive, color=source)) +
 
 
 # Age composition -------------------------------------------------------------
-age_data <- read.csv("data/age_comp.csv")
+age_data <- read.csv("data/assessment/age_comp.csv")
 
 catch_age_comp <- ggplot(age_data, aes(x=year, y=catch, fill=age)) +
   geom_bar(position = "stack", stat = "identity") +
@@ -88,14 +88,14 @@ ggsave(filename="plots/catch_age_comp.pdf", catch_age_comp,
 
 
 # Catch rates -----------------------------------------------------------------
-all_catch <- read.csv("data/all_catch.csv")
+all_catch <- read.csv("data/assessment/catch_source.csv")
 
 all_catch$source <- factor(all_catch$source, 
                            levels = c("freezer-trawler", "JV", "shoreside",
                                       "catcher-processor", "mothership", 
                                       "research", "unidentified"))
 
-catch <- ggplot(all_catch, aes(y=total_catch, x=year, fill=source)) +
+catch <- ggplot(all_catch, aes(y=catch, x=year, fill=source)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis(discrete = TRUE) +
   theme_sleek() +
@@ -121,7 +121,7 @@ ggsave(filename="plots/survey_biomass.pdf", survey_biomass,
 
 # Age - Length transition matrix ----------------------------------------------
 # Pollock from Grant's CEATTLE implementation
-test_data <- read.csv("data/age_trans.csv")
+test_data <- read.csv("data/assessment/age_trans.csv")
 
 test2 <- melt(test_data, id.vars = "Age", 
               variable.name = "length_cat", value.name = "prop")
