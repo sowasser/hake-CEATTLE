@@ -5,6 +5,7 @@
 
 library(dplyr)
 library(ggplot2)
+library(viridis)
 
 temp_all <- read.csv("data/temperature/temp_100_sophia.csv")
 
@@ -26,8 +27,14 @@ colnames(temp2) <- c("year", "temp", "data_type")
 all_years <- rbind(temp2, missing_years)
 all_years <- all_years[order(all_years$year), ]
 
-temp_plot <- ggplot(all_years, aes(x=year, y=temp, color=data_type)) +
-  geom_point() +
+all_years$temp <- as.numeric(all_years$temp)
+all_years$year <- as.integer(all_years$year)
+
+# Plot all temperatures -------------------------------------------------------
+temp_plot <- ggplot(all_years, aes(x=year, y=temp)) +
+  geom_line(color="gray") +
+  geom_point(aes(color=data_type)) +
+  scale_color_viridis(discrete = TRUE, direction=-1) +  # invert colors
   theme_sleek()
 temp_plot
 
