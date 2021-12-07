@@ -40,7 +40,7 @@ mean_temp_plot <- ggplot(all_years, aes(x=year, y=temp)) +
   theme_sleek()
 # mean_temp_plot
 
-ggsave(filename="plots/survey_mean_temp.pdf", mean_temp_plot,
+ggsave(filename="plots/temperature/survey_mean_temp.pdf", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
 
 # Temp distribution & max for looking at hake thermal maximum -----------------
@@ -56,7 +56,7 @@ max_temp <- ggplot(year_max, aes(x=year, y=temp_100)) +
   theme_sleek()
 max_temp
 
-ggsave(filename="plots/survey_max_temp.pdf", max_temp,
+ggsave(filename="plots/temperature/survey_max_temp.pdf", max_temp,
        width=150, height=100, units="mm", dpi=300)
 
 # Temperature distribution overall and per year
@@ -65,7 +65,7 @@ temp_dist_all <- ggplot(temp_all, aes(x=temp_100)) +
   theme_sleek() 
 temp_dist_all
 
-ggsave(filename="plots/temp_dist_all.pdf", temp_dist_all,
+ggsave(filename="plots/temperature/temp_dist_all.pdf", temp_dist_all,
        width=150, height=100, units="mm", dpi=300)
 
 temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
@@ -74,5 +74,5 @@ temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
   facet_wrap(~year)
 # temp_dist_years
 
-ggsave(filename="plots/temp_dist_years.pdf", temp_dist_years,
+ggsave(filename="plots/temperature/temp_dist_years.pdf", temp_dist_years,
        width=150, height=100, units="mm", dpi=300)
