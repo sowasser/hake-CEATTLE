@@ -50,3 +50,4 @@ vignettes/*.pdf
 
 # Ignore folders that don't need to be tracked on git
 AEP_class/
+data/
