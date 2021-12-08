@@ -10,16 +10,23 @@ library(viridis)
 
 temp_all <- read.csv("data/temperature/temp_100_sophia.csv")
 
+# Temp summary stats ----------------------------------------------------------
+overall_mean <- mean(temp_all$temp_100)  # 7.916°C
+overall_median <- median(temp_all$temp_100)  # 7.763°C
+
+overall_max <- max(temp_all$temp_100)  # 14.481°C
+overall_min <- min(temp_all$temp_100)  # 5.734°C
+overall_95 <- quantile(temp_all$temp_100, .95)  # 95% < 9.665°C
+
+
 # Mean temperature per year for CEATTLE ---------------------------------------
 # Iincluding overall mean for missing years
 temp_mean <- temp_all %>% group_by(year) %>%
   summarise(mean_temp = mean(temp_100))
 
-all_mean <- mean(temp_mean$mean_temp)
-
 missing_years <- cbind(c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,
                          2010, 2014, 2016, 2018, 2020), 
-                       rep(all_mean, length=14),
+                       rep(overall_mean, length=14),
                        rep("overall mean", length=14))
 colnames(missing_years) <- c("year", "temp", "data_type")
 
@@ -44,8 +51,7 @@ ggsave(filename="plots/temperature/survey_mean_temp.pdf", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
 
 # Temp distribution & max for looking at hake thermal maximum -----------------
-# overall maximum
-overall_max <- max(temp_all$temp_100)  # 14.481°C
+
 
 # Max temperature for each year
 year_max <- temp_all %>% group_by(year) %>%
@@ -75,4 +81,4 @@ temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
 # temp_dist_years
 
 ggsave(filename="plots/temperature/temp_dist_years.pdf", temp_dist_years,
-       width=150, height=100, units="mm", dpi=300)
+       width=250, height=150, units="mm", dpi=300)
