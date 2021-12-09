@@ -4,8 +4,8 @@
 
 proxy_params <- read.csv("data/bioenergetics/proxy_bioen_params.csv")
 
-# Temperature-dependent growth function 
-temp_dependent <- function(Qc, Tco, Tcm, Temp){
+# Temperature-dependent consumption -------------------------------------------
+temp_dependent <- function(Qc, Tco, Tcm, Temp) {
   z <- (log(Qc) * (Tcm - Tco)) 
   y <- (log(Qc) * (Tcm - Tco + 2))
   
@@ -13,9 +13,16 @@ temp_dependent <- function(Qc, Tco, Tcm, Temp){
   
   V <- ((Tcm - Temp) / (Tcm - Tco))
   
-  growth <- ((V^x) * exp(x * (1 - V)))
-    
-  return(growth)
+  consumption <- ((V^x) * exp(x * (1 - V)))
+  return(consumption)
 }
 
 temp_dependent(2, 10, 15, 11)
+
+# Allometric mass function ----------------------------------------------------
+allometric_mass <- function(CA, CB, wt) {
+  Cmax <- (CA * (wt^CB))
+  return(Cmax)
+}
+
+allometric_mass(0.3, -0.3, 100)
