@@ -16,7 +16,7 @@ overall_median <- median(temp_all$temp_100)  # 7.763°C
 
 overall_max <- max(temp_all$temp_100)  # 14.481°C
 overall_min <- min(temp_all$temp_100)  # 5.734°C
-overall_95 <- quantile(temp_all$temp_100, .95)  # 95% < 9.665°C
+overall_percentile <- quantile(temp_all$temp_100, 0.05, .95)  # 95% < 9.665°C
 
 
 # Mean temperature per year for CEATTLE ---------------------------------------

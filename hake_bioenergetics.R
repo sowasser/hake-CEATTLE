@@ -5,24 +5,36 @@
 proxy_params <- read.csv("data/bioenergetics/proxy_bioen_params.csv")
 
 # Temperature-dependent consumption -------------------------------------------
-temp_dependent <- function(Qc, Tco, Tcm, Temp) {
+temp_range <- 5:15  # Hake thermal range from survey data
+
+temp_dependent <- function(Qc, Tco, Tcm) {
   z <- (log(Qc) * (Tcm - Tco)) 
   y <- (log(Qc) * (Tcm - Tco + 2))
   
   x <- (((z^2) * (1 + (1 + (40/y))^0.5)^2) / 400)
   
-  V <- ((Tcm - Temp) / (Tcm - Tco))
+  consumption <- c()
+  for(i in temp_range) { 
+    V <- ((Tcm - i) / (Tcm - Tco))
+    rate <- ((V^x) * exp(x * (1 - V)))
+    consumption <- c(consumption, rate)
+  }
   
-  consumption <- ((V^x) * exp(x * (1 - V)))
   return(consumption)
 }
 
-temp_dependent(2, 10, 15, 11)
+test <- temp_dependent(2, 10, 15)
 
 # Allometric mass function ----------------------------------------------------
-allometric_mass <- function(CA, CB, wt) {
-  Cmax <- (CA * (wt^CB))
+weights <- 100:400  # Range of hake weights
+  
+allometric_mass <- function(CA, CB) {
+  Cmax <- c()
+  for(i in weights) {
+    mass <- (CA * (i^CB))
+    Cmax <- c(Cmax, mass)
+  }
   return(Cmax)
 }
 
-allometric_mass(0.3, -0.3, 100)
+test2 <- allometric_mass(0.3, -0.3)
