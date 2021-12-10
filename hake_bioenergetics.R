@@ -33,16 +33,22 @@ temp_dependent <- function(Qc, Tco, Tcm) {
   return(consumption)
 }
 
-# Run equation with cod, adult, juvenile pollock parameters
+# Run equation with cod, adult, juvenile pollock parameters & hake estimates
 spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
-                       temp_dependent(eq_2[3, 5], eq_2[3, 6], eq_2[3, 7]))
-colnames(spp_temp_wide) <- c("Atlantic cod", "pollock (adult)", "pollock (juvenile)")
+                       temp_dependent(eq_2[3, 5], eq_2[3, 6], eq_2[3, 7]),
+                       temp_dependent(2.6, 10, 15))
+colnames(spp_temp_wide) <- c("Atlantic cod", 
+                             "pollock (adult)", "pollock (juvenile)",
+                             "hake - estimated")
 spp_temp <- melt(as.data.frame(spp_temp_wide))
-spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=3))
-
+spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4), 
+                  ref = c(rep("a", times = (length(temp_range) * 3)), 
+                          rep("b", times = length(temp_range))))
+                  
 temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
-  geom_line(aes(color=variable), size=1) +
+  geom_line(aes(color=variable, linetype=ref), size=1) +
+  scale_linetype_manual(values=c("longdash", "solid"), guide="none") +
   scale_color_viridis(discrete = TRUE) +  # invert colors
   theme_sleek() +
   ylab("specific rate") +
@@ -50,6 +56,7 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
 
 ggsave(filename="plots/bioenergetics/temp_consumption.pdf", temp_rate,
        width=200, height=100, units="mm", dpi=300)
+
 
 # Allometric mass function ----------------------------------------------------
 weights <- 10:400  # Range of hake weights
@@ -63,16 +70,22 @@ allometric_mass <- function(CA, CB) {
   return(Cmax)
 }
 
-# Run equation with cod, adult, juvenile pollock parameters
+# Run equation with cod, adult, juvenile pollock parameters & jake estimates
 spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4]), 
                        allometric_mass(eq_2[2, 3], eq_2[2, 4]), 
-                       allometric_mass(eq_2[3, 3], eq_2[3, 4]))
-colnames(spp_mass_wide) <- c("Atlantic cod", "pollock (adult)", "pollock (juvenile)")
+                       allometric_mass(eq_2[3, 3], eq_2[3, 4]), 
+                       allometric_mass(0.119009, -0.46024))
+colnames(spp_mass_wide) <- c("Atlantic cod", 
+                             "pollock (adult)", "pollock (juvenile)",
+                             "hake - estimated")
 spp_mass <- melt(as.data.frame(spp_mass_wide))
-spp_mass <- cbind(spp_mass, weight = rep(weights, times=3))
+spp_mass <- cbind(spp_mass, weight = rep(weights, times=4), 
+                  ref = c(rep("a", times = (length(weights) * 3)), 
+                          rep("b", times = length(weights))))
 
 mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
-  geom_line(aes(color=variable), size=1) +
+  geom_line(aes(color=variable, linetype=ref), size=1) +
+  scale_linetype_manual(values=c("longdash", "solid"), guide="none") +
   scale_color_viridis(discrete = TRUE) +  # invert colors
   theme_sleek() +
   ylab("specific rate") +
