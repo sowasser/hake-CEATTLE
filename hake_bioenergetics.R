@@ -37,7 +37,7 @@ temp_dependent <- function(Qc, Tco, Tcm) {
 spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
                        temp_dependent(eq_2[3, 5], eq_2[3, 6], eq_2[3, 7]),
-                       temp_dependent(2.6, 10, 15))
+                       temp_dependent(2.6, 10, 15))  # Cq from Grant's pollock CEATTLE ex.
 colnames(spp_temp_wide) <- c("Atlantic cod", 
                              "pollock (adult)", "pollock (juvenile)",
                              "hake - estimated")
@@ -70,11 +70,11 @@ allometric_mass <- function(CA, CB) {
   return(Cmax)
 }
 
-# Run equation with cod, adult, juvenile pollock parameters & jake estimates
+# Run equation with cod, adult, juvenile pollock parameters & hake estimates
 spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4]), 
                        allometric_mass(eq_2[2, 3], eq_2[2, 4]), 
                        allometric_mass(eq_2[3, 3], eq_2[3, 4]), 
-                       allometric_mass(0.119009, -0.46024))
+                       allometric_mass(0.119009, -0.46024))  # values from Grant's pollock CEATTLE ex. 
 colnames(spp_mass_wide) <- c("Atlantic cod", 
                              "pollock (adult)", "pollock (juvenile)",
                              "hake - estimated")
