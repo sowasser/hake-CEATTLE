@@ -37,17 +37,21 @@ temp_dependent <- function(Qc, Tco, Tcm) {
 spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
                        temp_dependent(eq_2[3, 5], eq_2[3, 6], eq_2[3, 7]),
-                       temp_dependent(2.6, 10, 15))  # Cq from Grant's pollock CEATTLE ex.
-colnames(spp_temp_wide) <- c("Atlantic cod", 
-                             "pollock (adult)", "pollock (juvenile)",
-                             "pollock - CEATTLE")
+                       temp_dependent(2.6, 10, 15),  # Grant's pollock CEATTLE ex.
+                       temp_dependent(2.5, 8, 14.5))  # Hake estimaates w/ temp from Mike Malick's series
+colnames(spp_temp_wide) <- c("Atlantic cod - fb4", 
+                             "pollock (adult) - fb4", 
+                             "pollock (juvenile) - fb4",
+                             "pollock - CEATTLE",
+                             "hake estimate")
 spp_temp <- melt(as.data.frame(spp_temp_wide))
+spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=5))
 
-# Distinguish between literature values & estimated value for Hake (when that's ready)
-spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4), 
-                  ref = c(rep("a", times = (length(temp_range) * 3)), 
-                          rep("b", times = length(temp_range))))
-                  
+# # Distinguish between literature values & estimated value for Hake (when that's ready)
+# spp_temp <- cbind(spp_temp, ref = c(rep("a", times = (length(temp_range) * 3)), 
+#                                     rep("b", times = length(temp_range))))
+ 
+# Plot consumption rate                 
 temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   geom_line(aes(color=variable), size=1) +
   # Following lines for distinguishing between lit & estimated hake values
@@ -90,11 +94,11 @@ colnames(spp_mass_wide) <- c("Atlantic cod - fb4",
 spp_mass <- melt(as.data.frame(spp_mass_wide))
 spp_mass <- cbind(spp_mass, weight = rep(weights, times=6))
 
-# Distinguish between literature values & estimated value for Hake (when that's ready)
-# spp_mass <- cbind(spp_mass, weight = rep(weights, times=4), 
-#                   ref = c(rep("a", times = (length(weights) * 3)), 
-#                           rep("b", times = length(weights))))
+# # Distinguish between literature values & estimated value for Hake (when that's ready)
+# spp_mass <- cbind(spp_mass, ref = c(rep("a", times = (length(weights) * 5)), 
+#                                     rep("b", times = length(weights))))
 
+# Plot allometric mass
 mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   geom_line(aes(color=variable), size=1) +
   # Following lines for distinguishing between lit & estimated hake values
