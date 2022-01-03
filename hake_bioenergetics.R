@@ -78,16 +78,22 @@ allometric_mass <- function(CA, CB) {
 spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4]), 
                        allometric_mass(eq_2[2, 3], eq_2[2, 4]), 
                        allometric_mass(eq_2[3, 3], eq_2[3, 4]), 
-                       allometric_mass(0.119009, -0.46024))  # values from Grant's pollock CEATTLE ex. 
-colnames(spp_mass_wide) <- c("Atlantic cod", 
-                             "pollock (adult)", "pollock (juvenile)",
-                             "pollock - CEATTLE")
+                       allometric_mass(0.119009, -0.46024),  # values from Grant's pollock CEATTLE ex.
+                       allometric_mass(0.167, -0.460),  # hake estimate from Francis (1983)
+                       allometric_mass(0.0835, -0.460))  # Francis (1983) estimate w/ CA/2  
+colnames(spp_mass_wide) <- c("Atlantic cod - fb4", 
+                             "pollock (adult) - fb4", 
+                             "pollock (juvenile) - fb4",
+                             "pollock - CEATTLE",
+                             "hake - Francis",
+                             "hake - Francis, CA/2")
 spp_mass <- melt(as.data.frame(spp_mass_wide))
+spp_mass <- cbind(spp_mass, weight = rep(weights, times=6))
 
 # Distinguish between literature values & estimated value for Hake (when that's ready)
-spp_mass <- cbind(spp_mass, weight = rep(weights, times=4), 
-                  ref = c(rep("a", times = (length(weights) * 3)), 
-                          rep("b", times = length(weights))))
+# spp_mass <- cbind(spp_mass, weight = rep(weights, times=4), 
+#                   ref = c(rep("a", times = (length(weights) * 3)), 
+#                           rep("b", times = length(weights))))
 
 mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   geom_line(aes(color=variable), size=1) +
