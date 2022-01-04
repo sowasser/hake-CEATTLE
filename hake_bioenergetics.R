@@ -38,14 +38,16 @@ spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]),
                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
                        temp_dependent(eq_2[3, 5], eq_2[3, 6], eq_2[3, 7]),
                        temp_dependent(2.6, 10, 15),  # Grant's pollock CEATTLE ex.
-                       temp_dependent(2.5, 8, 14.5))  # Hake estimaates w/ temp from Mike Malick's series
+                       temp_dependent(2.5, 8, 14.5),  # Hake estimates w/ temp from acoustic series
+                       temp_dependent(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
 colnames(spp_temp_wide) <- c("Atlantic cod - fb4", 
                              "pollock (adult) - fb4", 
                              "pollock (juvenile) - fb4",
                              "pollock - CEATTLE",
-                             "hake estimate")
+                             "hake estimate - survey temp",
+                             "hake estimate - kriged temp")
 spp_temp <- melt(as.data.frame(spp_temp_wide))
-spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=5))
+spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=6))
 
 # # Distinguish between literature values & estimated value for Hake (when that's ready)
 # spp_temp <- cbind(spp_temp, ref = c(rep("a", times = (length(temp_range) * 3)), 
