@@ -20,7 +20,7 @@ overall_percentile <- quantile(temp_all$temp_100, 0.05, .95)  # 95% < 9.665°C
 
 
 # Mean temperature per year for CEATTLE ---------------------------------------
-# Iincluding overall mean for missing years
+# Including overall mean for missing years
 temp_mean <- temp_all %>% group_by(year) %>%
   summarise(mean_temp = mean(temp_100))
 
@@ -51,8 +51,6 @@ ggsave(filename="plots/temperature/survey_mean_temp.pdf", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
 
 # Temp distribution & max for looking at hake thermal maximum -----------------
-
-
 # Max temperature for each year
 year_max <- temp_all %>% group_by(year) %>%
   filter(temp_100 == max(temp_100))
@@ -82,3 +80,25 @@ temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
 
 ggsave(filename="plots/temperature/temp_dist_years.pdf", temp_dist_years,
        width=250, height=150, units="mm", dpi=300)
+
+
+# Temperature where hake were found -------------------------------------------
+# Temp here has been kriged to create a spatial surface for each year and then
+# temp from this kriged grid was assigned to each hake biomass estimate.
+# Info here: https://www.int-res.com/abstracts/meps/v639/p185-197/
+temp_kriged <- read.csv("data/temperature/temp_100_matched_sophia.csv")
+
+# Only include rows where hake were found
+temp_hake <- temp_kriged %>%
+  filter(hake_biomass > 0)
+
+temp_hake_mean <- mean(temp_hake$temp_100_kriged)
+temp_hake_max <- max(temp_hake$temp_100_kriged)
+
+# Plot histogram of kriged temp values
+temp_kriged <- ggplot(temp_hake, aes(x=temp_100_kriged)) +
+  geom_histogram() +
+  theme_sleek()
+
+ggsave(filename="plots/temperature/temp_kriged.pdf", temp_kriged,
+       width=150, height=100, units="mm", dpi=300)
