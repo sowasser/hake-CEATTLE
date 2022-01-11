@@ -113,3 +113,64 @@ mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
 
 ggsave(filename="plots/bioenergetics/allometric_mass.pdf", mass_rate,
        width=200, height=100, units="mm", dpi=300)
+
+
+# Sensitivity of bioenergetics to temp anomaly --------------------------------
+# Following the temperature anomalies determined from the hake survey data in
+# this paper: https://www.int-res.com/abstracts/meps/v639/p185-197/
+anomalies <- c(-1, -0.5, 0, 0.5, 1, 1.5, 2)
+# Add mean temp from kriged temps where hake were present
+anomaly_temp <- anomalies + 7.909423  
+
+# Test sensitivity of temperature-dependent consumption curve
+temp_dependent2 <- function(Qc, Tco, Tcm) {
+  z <- (log(Qc) * (Tcm - Tco)) 
+  y <- (log(Qc) * (Tcm - Tco + 2))
+  
+  x <- (((z^2) * (1 + (1 + (40/y))^0.5)^2) / 400)
+  
+  consumption <- c()
+  for(i in anomaly_temp) { 
+    V <- ((Tcm - i) / (Tcm - Tco))
+    rate <- ((V^x) * exp(x * (1 - V)))
+    consumption <- c(consumption, rate)
+  }
+  
+  return(consumption)
+}
+
+temp_sen_wide <- cbind(temp_dependent2(2.6, 10, 15),  # Grant's pollock CEATTLE ex.
+                       temp_dependent2(2.5, 8, 14.5),  # Hake estimates w/ temp from acoustic series
+                       temp_dependent2(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
+
+colnames(temp_sen_wide) <- c("pollock - CEATTLE",
+                             "hake estimate - survey temp",
+                             "hake estimate - kriged temp")
+temp_sen <- melt(as.data.frame(temp_sen_wide))
+temp_sen <- cbind(temp_sen, anomaly = rep(anomalies, times=3))
+
+# Plot resulting specific rates from the temp anomalies
+temp_sensitivity <- ggplot(temp_sen, aes(x=anomaly, y=value)) +
+  geom_point(aes(color=variable), size=2) +
+  geom_line(aes(color=variable), size=1) +
+  scale_color_viridis(discrete = TRUE) +  # invert colors
+  theme_sleek() +
+  ylab("specific rate") +
+  xlab("temperature anomaly") +
+  labs(color = "species")
+
+ggsave(filename="plots/bioenergetics/temp_sensitivity.pdf", temp_sensitivity,
+       width=200, height=100, units="mm", dpi=300)
+
+# Plot difference between the 2 hake estimates for each anomaly
+diff <- temp_dependent2(2.5, 8, 14.5) - temp_dependent2(2.5, 8, 10.5)
+temp_diff <- data.frame(cbind(anomalies, diff))
+
+rate_difference <- ggplot(temp_diff, aes(x=anomalies, y=diff)) +
+  geom_point() +
+  theme_sleek() +
+  ylab("difference in specific rate") +
+  xlab("temperature anomaly") 
+
+ggsave(filename="plots/bioenergetics/rate_difference.pdf", rate_difference,
+       width=200, height=100, units="mm", dpi=300)
