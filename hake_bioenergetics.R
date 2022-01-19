@@ -64,7 +64,7 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   ylab("specific rate") +
   labs(color = "species")
 
-ggsave(filename="plots/bioenergetics/temp_consumption.pdf", temp_rate,
+ggsave(filename="plots/bioenergetics/temp_consumption.png", temp_rate,
        width=200, height=100, units="mm", dpi=300)
 
 
@@ -111,7 +111,7 @@ mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   ylab("specific rate") +
   labs(color = "species")
 
-ggsave(filename="plots/bioenergetics/allometric_mass.pdf", mass_rate,
+ggsave(filename="plots/bioenergetics/allometric_mass.png", mass_rate,
        width=200, height=100, units="mm", dpi=300)
 
 
@@ -159,8 +159,9 @@ temp_sensitivity <- ggplot(temp_sen, aes(x=anomaly, y=value)) +
   xlab("temperature anomaly") +
   labs(color = "species")
 
-ggsave(filename="plots/bioenergetics/temp_sensitivity.pdf", temp_sensitivity,
+ggsave(filename="plots/bioenergetics/temp_sensitivity.png", temp_sensitivity,
        width=200, height=100, units="mm", dpi=300)
+
 
 # Plot difference between the 2 hake estimates for each anomaly
 diff <- temp_dependent2(2.5, 8, 14.5) - temp_dependent2(2.5, 8, 10.5)
@@ -172,5 +173,5 @@ rate_difference <- ggplot(temp_diff, aes(x=anomalies, y=diff)) +
   ylab("difference in specific rate") +
   xlab("temperature anomaly") 
 
-ggsave(filename="plots/bioenergetics/rate_difference.pdf", rate_difference,
+ggsave(filename="plots/bioenergetics/rate_difference.png", rate_difference,
        width=200, height=100, units="mm", dpi=300)
