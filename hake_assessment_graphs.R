@@ -13,7 +13,7 @@ path <- "~/Desktop/Local/hake-assessment-master/data/"
 maturity_table <- read.csv(paste0(path, "maturity-table.csv"))
 hake_maturity_data <- read.csv(paste0(path, "hake-maturity-data.csv"))
 
-# Weight at age
+# Overall weight at age
 weight_age <- ggplot(maturity_table, aes(x=age, y=avg.wt)) +
   geom_point() +
   theme_sleek()
@@ -32,8 +32,17 @@ weight_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Weight_kg)) +
 ggsave(filename="plots/assessment/weight_age_yearly.pdf", weight_age_yearly,
        width=300, height=200, units="mm", dpi=300)
 
+# Overall length at age
+length_age <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Age)) +
+  geom_point() +
+  theme_sleek() 
+# length_age
+
+ggsave(filename="plots/assessment/length_age.pdf", length_age,
+       width=150, height=100, units="mm", dpi=300)
+
 # Yearly length at age
-length_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
+length_age_yearly <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Age)) +
   geom_point() +
   theme_sleek() +
   facet_wrap(~Year, ncol = 3) 
