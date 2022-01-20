@@ -5,6 +5,7 @@ library(dplyr)
 library(ggplot2)
 library(ggsidekick)
 library(fishmethods)
+library(stats4)
 
 specimens <- read.csv("data/diet/hake_specimens.csv")
 contents <- read.csv("data/diet/hake_contents.csv")
@@ -52,11 +53,24 @@ ggsave(filename="plots/diet/specimen_weights.png", specimen_weights,
        width=150, height=100, units="mm", dpi=300)
 
 # Estimate ages ---------------------------------------------------------------
-# Compare assessment length-at-age to specimen & contents lengths
 hake_maturity_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/hake-maturity-data.csv")
 length_age_all <- na.omit(hake_maturity_data[, 11:12])
 
-# Check von Bertalanffy for estimating ages in hake diet data -----------------
+# Check von Bertalanffy for estimating ages in hake diet data
 # Estimates for Linf/Sinf & K from 2011 stock assessment
 von_bert <- growth(size = length_age_all$Length_cm, age = length_age_all$Age,
-                   Sinf = 50, K = 0.45, t0 = 0)
+                   Sinf = 50, K = 0.45, t0 = 1)
+
+# Apply inverted von Bertalanffy to length data 
+inverted <- function(k, Linf, a0, length) {
+  age <- c()
+  for(l in length) {
+    a <- -(1/k) * log(1 - (l / Linf)) + a0
+    age <- c(age, a)
+  }
+  
+  return(age)
+}
+
+estim_age_specimens <- inverted(k=0.45, Linf=50, a0=1, length=specimens$fork_length)
+estim_age_contents <- inverted(k=0.45, Linf=50, a0=1, length=contents$length)
