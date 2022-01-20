@@ -14,7 +14,7 @@ catch_data <- function(file, country, type) {
   df <- read.csv(paste0(path, file))
   
   if (country == "Canada") {
-    colnames(df) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+    colnames(df) <- c("year", 1:12)
     df2 <- cbind(df, nation = rep("Canada", length(df[, 1])), 
                  source = rep(type, length(df[, 1])))
     df3 <- melt(df2, id.vars = c("year", "nation", "source"), 
@@ -78,11 +78,11 @@ us_age <- melt(us_age_wide, id.vars = c("year", "n.fish", "n.hauls", "source"),
 # Canadian data
 can_age_all <- read.csv(paste0(path, "can-age-data.csv"), skip=1)
 can_shore_age <- cbind(can_age_all[1:27,], can_age_all[65:91,2], rep("shore", length(27)))
-colnames(can_shore_age) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "n.hauls", "source")
+colnames(can_shore_age) <- c("year", 1:15, "n.hauls", "source")
 can_ft_age <- cbind(can_age_all[29:43,], can_age_all[93:107, 2], rep("ft", length(15)))
-colnames(can_ft_age) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "n.hauls", "source")
+colnames(can_ft_age) <- c("year", 1:15, "n.hauls", "source")
 can_jv_age <- cbind(can_age_all[45:63,], can_age_all[109:127, 2], rep("jv", length(19)))
-colnames(can_jv_age) <- c("year", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "n.hauls", "source")
+colnames(can_jv_age) <- c("year", 1:15, "n.hauls", "source")
 
 can_age_wide <- rbind(can_shore_age, can_ft_age, can_jv_age)
 can_age <- melt(can_age_wide, id.vars = c("year", "n.hauls", "source"),
