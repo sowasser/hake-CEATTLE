@@ -5,22 +5,25 @@ library(dplyr)
 library(ggplot2)
 library(ggsidekick)
 
-predator <- read.csv("data/diet/hake_predator_05-19.csv")
-prey <- read.csv("data/diet/hake_prey_19.csv")
+specimens <- read.csv("data/diet/hake_specimens.csv")
+contents <- read.csv("data/diet/hake_contents.csv")
 
 
-# Prey ------------------------------------------------------------------------
+# Stomach contents only -------------------------------------------------------
 # Prey lengths 
 lengths <- ggplot(prey, aes(x=length)) +
   geom_histogram() +
   theme_sleek() +
-  xlab("content weight (g)")
+  xlab("content length (cm)")
 
-lengths
+ggsave(filename="plots/diet/contents_length.png", lengths,
+       width=150, height=100, units="mm", dpi=300)
 
 # Prey weights
 weights <- ggplot(prey, aes(x=content_weight)) +
   geom_histogram() +
   theme_sleek() +
-  xlab("length (cm)")
-weights
+  xlab("weight (g)")
+
+ggsave(filename="plots/diet/contents_length.png", lengths,
+       width=150, height=100, units="mm", dpi=300)

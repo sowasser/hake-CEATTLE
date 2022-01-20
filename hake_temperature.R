@@ -44,7 +44,8 @@ mean_temp_plot <- ggplot(all_years, aes(x=year, y=temp)) +
   geom_line(color="gray") +
   geom_point(aes(color=data_type)) +
   scale_color_viridis(discrete = TRUE, direction=-1) +  # invert colors
-  theme_sleek()
+  theme_sleek() +
+  ylab("temperature")
 # mean_temp_plot
 
 ggsave(filename="plots/temperature/survey_mean_temp.png", mean_temp_plot,
@@ -57,7 +58,8 @@ year_max <- temp_all %>% group_by(year) %>%
 
 max_temp <- ggplot(year_max, aes(x=year, y=temp_100)) +
   geom_point() +
-  theme_sleek()
+  theme_sleek() +
+  ylab("temperature")
 max_temp
 
 ggsave(filename="plots/temperature/survey_max_temp.png", max_temp,
@@ -66,7 +68,8 @@ ggsave(filename="plots/temperature/survey_max_temp.png", max_temp,
 # Temperature distribution overall and per year
 temp_dist_all <- ggplot(temp_all, aes(x=temp_100)) +
   geom_histogram() +
-  theme_sleek() 
+  theme_sleek() +
+  xlab("temperature") + ylab(" ")
 temp_dist_all
 
 ggsave(filename="plots/temperature/temp_dist_all.png", temp_dist_all,
@@ -75,6 +78,7 @@ ggsave(filename="plots/temperature/temp_dist_all.png", temp_dist_all,
 temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
   geom_histogram() +
   theme_sleek() +
+  xlab("temperature") + ylab(" ")
   facet_wrap(~year)
 # temp_dist_years
 
@@ -98,7 +102,8 @@ temp_hake_max <- max(temp_hake$temp_100_kriged)
 # Plot histogram of kriged temp values
 temp_kriged <- ggplot(temp_hake, aes(x=temp_100_kriged)) +
   geom_histogram() +
-  theme_sleek()
+  theme_sleek() +
+  xlab("kriged temperature") + ylab(" ")
 
 ggsave(filename="plots/temperature/temp_kriged.png", temp_kriged,
        width=150, height=100, units="mm", dpi=300)
