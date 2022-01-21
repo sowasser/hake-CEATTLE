@@ -100,10 +100,36 @@ temp_hake_mean <- mean(temp_hake$temp_100_kriged)
 temp_hake_max <- max(temp_hake$temp_100_kriged)
 
 # Plot histogram of kriged temp values
-temp_kriged <- ggplot(temp_hake, aes(x=temp_100_kriged)) +
+temp_hake_hist <- ggplot(temp_hake, aes(x=temp_100_kriged)) +
   geom_histogram() +
   theme_sleek() +
-  xlab("kriged temperature") + ylab(" ")
+  xlab("kriged temperature, biomass > 0") + ylab(" ")
 
-ggsave(filename="plots/temperature/temp_kriged.png", temp_kriged,
+ggsave(filename="plots/temperature/temp_hake_hist.png", temp_hake_hist,
        width=150, height=100, units="mm", dpi=300)
+
+
+# Compare mean survey temp, mean kriged temp, kriged + hake biomass > 0 -------
+temp_kriged_mean <- temp_kriged %>% group_by(year) %>%
+  summarise(mean_temp = mean(temp_100_kriged))
+
+temp_hake_mean <- temp_hake %>% group_by(year) %>%
+  summarise(mean_temp = mean(temp_100_kriged))
+
+# Combine into 1 dataset with labeled data sources, then plot
+means <- rbind(temp_mean, temp_kriged_mean, temp_hake_mean)
+means <- cbind(means, c(rep("survey", 13), 
+                        rep("kriged, all", 12), 
+                        rep("kriged, biomass > 0", 12)))
+colnames(means)[3] <- "dataset"
+
+mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
+  geom_point(aes(color=dataset), size=2) +
+  geom_line(aes(color=dataset), size=1) +
+  scale_color_viridis(discrete = TRUE) +   
+  theme_sleek() +
+  ylab("mean temperature")
+mean_temp_compared
+
+ggsave(filename="plots/temperature/mean_temp_compared.png", mean_temp_compared,
+       width=160, height=100, units="mm", dpi=300)
