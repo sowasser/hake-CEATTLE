@@ -4,53 +4,61 @@
 library(dplyr)
 library(ggplot2)
 library(ggsidekick)
+library(viridis)
 library(fishmethods)
-library(stats4)
+
 
 specimens <- read.csv("data/diet/hake_specimens.csv")
 contents <- read.csv("data/diet/hake_contents.csv")
 combined <- read.csv("data/diet/diet_combined.csv")
 
 # Length & weight -------------------------------------------------------------
-# Contents lengths 
-contents_lengths <- ggplot(contents, aes(x=length)) +
-  geom_histogram() +
-  stat_bin(bins=4) +
-  theme_sleek() +
-  xlab("content length (cm)") + ylab(" ")
+lengths <- as.data.frame(
+  rbind(cbind(na.omit(contents$length), 
+              rep("contents", times = length(na.omit(contents$length)))),
+        cbind(specimens$fork_length,
+              rep("specimen", times = length(specimens$fork_length)))),
+)
 
-ggsave(filename="plots/diet/contents_length.png", contents_lengths,
+colnames(lengths) <- c("length", "hake")
+lengths$length <- as.numeric(lengths$length)
+  
+# Histogram of lengths
+length_hist <- ggplot(lengths, aes(x=length, fill=hake)) +
+  geom_histogram() +
+  stat_bin(binwidth = 3) +
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +
+  xlab("length (cm)") + ylab(" ")
+# length_hist
+
+ggsave(filename="plots/diet/length_hist.png", length_hist,
        width=150, height=100, units="mm", dpi=300)
 
-# Contents weights
-contents_weights <- ggplot(contents, aes(x=content_weight)) +
+# Combine weights into one dataframe, excluding duplicate contents weights from
+# multiple length observations
+weights <- as.data.frame(
+  rbind(cbind(unique(contents$content_weight), 
+              rep("contents", times = length(unique(contents$content_weight)))),
+        cbind(specimens$organism_weight * 1000,  # convert kg to g
+              rep("specimen", times = length(specimens$organism_weight)))),
+)
+
+colnames(weights) <- c("weight", "hake")
+weights$weight <- as.numeric(weights$weight)
+
+# Histogram of weights
+weight_hist <- ggplot(weights, aes(x=weight, fill=hake)) +
   geom_histogram() +
-  stat_bin(bins=5) +
+  stat_bin(binwidth = 3) +
   theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +
   xlab("weight (g)") + ylab(" ")
+# weight_hist
 
-ggsave(filename="plots/diet/contents_weight.png", contents_weights,
+ggsave(filename="plots/diet/weight_hist.png", weight_hist,
        width=150, height=100, units="mm", dpi=300)
 
-# Specimen lengths
-specimen_lengths <- ggplot(combined, aes(x=fork_length)) +
-  geom_histogram() +
-  stat_bin(bins=5) +
-  theme_sleek() +
-  xlab("specimen length (cm)") + ylab(" ")
-
-ggsave(filename="plots/diet/specimen_lengths.png", specimen_lengths,
-       width=150, height=100, units="mm", dpi=300)
-
-# Specimen weights
-specimen_weights <- ggplot(combined, aes(x=organism_weight_kg)) +
-  geom_histogram() +
-  stat_bin(bins=5) +
-  theme_sleek() +
-  xlab("organism weight (kg)") + ylab(" ")
-
-ggsave(filename="plots/diet/specimen_weights.png", specimen_weights,
-       width=150, height=100, units="mm", dpi=300)
 
 # Estimate ages ---------------------------------------------------------------
 hake_maturity_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/hake-maturity-data.csv")
