@@ -15,9 +15,9 @@ combined <- read.csv("data/diet/diet_combined.csv")
 # Length & weight -------------------------------------------------------------
 lengths <- as.data.frame(
   rbind(cbind(na.omit(contents$length), 
-              rep("contents", times = length(na.omit(contents$length)))),
+              rep("prey", times = length(na.omit(contents$length)))),
         cbind(specimens$fork_length,
-              rep("specimen", times = length(specimens$fork_length)))),
+              rep("predator", times = length(specimens$fork_length)))),
 )
 
 colnames(lengths) <- c("length", "hake")
@@ -37,11 +37,12 @@ ggsave(filename="plots/diet/length_hist.png", length_hist,
 
 # Combine weights into one dataframe, excluding duplicate contents weights from
 # multiple length observations
+content_wt_kg <- contents$content_weight / 1000
 weights <- as.data.frame(
-  rbind(cbind(unique(contents$content_weight), 
-              rep("contents", times = length(unique(contents$content_weight)))),
-        cbind(specimens$organism_weight * 1000,  # convert kg to g
-              rep("specimen", times = length(specimens$organism_weight)))),
+  rbind(cbind(unique((contents$content_weight) / 1000),  # convert to kg
+              rep("prey", times = length(unique(contents$content_weight)))),
+        cbind(specimens$organism_weight,  
+              rep("predator", times = length(specimens$organism_weight)))),
 )
 
 colnames(weights) <- c("weight", "hake")
@@ -50,10 +51,9 @@ weights$weight <- as.numeric(weights$weight)
 # Histogram of weights
 weight_hist <- ggplot(weights, aes(x=weight, fill=hake)) +
   geom_histogram() +
-  stat_bin(binwidth = 3) +
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +
-  xlab("weight (g)") + ylab(" ")
+  xlab("weight (kg)") + ylab(" ")
 # weight_hist
 
 ggsave(filename="plots/diet/weight_hist.png", weight_hist,

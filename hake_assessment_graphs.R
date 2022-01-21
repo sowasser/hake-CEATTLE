@@ -13,12 +13,20 @@ path <- "~/Desktop/Local/hake-assessment-master/data/"
 maturity_table <- read.csv(paste0(path, "maturity-table.csv"))
 hake_maturity_data <- read.csv(paste0(path, "hake-maturity-data.csv"))
 
-# Overall weight at age
-weight_age <- ggplot(maturity_table, aes(x=age, y=avg.wt)) +
+# Average weight at age
+weight_age_avg <- ggplot(maturity_table, aes(x=age, y=avg.wt)) +
   geom_point() +
   theme_sleek()
-# weight_age
+# weight_age_avg
+ggsave(filename="plots/assessment/weight_age_avg.png", weight_age_avg,
+       width=150, height=100, units="mm", dpi=300)
 
+# Overall weight at age
+weight_age <- ggplot(hake_maturity_data, aes(x=Age, y=Weight_kg)) +
+  geom_point() +
+  theme_sleek() +
+  ylab("weight (kg)")
+# weight_age
 ggsave(filename="plots/assessment/weight_age.png", weight_age,
        width=150, height=100, units="mm", dpi=300)
 
@@ -28,9 +36,9 @@ weight_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Weight_kg)) +
   theme_sleek() +
   facet_wrap(~Year, ncol = 3) 
 # weight_age_yearly
-
 ggsave(filename="plots/assessment/weight_age_yearly.png", weight_age_yearly,
        width=300, height=200, units="mm", dpi=300)
+
 
 # Overall length at age
 length_age <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
@@ -38,7 +46,6 @@ length_age <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
   ylab("length (cm)") +
   theme_sleek() 
 # length_age
-
 ggsave(filename="plots/assessment/length_age.png", length_age,
        width=150, height=100, units="mm", dpi=300)
 
@@ -48,7 +55,6 @@ length_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
   theme_sleek() +
   facet_wrap(~Year, ncol = 3) 
 # length_age_yearly
-
 ggsave(filename="plots/assessment/length_age_yearly.png", length_age_yearly,
        width=300, height=200, units="mm", dpi=300)
 
@@ -57,7 +63,6 @@ weight_length <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Weight_kg)) +
   geom_point() +
   theme_sleek()
 # weight_length
-
 ggsave(filename="plots/assessment/weight_length.png", weight_length,
        width=150, height=100, units="mm", dpi=300)
 
