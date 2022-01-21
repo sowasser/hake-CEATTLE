@@ -19,7 +19,7 @@ weight_age <- ggplot(maturity_table, aes(x=age, y=avg.wt)) +
   theme_sleek()
 # weight_age
 
-ggsave(filename="plots/assessment/weight_age.pdf", weight_age,
+ggsave(filename="plots/assessment/weight_age.png", weight_age,
        width=150, height=100, units="mm", dpi=300)
 
 # Yearly weight at age
@@ -29,16 +29,17 @@ weight_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Weight_kg)) +
   facet_wrap(~Year, ncol = 3) 
 # weight_age_yearly
 
-ggsave(filename="plots/assessment/weight_age_yearly.pdf", weight_age_yearly,
+ggsave(filename="plots/assessment/weight_age_yearly.png", weight_age_yearly,
        width=300, height=200, units="mm", dpi=300)
 
 # Overall length at age
 length_age <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
   geom_point() +
+  ylab("length (cm)") +
   theme_sleek() 
 # length_age
 
-ggsave(filename="plots/assessment/length_age.pdf", length_age,
+ggsave(filename="plots/assessment/length_age.png", length_age,
        width=150, height=100, units="mm", dpi=300)
 
 # Yearly length at age
@@ -48,7 +49,7 @@ length_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
   facet_wrap(~Year, ncol = 3) 
 # length_age_yearly
 
-ggsave(filename="plots/assessment/length_age_yearly.pdf", length_age_yearly,
+ggsave(filename="plots/assessment/length_age_yearly.png", length_age_yearly,
        width=300, height=200, units="mm", dpi=300)
 
 # Weight/length relationship (sanity check)
@@ -57,7 +58,7 @@ weight_length <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Weight_kg)) +
   theme_sleek()
 # weight_length
 
-ggsave(filename="plots/assessment/weight_length.pdf", weight_length,
+ggsave(filename="plots/assessment/weight_length.png", weight_length,
        width=150, height=100, units="mm", dpi=300)
 
 
@@ -68,7 +69,7 @@ age_maturity <- ggplot(maturity_table, aes(x=age, y=maturity)) +
   theme_sleek() 
 # age_maturity
 
-ggsave(filename="plots/assessment/age_maturity.pdf", age_maturity,
+ggsave(filename="plots/assessment/age_maturity.png", age_maturity,
        width=150, height=100, units="mm", dpi=300)
 
 # Maturity ogives
@@ -92,7 +93,7 @@ catch_age_comp <- ggplot(age_data, aes(x=year, y=catch, fill=age)) +
   facet_wrap(~source)
 # catch_age_comp
 
-ggsave(filename="plots/assessment/catch_age_comp.pdf", catch_age_comp,
+ggsave(filename="plots/assessment/catch_age_comp.png", catch_age_comp,
        width=300, height=100, units="mm", dpi=300)
 
 
@@ -111,7 +112,7 @@ catch <- ggplot(all_catch, aes(y=catch, x=year, fill=source)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~nation, ncol=2)
 
-ggsave(filename="plots/assessment/catch.pdf", catch,
+ggsave(filename="plots/assessment/catch.png", catch,
        width=300, height=150, units="mm", dpi=300)
 
 
@@ -125,7 +126,7 @@ survey_biomass <- ggplot(survey_history, aes(y=biomass, x=year)) +
   theme_sleek()
 # survey_biomass
 
-ggsave(filename="plots/assessment/survey_biomass.pdf", survey_biomass,
+ggsave(filename="plots/assessment/survey_biomass.png", survey_biomass,
        width=150, height=100, units="mm", dpi=300)
 
 # Age - Length transition matrix ----------------------------------------------
