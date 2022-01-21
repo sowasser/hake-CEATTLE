@@ -33,7 +33,7 @@ ggsave(filename="plots/assessment/weight_age_yearly.pdf", weight_age_yearly,
        width=300, height=200, units="mm", dpi=300)
 
 # Overall length at age
-length_age <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Age)) +
+length_age <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
   geom_point() +
   theme_sleek() 
 # length_age
@@ -42,7 +42,7 @@ ggsave(filename="plots/assessment/length_age.pdf", length_age,
        width=150, height=100, units="mm", dpi=300)
 
 # Yearly length at age
-length_age_yearly <- ggplot(hake_maturity_data, aes(x=Length_cm, y=Age)) +
+length_age_yearly <- ggplot(hake_maturity_data, aes(x=Age, y=Length_cm)) +
   geom_point() +
   theme_sleek() +
   facet_wrap(~Year, ncol = 3) 
