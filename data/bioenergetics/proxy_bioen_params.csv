@@ -1,0 +1,7 @@
+﻿species,Equation,CA,CB,Qc,Tco,Tcm,Reference
+Atlantic cod,2,0.099,-0.195,2.41,13.7,21,Hansson et al. 1996; Mateo 2007
+Pollock (>400g),1,0.02878,-0.6292,0.3763,N/A,N/A,Buckley & Livingston 1996
+Pollock (300-400g),1,0.02878,-0.6292,0.3763,N/A,N/A,Buckley & Livingston 1995
+Pollock (100-299g),1,0.02878,-0.6292,0.3763,N/A,N/A,Buckley & Livingston 1994
+Pollock (adult),2,0.3,-0.5875,3.5,8,15,Mason et al. unpub
+Pollock (juvenile),2,0.34,-0.5875,6,8,15,Mason et al. unpub

@@ -43,11 +43,13 @@ vignettes/*.pdf
 
 *.Rproj
 
-# Additional file types to ignore (such as data / plots)
-*.xlsx
-*.pdf
-*.png
-
 # Ignore folders that don't need to be tracked on git
 AEP_class/
-data/
+Resources/
+plots/
+FB4/
+From Grant/
+
+# Ignore specific file types
+*.docx
+*.pdf
