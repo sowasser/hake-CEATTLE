@@ -1,0 +1,60 @@
+---
+title: "Hake data sources for CEATTLE"
+author: "Sophia Wassermann"
+date: "1/26/2022"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+    fig_captions: yes
+    
+header-includes:
+- \usepackage[labelfont=bf]{caption}
+- \captionsetup{font=footnotesize}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Summary
+
+CEATTLE - Climate-Enhanced, Age-based model with Temperature-specific Trophic Linkages and Energetics - is a multi-species, age-structured assessment model that has been used for groundfish in the Bering Sea and Gulf of Alaska. This project seeks to apply CEATTLE to Pacific hake in the California Current Ecosystem. Pacific hake are an important fishery on the US West Coast (\$60 million in 2017), and are one of the most abundant predators. This implementation of CEATTLE focuses on hake cannibalism.
+
+## Data sources
+
+CEATTLE is implemented through the [RCeattle](https://github.com/grantdadams/Rceattle) package, a wrapper for the model built in Template Model Builder (TMB). The model incorporates data from multiple sources: primarily the [hake stock assessment](https://github.com/pacific-hake/hake-assessment) conducted by the Northwest Fisheries Science Center (NWFSC), with the climate and trophic linkeages integrated through temperature-specific bioenergetics and predation (diet) data.
+
+### Hake assessment
+
+The data inputs into CEATTLE include survey and fishery catch data, length and age composition, and empirical weight-at-age. These data are from the [hake assessment](https://github.com/pacific-hake/hake-assessment). A summary of the data are below.
+
+![Hake catch by source (commercial and survey) for Canada and the US](./plots/assessment/catch.png)
+
+![Age composition for the US fishery by year and fleet.](./plots/assessment/catch_age_comp.png)
+
+![Length at age](./plots/assessment/length_age.png)
+
+![Weight at age](./plots/assessment/weight_age.png)
+
+<br />
+
+### Temperature
+
+Temperature data are available from the acoustic survey for hake for 13 years between 1995-2019. The temperature is reported for 100m, or bottom temp if the bottom was <100m, and were collected with a variety of instruments. 
+
+![Temperature at ~100m for the entire survey area.](./plots/temperature/temp_dist_all.png)
+
+Calculation of the temperature-dependent consumption rate for both the climate and predation aspects of the model depends on finding an optimal and maximum temperature for hake. With no clear values in the literature to use for Pacific hake, the temperature where hake occurred during the survey can be used as an estimate.
+
+The temperature across the survey had been kriged and used to create a spatial grid across the survey area. The temperature from this grid was then assigned to hake biomass estimates ([Malick et al. 2020](https://www.int-res.com/abstracts/meps/v639/p185-197/)) and filtered for when hake were present (biomass > 0).
+
+![Kriged, gridded temperature at ~100m when hake biomass > 0.](./plots/temperature/temp_hake_hist.png)
+
+Further temperature datasets are needed to provide an estimate for earlier and missing years. In CEATTLE, any missign years will be coded as the mean temperature.
+
+<br />
+
+### Bioenergetics
+
+### Predation (diet)
