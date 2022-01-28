@@ -53,3 +53,6 @@ From Grant/
 # Ignore specific file types
 *.docx
 *.pdf
+hake_document.log
+
+*.log
