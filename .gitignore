@@ -56,3 +56,5 @@ From Grant/
 hake_document.log
 
 *.log
+
+*.tex
