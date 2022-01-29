@@ -49,8 +49,7 @@ Resources/
 plots/
 FB4/
 From Grant/
-hake-assessment-master/
-2020_Hake_Assessment/
+hake_assessment/
 
 # Ignore specific file types
 *.docx
