@@ -3,14 +3,15 @@ devtools::install_github("grantdadams/Rceattle")
 library(Rceattle)
 
 library(r4ss)
+library(reshape2)
+library(ggplot2)
+library(ggsidekick)
 
 # Run CEATTLE -----------------------------------------------------------------
 mydata <- Rceattle::read_data( file = "data/hake_from_ss.xlsx")
 grantsdata <- Rceattle::read_data( file = "data/From Grant/PacificHake/Data/2019PacificHake.xlsx")
 
-# mydata$est_M1 <- c(0,0,0)
-# mydata$estDynamics = 1
-# mydata$fleet_control$proj_F_prop <-rep(0,2)  # changed from 7 in tutorial
+grantsdata$projyr <- 2022  # change to 2022 to match assessment
 
 ss_run <- Rceattle::fit_mod(data_list = grantsdata,
                             inits = NULL, # Initial parameters = 0
@@ -24,11 +25,8 @@ plot_biomass(Rceattle =  ss_run)
 plot_recruitment(Rceattle =  ss_run, add_ci = TRUE)
 plot_catch(Rceattle =  ss_run, incl_proj = T)
 
-# Compare estimates to assessment ---------------------------------------------
-# Biomass from CEATTLE
-biomass <- ss_run$quantities$biomass
-biomass <- cbind(c(1966:2050), c(biomass))
 
+# Run r4ss diagnostics on stock synthesis model -------------------------------
 # Diagnostics from r4ss
 mydir <- file.path(file.path("hake_assessment/2020_Hake_Assessment"))
 
@@ -40,3 +38,24 @@ replist <- SS_output(dir = mydir,
 # plots the results
 SS_plots(replist)
 
+
+# Compare virgin spawning stock biomass between SS3 and CEATTLE ---------------
+# Biomass from CEATTLE
+ceattle_biomass <- c(ss_run$quantities$biomass)
+ceattle_biomass <- cbind(1966:2022, ceattle_biomass)
+
+# Pull out just biomass from stock synthesis run
+ss_biomass <- read.table("data/ssb.txt")
+
+# Combine and plot
+biomass_wide <- as.data.frame(cbind(ceattle_biomass, ss_biomass[, 2]))
+colnames(biomass_wide) <- c("year", "CEATTLE", "SS3")
+biomass <- melt(biomass_wide, id.vars = "year")
+
+ssb_plot <- ggplot(biomass, aes(x=year, y=value)) +
+  geom_line(aes(color=variable), size=1) +
+  # scale_color_viridis(discrete = TRUE) +  # invert colors
+  theme_sleek() +
+  ylab("biomass") +
+  labs(color = "model")
+ssb_plot
