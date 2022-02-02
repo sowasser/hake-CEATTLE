@@ -1,17 +1,17 @@
 # Run CEATTLE for hake data with no diet data 
 library(devtools)
-# library(Rceattle)
-install_github("grantdadams/Rceattle")
+library(Rceattle)
+# install_github("grantdadams/Rceattle")
 
-mydata <- Rceattle::read_data( file = "data/input_nodiet.xlsx")
+mydata <- Rceattle::read_data( file = "data/From Grant/PacificHake/data/2019PacificHake.xlsx")
 mydata$est_M1 <- c(0,0,0)
-mydata$estDynamics = 0
+mydata$estDynamics = 1
 
-mydata$fleet_control$proj_F_prop <-rep(0,3)  # changed from 7 in tutorial
+mydata$fleet_control$proj_F_prop <-rep(0,2)  # changed from 7 in tutorial
 ss_run <- Rceattle::fit_mod(data_list = mydata,
                             inits = NULL, # Initial parameters = 0
                             file = NULL, # Don't save
-                            debug = FALSE, # Estimate
+                            debug = 1, # 1 = estimate, 0 = don't estimate
                             random_rec = FALSE, # No random recruitment
                             msmMode = 0, # Single species mode
                             phase = "default")
@@ -24,8 +24,8 @@ ss_run <- Rceattle::fit_mod(data_list = mydata,
 # Data
 ################################################
 # Read the data in
-mydata_pollock_fixed <- Rceattle::read_data( file = "GOA_18.5.1_pollock_single_species_1970-2018.xlsx")
-mydata_pollock <-  mydata_pollock_fixed
+mydata_pollock_fixed <- Rceattle::read_data( file = "data/GOA_18.5.1_pollock_single_species_1970-2018.xlsx")
+mydata_pollock <- mydata_pollock_fixed
 mydata_pollock$estDynamics = 0
 
 #######################################
@@ -38,7 +38,7 @@ pollock_fixed <- Rceattle::fit_mod(data_list = mydata_pollock_fixed,
                                    file = NULL, # Don't save
                                    debug = 1, # Don't estimate (no need to)
                                    msmMode = 0, # Single species mode
-                                   silent = TRUE,
+                                   # silent = TRUE,  # "unused argument"
                                    phase = "default")
 
 #######################################
