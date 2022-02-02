@@ -3,7 +3,7 @@ library(devtools)
 library(Rceattle)
 # install_github("grantdadams/Rceattle")
 
-mydata <- Rceattle::read_data( file = "data/From Grant/PacificHake/data/2019PacificHake.xlsx")
+mydata <- Rceattle::read_data( file = "data/hake_from_ss.xlsx")
 mydata$est_M1 <- c(0,0,0)
 mydata$estDynamics = 1
 
