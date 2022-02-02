@@ -62,3 +62,5 @@ hake_document.log
 
 # Ignore Microsoft temporary files
 [~][$]*  
+
+data/BS2017SS.xlsx

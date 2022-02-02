@@ -37,7 +37,7 @@ mydata$fleet_control$proj_F_prop <-rep(0,7)
 ss_run <- Rceattle::fit_mod(data_list = mydata,
                             inits = NULL, # Initial parameters = 0
                             file = NULL, # Don't save
-                            debug = FALSE, # Estimate
+                          # debug = FALSE, # Estimate
                             random_rec = FALSE, # No random recruitment
                             msmMode = 0, # Single species mode
                             phase = "default")
@@ -49,7 +49,7 @@ mydata_M$est_M1 <- c(1,0,0)
 ss_run_M <- Rceattle::fit_mod(data_list = mydata_M,
                               inits = NULL, # Initial parameters = 0
                               file = NULL, # Don't save
-                              debug = FALSE, # Estimate
+                            # debug = FALSE, # Estimate
                               random_rec = FALSE, # No random recruitment
                               msmMode = 0, # Single species mode
                               phase = "default" )
