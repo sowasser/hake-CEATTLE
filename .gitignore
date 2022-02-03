@@ -50,6 +50,7 @@ plots/
 FB4/
 From Grant/
 hake_assessment/
+old/
 
 # Ignore specific file types
 *.docx
