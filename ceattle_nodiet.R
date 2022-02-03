@@ -64,14 +64,19 @@ ss_biom_wide <- as.data.frame(cbind(1966:2022, ss_ssb, ss_biomass))
 colnames(ss_biom_wide) <- c("year", "SSB", "total biomass")
 ss_biom <- melt(ss_biom_wide, id.vars = "year")
 
+# Error from stock synthesis SSB
+error <- c(rep(0, 114), ss_ssb_werror[, 3], rep(0, 57))
+
 # Combine all together and plot
 biom_wide <- cbind(ceattle_biom, ss_biom[, 3])
 colnames(biom_wide)[4] <- "Stock Synthesis"
-biom <- melt(biom_wide, id.vars = c("year", "type"))
+biom_noerror <- melt(biom_wide, id.vars = c("year", "type"))
+biom <- cbind(biom_noerror, error)
 
 biom_plot <- ggplot(biom, aes(x=year, y=value)) +
   geom_line(aes(color=variable, linetype=type)) +
   scale_linetype_manual(values=c("dashed", "solid")) +  # specify line types
+  geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=.3, alpha=0.3) +
   scale_color_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +  # specify colors
   theme_sleek() +
   ylab("Biomass") +
