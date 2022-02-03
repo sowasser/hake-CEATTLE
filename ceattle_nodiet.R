@@ -40,6 +40,9 @@ plot_ssb(Rceattle = ss_run_GA)
 plot_selectivity(Rceattle = ss_run_GA)
 plot_logindex(Rceattle = ss_run_GA)
 
+# Check what all comes out of CEATTLE
+ceattle_stuff <- ss_run_GA$quantities
+
 
 # Compare spawning stock biomass & total biomass between SS3 and CEATTLE ------
 # Pull out SSB & total biomass from CEATTLE & combine
@@ -76,14 +79,34 @@ biom <- cbind(biom_noerror, error)
 biom_plot <- ggplot(biom, aes(x=year, y=value)) +
   geom_line(aes(color=variable, linetype=type)) +
   scale_linetype_manual(values=c("dashed", "solid")) +  # specify line types
-  geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=.3, alpha=0.3) +
+  geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=0, alpha=0.3) +
   scale_color_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +  # specify colors
   theme_sleek() +
-  ylab("Biomass") +
+  ylab("Biomass (mt)") +
   labs(color = "model")
 biom_plot
 
 ggsave(filename="plots/CEATTLE/allbiom_ss3_ceattle.png", biom_plot,
+       width=200, height=100, units="mm", dpi=300)
+
+
+# Compare recruitment between SS3 and CEATTLE ---------------------------------
+ceattle_R <- c(ss_run_GA$quantities$R)
+ss_R <- read.table("data/assessment/recruitment.txt")
+
+recruitment_wide <- as.data.frame(cbind(1966:2022, ceattle_R, ss_R[, 2]))
+colnames(recruitment_wide) <- c("year", "CEATTLE", "Stock Synthesis")
+recruitment <- melt(recruitment_wide, id.vars = "year")
+
+recruit_plot <- ggplot(recruitment, aes(x=year, y=value)) +
+  geom_line(aes(color=variable)) +
+  scale_color_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +  # specify colors
+  theme_sleek() +
+  ylab("Recruitment") +
+  labs(color = "model")
+recruit_plot
+
+ggsave(filename="plots/CEATTLE/recruitment_ss3_ceattle.png", recruit_plot,
        width=200, height=100, units="mm", dpi=300)
 
 
