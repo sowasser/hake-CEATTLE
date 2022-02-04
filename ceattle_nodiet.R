@@ -11,10 +11,10 @@ library(viridis)
 
 # Run CEATTLE -----------------------------------------------------------------
 # mydata <- Rceattle::read_data( file = "data/hake_from_ss.xlsx")
-GAdata <- Rceattle::read_data( file = "data/From Grant/PacificHake/Data/2019PacificHake.xlsx")
+hake_nodiet <- Rceattle::read_data( file = "data/hake220203.xlsx")
 
 # mydata$projyr <- 2022  # change to 2022 to match assessment
-GAdata$projyr <- 2022  # change to 2022 to match assessment
+hake_nodiet$projyr <- 2022  # change to 2022 to match assessment
 
 # ss_run <- Rceattle::fit_mod(data_list = mydata,
 #                             inits = NULL, # Initial parameters = 0
@@ -24,30 +24,30 @@ GAdata$projyr <- 2022  # change to 2022 to match assessment
 #                             msmMode = 0, # Single species mode
 #                             phase = "default")
 
-ss_run_GA <- Rceattle::fit_mod(data_list = GAdata,
-                               inits = NULL, # Initial parameters = 0
-                               file = NULL, # Don't save
-                               # debug = 1, # 1 = estimate, 0 = don't estimate
-                               random_rec = FALSE, # No random recruitment
-                               msmMode = 0, # Single species mode
-                               phase = "default")
+nodiet_run <- Rceattle::fit_mod(data_list = hake_nodiet,
+                              inits = NULL, # Initial parameters = 0
+                              file = NULL, # Don't save
+                            # debug = 1, # 1 = estimate, 0 = don't estimate
+                              random_rec = FALSE, # No random recruitment
+                              msmMode = 0, # Single species mode
+                              phase = "default")
 
-plot_biomass(Rceattle =  ss_run_GA)
-plot_recruitment(Rceattle =  ss_run_GA, add_ci = TRUE)
-plot_catch(Rceattle =  ss_run_GA, incl_proj = F)
+plot_biomass(Rceattle =  nodiet_run)
+plot_recruitment(Rceattle =  nodiet_run, add_ci = TRUE)
+plot_catch(Rceattle =  nodiet_run, incl_proj = F)
 
-plot_ssb(Rceattle = ss_run_GA)
-plot_selectivity(Rceattle = ss_run_GA)
-plot_logindex(Rceattle = ss_run_GA)
+plot_ssb(Rceattle = nodiet_run)
+plot_selectivity(Rceattle = nodiet_run)
+plot_logindex(Rceattle = nodiet_run)
 
 # Check what all comes out of CEATTLE
-ceattle_stuff <- ss_run_GA$quantities
+ceattle_stuff <- nodiet_run$quantities
 
 
 # Compare spawning stock biomass & total biomass between SS3 and CEATTLE ------
 # Pull out SSB & total biomass from CEATTLE & combine
-ceattle_ssb <- c(ss_run_GA$quantities$biomassSSB)
-ceattle_biomass <- c(ss_run_GA$quantities$biomass)
+ceattle_ssb <- c(nodiet_run$quantities$biomassSSB)
+ceattle_biomass <- c(nodiet_run$quantities$biomass)
 
 ceattle_biom_wide <- as.data.frame(cbind(1966:2022, ceattle_ssb, ceattle_biomass))
 colnames(ceattle_biom_wide) <- c("year", "SSB", "Total Biomass")
@@ -91,7 +91,7 @@ ggsave(filename="plots/CEATTLE/allbiom_ss3_ceattle.png", biom_plot,
 
 
 # Compare recruitment between SS3 and CEATTLE ---------------------------------
-ceattle_R <- c(ss_run_GA$quantities$R)
+ceattle_R <- c(nodiet_run$quantities$R)
 ss_R <- read.table("data/assessment/recruitment.txt")
 
 recruitment_wide <- as.data.frame(cbind(1966:2022, ceattle_R, ss_R[, 2]))
