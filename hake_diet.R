@@ -7,18 +7,24 @@ library(ggsidekick)
 library(viridis)
 library(fishmethods)
 
+stomach_summary <- read.csv("data/diet/hake_stomachs_summary.csv")
+full_stomachs <- read.csv("data/diet/full_stomachs.csv")
 
-specimens <- read.csv("data/diet/hake_specimens.csv")
-contents <- read.csv("data/diet/hake_contents.csv")
-combined <- read.csv("data/diet/diet_combined.csv")
+# Total stomachs per year -----------------------------------------------------
+per_year <- ggplot(stomach_summary, aes(x=year)) +
+  geom_histogram() +
+  # stat_bin(binwidth = 3) +
+  theme_sleek() +
+  xlab("year") + ylab(" ")
+per_year
+
 
 # Length & weight -------------------------------------------------------------
 lengths <- as.data.frame(
-  rbind(cbind(na.omit(contents$length), 
-              rep("prey", times = length(na.omit(contents$length)))),
-        cbind(specimens$fork_length,
-              rep("predator", times = length(specimens$fork_length)))),
-)
+  rbind(cbind(na.omit(full_stomachs$content_length.cm), 
+              rep("prey", times = length(na.omit(full_stomachs$content_length.cm)))),
+        cbind(full_stomachs$fork_length.cm,
+              rep("predator", times = length(full_stomachs$fork_length.cm)))))
 
 colnames(lengths) <- c("length", "hake")
 lengths$length <- as.numeric(lengths$length)
@@ -30,20 +36,18 @@ length_hist <- ggplot(lengths, aes(x=length, fill=hake)) +
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +
   xlab("length (cm)") + ylab(" ")
-# length_hist
+length_hist
 
 ggsave(filename="plots/diet/length_hist.png", length_hist,
        width=150, height=100, units="mm", dpi=300)
 
 # Combine weights into one dataframe, excluding duplicate contents weights from
 # multiple length observations
-content_wt_kg <- contents$content_weight / 1000
 weights <- as.data.frame(
-  rbind(cbind(unique((contents$content_weight) / 1000),  # convert to kg
-              rep("prey", times = length(unique(contents$content_weight)))),
-        cbind(specimens$organism_weight,  
-              rep("predator", times = length(specimens$organism_weight)))),
-)
+  rbind(cbind(unique((full_stomachs$content_weight.g) / 1000),  # convert to kg
+              rep("prey", times = length(unique(full_stomachs$content_weight.g)))),
+        cbind(full_stomachs$organism_weight.kg,  
+              rep("predator", times = length(full_stomachs$organism_weight.kg)))))
 
 colnames(weights) <- c("weight", "hake")
 weights$weight <- as.numeric(weights$weight)
@@ -52,33 +56,9 @@ weights$weight <- as.numeric(weights$weight)
 weight_hist <- ggplot(weights, aes(x=weight, fill=hake)) +
   geom_histogram() +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.7) +
   xlab("weight (kg)") + ylab(" ")
-# weight_hist
+weight_hist
 
 ggsave(filename="plots/diet/weight_hist.png", weight_hist,
        width=150, height=100, units="mm", dpi=300)
-
-
-# Estimate ages ---------------------------------------------------------------
-hake_maturity_data <- read.csv("~/Desktop/Local/hake-assessment-master/data/hake-maturity-data.csv")
-length_age_all <- na.omit(hake_maturity_data[, 11:12])
-
-# Check von Bertalanffy for estimating ages in hake diet data
-# Estimates for Linf/Sinf & K from 2011 stock assessment
-von_bert <- growth(size = length_age_all$Length_cm, age = length_age_all$Age,
-                   Sinf = 50, K = 0.45, t0 = 1)
-
-# Apply inverted von Bertalanffy to length data 
-inverted <- function(k, Linf, a0, length) {
-  age <- c()
-  for(l in length) {
-    a <- -(1/k) * log(1 - (l / Linf)) + a0
-    age <- c(age, a)
-  }
-  
-  return(age)
-}
-
-estim_age_specimens <- inverted(k=0.45, Linf=50, a0=1, length=specimens$fork_length)
-estim_age_contents <- inverted(k=0.45, Linf=50, a0=1, length=contents$length)
