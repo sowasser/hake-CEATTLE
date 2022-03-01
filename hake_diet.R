@@ -10,11 +10,11 @@ library(fishmethods)
 stomach_summary <- read.csv("data/diet/hake_stomachs_summary.csv")
 full_stomachs <- read.csv("data/diet/full_stomachs.csv")
 hake_predator <- read.csv("data/diet/hake_predator_all.csv")
+all_stomachs <- read.csv("data/diet/hake_stomachs_all.csv")
 
 # Total stomachs per year -----------------------------------------------------
 per_year <- ggplot(stomach_summary, aes(x=year)) +
   geom_histogram() +
-  # stat_bin(binwidth = 3) +
   theme_sleek() +
   xlab("year") + ylab(" ")
 per_year
@@ -22,14 +22,37 @@ per_year
 ggsave(filename="plots/diet/stomachs_per_year.png", per_year,
        width=150, height=100, units="mm", dpi=300)
 
+# Empty vs. hake_containing stomachs ------------------------------------------
+empty_hake_length <- ggplot(all_stomachs, aes(x=fork_length.cm, fill=scientific_name)) +
+  geom_histogram() +
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, labels = c("empty", "hake")) +
+  xlab("fork length (cm)") + ylab(" ") +
+  labs(fill = "contents")
+empty_hake_length
+
+ggsave(filename="plots/diet/emptyvshake_length.png", empty_hake_length,
+       width=150, height=100, units="mm", dpi=300)
+
+empty_hake_age <- ggplot(all_stomachs, aes(x=age, fill=scientific_name)) +
+  geom_histogram() +
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, labels = c("empty", "hake")) +
+  xlab("predator age") + ylab(" ") +
+  labs(fill = "contents")
+empty_hake_age
+
+ggsave(filename="plots/diet/emptyvshake_age.png", empty_hake_age,
+       width=150, height=100, units="mm", dpi=300)
+  
+
 # Predator hake dynamics ------------------------------------------------------
 # Overall lengths 
 pred_lengths <- ggplot(hake_predator, aes(x=fork_length.cm, fill=sex)) +
   geom_histogram() +
-  # stat_bin(binwidth = 3) +
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE) +
-  xlab("fork length (cm)") + ylab(" ")
+  xlab("fork length (cm)") + ylab(" ") 
 pred_lengths
 
 ggsave(filename="plots/diet/all_pred_lengths.png", pred_lengths,
@@ -37,7 +60,6 @@ ggsave(filename="plots/diet/all_pred_lengths.png", pred_lengths,
 
 pred_age <- ggplot(hake_predator, aes(x=age, fill=sex)) +
   geom_histogram() +
-  # stat_bin(binwidth = 3) +
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE) +
   xlab("age") + ylab(" ")
