@@ -80,7 +80,7 @@ biom_plot <- ggplot(biom, aes(x=year, y=value)) +
   geom_line(aes(color=variable, linetype=type)) +
   scale_linetype_manual(values=c("dashed", "solid")) +  # specify line types
   geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=0, alpha=0.3) +
-  scale_color_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +  # specify colors
+  scale_color_viridis(discrete = TRUE, begin = 0.15, end = 0.85) +  # specify colors
   theme_sleek() +
   ylab("Biomass (mt)") +
   labs(color = "model")
@@ -98,9 +98,17 @@ recruitment_wide <- as.data.frame(cbind(1966:2022, ceattle_R, ss_R[, 2]))
 colnames(recruitment_wide) <- c("year", "CEATTLE", "Stock Synthesis")
 recruitment <- melt(recruitment_wide, id.vars = "year")
 
+# Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
+ss_1 <- cbind(1967:2022, rep("SS + 1", 56), ss_R[1:56, 2])
+colnames(ss_1) <- c("year", "variable", "value")
+recruitment <- rbind(recruitment, ss_1)
+recruitment$value <- as.numeric(recruitment$value)
+recruitment$year <- as.numeric(recruitment$year)
+
 recruit_plot <- ggplot(recruitment, aes(x=year, y=value)) +
-  geom_line(aes(color=variable)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.25, end = 0.75) +  # specify colors
+  geom_line(aes(color=variable, linetype=variable)) +
+  scale_color_viridis(discrete = TRUE, begin = 0.15, end = 0.85) +  # specify colors
+  scale_linetype_manual(values=c("solid", "dotted", "solid")) +
   theme_sleek() +
   ylab("Recruitment") +
   labs(color = "model")
