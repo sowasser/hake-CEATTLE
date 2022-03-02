@@ -98,6 +98,9 @@ temp_hake <- temp_kriged %>%
 
 temp_hake_mean <- mean(temp_hake$temp_100_kriged)
 temp_hake_max <- max(temp_hake$temp_100_kriged)
+temp_hake_min <- min(temp_hake$temp_100_kriged)
+
+weighted_mean <- weighted.mean(temp_hake$temp_100_kriged, temp_hake$hake_biomass)
 
 # Plot histogram of kriged temp values
 temp_hake_hist <- ggplot(temp_hake, aes(x=temp_100_kriged)) +
@@ -116,11 +119,15 @@ temp_kriged_mean <- temp_kriged %>% group_by(year) %>%
 temp_hake_mean <- temp_hake %>% group_by(year) %>%
   summarise(mean_temp = mean(temp_100_kriged))
 
+temp_weighted <- temp_hake %>% group_by(year) %>%
+  summarise(mean_temp = weighted.mean(temp_100_kriged, hake_biomass))
+
 # Combine into 1 dataset with labeled data sources, then plot
-means <- rbind(temp_mean, temp_kriged_mean, temp_hake_mean)
+means <- rbind(temp_mean, temp_kriged_mean, temp_hake_mean, temp_weighted)
 means <- cbind(means, c(rep("survey", 13), 
                         rep("kriged, all", 12), 
-                        rep("kriged, biomass > 0", 12)))
+                        rep("kriged, biomass > 0", 12),
+                        rep("kriged, weighted", 12)))
 colnames(means)[3] <- "dataset"
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
