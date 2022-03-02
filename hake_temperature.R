@@ -89,15 +89,15 @@ temp_comp <- as.data.frame(temp_comp)
 colnames(temp_comp) <- c("temp", "source")
 temp_comp$temp <- as.numeric(temp_comp$temp)
   
-temp_hake_hist <- ggplot(temp_comp, aes(x=temp)) +
+temp_hake_hist <- ggplot(temp_comp, aes(x=temp, fill=source)) +
   geom_histogram() +
   theme_sleek() +
-  xlab("temperature (°C)") + ylab(" ") +
-  facet_wrap(~source)
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  xlab("temperature (°C)") + ylab(" ") 
 temp_hake_hist
 
 ggsave(filename="plots/temperature/temp_hake_hist.png", temp_hake_hist,
-       width=270, height=100, units="mm", dpi=300)
+       width=160, height=100, units="mm", dpi=300)
 
 
 # Compare mean survey temp, mean kriged temp, kriged + hake biomass > 0 -------
