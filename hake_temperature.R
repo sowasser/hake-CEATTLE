@@ -51,39 +51,17 @@ mean_temp_plot <- ggplot(all_years, aes(x=year, y=temp)) +
 ggsave(filename="plots/temperature/survey_mean_temp.png", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
 
-# Temp distribution & max for looking at hake thermal maximum -----------------
-# Max temperature for each year
-year_max <- temp_all %>% group_by(year) %>%
-  filter(temp_100 == max(temp_100))
 
-max_temp <- ggplot(year_max, aes(x=year, y=temp_100)) +
-  geom_point() +
-  theme_sleek() +
-  ylab("temperature")
-max_temp
-
-ggsave(filename="plots/temperature/survey_max_temp.png", max_temp,
-       width=150, height=100, units="mm", dpi=300)
-
-# Temperature distribution overall and per year
-temp_dist_all <- ggplot(temp_all, aes(x=temp_100)) +
-  geom_histogram() +
-  theme_sleek() +
-  xlab("temperature") + ylab(" ")
-temp_dist_all
-
-ggsave(filename="plots/temperature/temp_dist_all.png", temp_dist_all,
-       width=150, height=100, units="mm", dpi=300)
-
+# Temperature distribution per year -------------------------------------------
 temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
   geom_histogram() +
   theme_sleek() +
-  xlab("temperature") + ylab(" ")
+  xlab("temperature") + ylab(" ") +
   facet_wrap(~year)
 # temp_dist_years
 
 ggsave(filename="plots/temperature/temp_dist_years.png", temp_dist_years,
-       width=250, height=150, units="mm", dpi=300)
+       width=250, height=200, units="mm", dpi=300)
 
 
 # Temperature where hake were found -------------------------------------------
@@ -102,14 +80,24 @@ temp_hake_min <- min(temp_hake$temp_100_kriged)
 
 weighted_mean <- weighted.mean(temp_hake$temp_100_kriged, temp_hake$hake_biomass)
 
-# Plot histogram of kriged temp values
-temp_hake_hist <- ggplot(temp_hake, aes(x=temp_100_kriged)) +
+# Plot histogram of kriged temp values vs. overall temperature 
+temp_comp <- rbind(cbind(temp_all$temp_100, 
+                         rep("survey", length(temp_all$temp_100))),
+                   cbind(temp_hake$temp_100_kriged, 
+                         rep("kriged, biomass > 0", length(temp_hake$temp_100_kriged))))
+temp_comp <- as.data.frame(temp_comp)
+colnames(temp_comp) <- c("temp", "source")
+temp_comp$temp <- as.numeric(temp_comp$temp)
+  
+temp_hake_hist <- ggplot(temp_comp, aes(x=temp)) +
   geom_histogram() +
   theme_sleek() +
-  xlab("kriged temperature, biomass > 0") + ylab(" ")
+  xlab("temperature (°C)") + ylab(" ") +
+  facet_wrap(~source)
+temp_hake_hist
 
 ggsave(filename="plots/temperature/temp_hake_hist.png", temp_hake_hist,
-       width=150, height=100, units="mm", dpi=300)
+       width=270, height=100, units="mm", dpi=300)
 
 
 # Compare mean survey temp, mean kriged temp, kriged + hake biomass > 0 -------
