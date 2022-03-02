@@ -94,7 +94,7 @@ length_hist <- ggplot(lengths, aes(x=length, fill=hake)) +
   geom_histogram() +
   stat_bin(binwidth = 3) +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.7) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("length (cm)") + ylab(" ")
 length_hist
 
@@ -116,9 +116,27 @@ weights$weight <- as.numeric(weights$weight)
 weight_hist <- ggplot(weights, aes(x=weight, fill=hake)) +
   geom_histogram() +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, begin = 0.25, end = 0.7) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("weight (kg)") + ylab(" ")
 weight_hist
 
 ggsave(filename="plots/diet/weight_hist.png", weight_hist,
        width=150, height=100, units="mm", dpi=300)
+
+
+# Comparison with historic cannibalism data -----------------------------------
+diet_history <- read.csv("data/diet/From Isaac/hake_diet_history.csv")
+
+history_plot <- ggplot(diet_history, aes(x=reorder(source, prop), y=prop, fill=stage)) +
+  geom_bar(stat = "identity") +
+  theme_sleek() +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) 
+history_plot
+
+ggsave(filename="plots/diet/diet_history.png", history_plot,
+       width=150, height=100, units="mm", dpi=300)
+
+
+
+
