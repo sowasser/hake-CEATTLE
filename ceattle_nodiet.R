@@ -1,5 +1,5 @@
 # Run CEATTLE for hake data with no diet data 
-devtools::install_github("grantdadams/Rceattle")
+# devtools::install_github("grantdadams/Rceattle")
 library(Rceattle)
 
 library(r4ss)
@@ -118,14 +118,14 @@ ggsave(filename="plots/CEATTLE/recruitment_ss3_ceattle.png", recruit_plot,
        width=200, height=100, units="mm", dpi=300)
 
 
-# Run r4ss diagnostics on stock synthesis model -------------------------------
-# Diagnostics from r4ss
-mydir <- file.path(file.path("hake_assessment/2020_Hake_Assessment"))
-
-# read the model output and print diagnostic messages 
-replist <- SS_output(dir = mydir, 
-                     verbose = TRUE,
-                     printstats = TRUE)
-
-# plots the results
-SS_plots(replist)
+# # Run r4ss diagnostics on stock synthesis model -------------------------------
+# # Diagnostics from r4ss
+# mydir <- file.path(file.path("hake_assessment/2020_Hake_Assessment"))
+# 
+# # read the model output and print diagnostic messages 
+# replist <- SS_output(dir = mydir, 
+#                      verbose = TRUE,
+#                      printstats = TRUE)
+# 
+# # plots the results
+# SS_plots(replist)
