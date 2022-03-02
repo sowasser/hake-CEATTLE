@@ -13,20 +13,21 @@ hake_predator <- read.csv("data/diet/hake_predator_all.csv")
 all_stomachs <- read.csv("data/diet/hake_stomachs_all.csv")
 
 # Total stomachs per year -----------------------------------------------------
-per_year <- ggplot(stomach_summary, aes(x=year)) +
-  geom_histogram() +
+per_year <- ggplot(stomach_summary, aes(x=year, y=num_stomachs_tow, fill=type)) +
+  geom_bar(stat = "identity", position = "stack") +
   theme_sleek() +
-  xlab("year") + ylab(" ")
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  xlab("year") + ylab("total stomachs")
 per_year
 
 ggsave(filename="plots/diet/stomachs_per_year.png", per_year,
        width=150, height=100, units="mm", dpi=300)
 
 # Empty vs. hake_containing stomachs ------------------------------------------
-empty_hake_length <- ggplot(all_stomachs, aes(x=fork_length.cm, fill=scientific_name)) +
+empty_hake_length <- ggplot(hake_predator, aes(x=fork_length.cm, fill=scientific_name)) +
   geom_histogram() +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, labels = c("empty", "hake")) +
+  scale_fill_viridis(discrete = TRUE, labels = c("empty", "hake"), begin = 0.1, end = 0.9) +
   xlab("fork length (cm)") + ylab(" ") +
   labs(fill = "contents")
 empty_hake_length
@@ -34,10 +35,10 @@ empty_hake_length
 ggsave(filename="plots/diet/emptyvshake_length.png", empty_hake_length,
        width=150, height=100, units="mm", dpi=300)
 
-empty_hake_age <- ggplot(all_stomachs, aes(x=age, fill=scientific_name)) +
+empty_hake_age <- ggplot(hake_predator, aes(x=age, fill=scientific_name)) +
   geom_histogram() +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, labels = c("empty", "hake")) +
+  scale_fill_viridis(discrete = TRUE, labels = c("empty", "hake"), begin = 0.1, end = 0.9) +
   xlab("predator age") + ylab(" ") +
   labs(fill = "contents")
 empty_hake_age
