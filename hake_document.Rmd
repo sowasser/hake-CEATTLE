@@ -3,11 +3,11 @@ title: "Hake data sources for CEATTLE"
 author: "Sophia Wassermann"
 date: "1/26/2022"
 output:
+  pdf_document: default
   html_document:
     
     df_print: paged
     fig_captions: yes
-  pdf_document: default
 header-includes:
 - \usepackage[labelfont=bf]{caption}
 - \captionsetup{font=footnotesize}
@@ -53,6 +53,8 @@ The temperature across the survey had been kriged and used to create a spatial g
 
 Further temperature datasets are needed to provide an estimate for earlier and missing years. In CEATTLE, any missing years will be coded as the mean temperature.
 
+
+
 <br />
 
 ### Bioenergetics
@@ -83,3 +85,13 @@ $TCM$ and $TCO$, the maximum and optimal temperatures, have not been empirically
 
 
 ### Predation (diet)
+
+This implementation of the CEATTLE model focuses on hake cannibalism, assumed across the literature to form a significant portion of the Pacific hake diet [(Ressler et al. 2007)](https://www.google.com/books/edition/Marine_Fisheries_Review/Fh2EDlfePrcC?hl=en&gbpv=1). Stomachs gathered from the hake survey, however, do not show a high rate of cannibalism. The dataset includes only 16 instances of hake cannibalism out of 3995 hake stomachs collected from 2005-2019, a rate of 0.4%.
+
+![Pacific hake stomachs collected during the hake survey from 2005-2019, overall and with hake as a prey item.](./plots/diet/stomachs_per_year.png)
+
+Looking at other sources of hake diet data, the cannibalism rate varies broadly from no cannibalism detected to over 80% of hake stomachs including hake as prey. These data are largely from adult hake. The one study that included juvenile hake found a cannibalism rate of 4.44%. The variability in cannibalism may be due to changes in the spatial overlap between adults and juveniles (as intra-cohort cannibalism is not generally detected - supported by the size disparity in predator and prey hake in the acoustic dataset) [(Ressler et al. 2007)](https://www.google.com/books/edition/Marine_Fisheries_Review/Fh2EDlfePrcC?hl=en&gbpv=1).
+
+![Rates of cannibalism from dditional sources of hake diet data for majority adults, with one dataset for juvenile hake.](./plots/diet/diet_history.png)
+
+
