@@ -43,17 +43,11 @@ The data inputs into CEATTLE include survey and fishery catch data, length and a
 
 Temperature data are available from the acoustic survey for hake for 13 years between 1995-2019. The temperature is reported for 100m, or bottom temp if the bottom was <100m, and were collected with a variety of instruments. 
 
-![Temperature at ~100m for the entire survey area.](./plots/temperature/temp_dist_all.png)
+Temperature data are used in two ways in CEATTLE: 1) a mean temperature per year is provided, 2) optimal and maximum temperatures for each species are included in the bioenergetics calculations. With no clear values in the literature to use for Pacific hake, the temperature where hake occurred during the survey can be used as an estimate. The temperature across the survey had been kriged and used to create a spatial grid across the survey area. The temperature from this grid was then assigned to hake biomass estimates ([Malick et al. 2020](https://www.int-res.com/abstracts/meps/v639/p185-197/)) and filtered for when hake were present (biomass > 0). 
 
-Calculation of the temperature-dependent consumption rate for both the climate and predation aspects of the model depends on finding an optimal and maximum temperature for hake. With no clear values in the literature to use for Pacific hake, the temperature where hake occurred during the survey can be used as an estimate.
+![Yearly temperature at 100m for the survey area from 1995-2019 and for the gridded, kriged temperatures where hake biomass was estimated to be greater than 0.](./plots/temperature/temp_hake_hist.png)
 
-The temperature across the survey had been kriged and used to create a spatial grid across the survey area. The temperature from this grid was then assigned to hake biomass estimates ([Malick et al. 2020](https://www.int-res.com/abstracts/meps/v639/p185-197/)) and filtered for when hake were present (biomass > 0).
-
-![Kriged, gridded temperature at ~100m when hake biomass > 0.](./plots/temperature/temp_hake_hist.png)
-
-Further temperature datasets are needed to provide an estimate for earlier and missing years. In CEATTLE, any missing years will be coded as the mean temperature.
-
-
+Further temperature datasets are needed to provide an estimate for earlier (back to 1966 to match the assessment data) and missing years. In CEATTLE, any missing years will be coded as the mean temperature.
 
 <br />
 
