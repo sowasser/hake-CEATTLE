@@ -127,16 +127,14 @@ ggsave(filename="plots/diet/weight_hist.png", weight_hist,
 # Comparison with historic cannibalism data -----------------------------------
 diet_history <- read.csv("data/diet/From Isaac/hake_diet_history.csv")
 
-history_plot <- ggplot(diet_history, aes(x=reorder(source, prop), y=prop, fill=stage)) +
+history_plot <- ggplot(diet_history, aes(x=source, y=prop, fill=stage)) +
   geom_bar(stat = "identity") +
   theme_sleek() +
-  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) 
-history_plot
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("proportion")
+# history_plot
 
 ggsave(filename="plots/diet/diet_history.png", history_plot,
-       width=150, height=100, units="mm", dpi=300)
-
-
-
+       width=350, height=200, units="mm", dpi=300)
 
