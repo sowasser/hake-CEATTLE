@@ -58,20 +58,18 @@ colnames(ceattle_biom)[2:3] <- c("type", "CEATTLE")
 ss_ssb_werror <- read.table("data/assessment/ssb.txt")
 ss_ssb <- ss_ssb_werror[, 2]
 
-ss_biomass <- read.table("data/assessment/biomass.txt", header = TRUE)
-ss_biomass2 <- ss_biomass %>% filter(Beg.Mid == "B")
-ss_biomass3 <- ss_biomass2[3:59, 13:33]
-ss_biomass <- rowSums(ss_biomass3)
+ss_biomass <- read.table("data/assessment/biomass.txt")
+ss_biom <- ss_biomass[, 2]
 
-ss_biom_wide <- as.data.frame(cbind(1966:2022, ss_ssb, ss_biomass))
+ss_biom_wide <- as.data.frame(cbind(1966:2022, ss_ssb, ss_biom))
 colnames(ss_biom_wide) <- c("year", "SSB", "total biomass")
-ss_biom <- melt(ss_biom_wide, id.vars = "year")
+ss_biom_all <- melt(ss_biom_wide, id.vars = "year")
 
 # Error from stock synthesis SSB
 error <- c(rep(0, 114), ss_ssb_werror[, 3], rep(0, 57))
 
 # Combine all together and plot
-biom_wide <- cbind(ceattle_biom, ss_biom[, 3])
+biom_wide <- cbind(ceattle_biom, ss_biom_all[, 3])
 colnames(biom_wide)[4] <- "Stock Synthesis"
 biom_noerror <- melt(biom_wide, id.vars = c("year", "type"))
 biom <- cbind(biom_noerror, error)
@@ -79,7 +77,7 @@ biom <- cbind(biom_noerror, error)
 biom_plot <- ggplot(biom, aes(x=year, y=value)) +
   geom_line(aes(color=variable, linetype=type)) +
   scale_linetype_manual(values=c("dashed", "solid")) +  # specify line types
-  geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=0, alpha=0.3) +
+  # geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=0, alpha=0.3) +
   scale_color_viridis(discrete = TRUE, begin = 0.15, end = 0.85) +  # specify colors
   theme_sleek() +
   ylab("Biomass (mt)") +
