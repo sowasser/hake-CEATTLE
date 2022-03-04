@@ -43,7 +43,7 @@ vignettes/*.pdf
 
 *.Rproj
 
-# Ignore folders that don't need to be tracked on git
+# Ignore folders & files that don't need to be tracked on git
 AEP_class/
 Resources/
 plots/
@@ -53,6 +53,7 @@ hake_assessment/
 old/
 From Isaac/
 Rceattle documentation.html
+ROMS*.csv
 
 # Ignore specific file types
 *.docx

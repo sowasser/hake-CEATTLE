@@ -8,52 +8,49 @@ library(ggplot2)
 library(ggsidekick)
 library(viridis)
 
-temp_all <- read.csv("data/temperature/temp_100_sophia.csv")
+survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
+summer_ROMS <- read.csv("data/temperature/summer_ROMS.csv")[, -2]
 
-# Temp summary stats ----------------------------------------------------------
-overall_mean <- mean(temp_all$temp_100)  # 7.916°C
-overall_median <- median(temp_all$temp_100)  # 7.763°C
+missing_years <- c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
+                   2014, 2016, 2018, 2020)
 
-overall_max <- max(temp_all$temp_100)  # 14.481°C
-overall_min <- min(temp_all$temp_100)  # 5.734°C
-overall_percentile <- quantile(temp_all$temp_100, 0.05, .95)  # 95% < 9.665°C
+# Subset ROMS dataset & combine with survey mean ------------------------------
+# Find yearly mean (of the summer months here)
+ROMS_mean <- summer_ROMS %>% group_by(Year) %>%
+  summarise(mean_temp = mean(H2)) 
 
+# Only keep years that don't overlap with the survey
+ROMS_nonsurvey <- filter(ROMS_mean, Year %in% c(1980:1994, missing_years))
 
-# Mean temperature per year for CEATTLE ---------------------------------------
-# Including overall mean for missing years
-temp_mean <- temp_all %>% group_by(year) %>%
+# Find mean from survey
+survey_mean <- survey_temp %>% group_by(year) %>%
   summarise(mean_temp = mean(temp_100))
 
-missing_years <- cbind(c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,
-                         2010, 2014, 2016, 2018, 2020), 
-                       rep(overall_mean, length=14),
-                       rep("overall mean", length=14))
-colnames(missing_years) <- c("year", "temp", "data_type")
+survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
+colnames(survey) <- c("year", "temp", "source")
 
-temp2 <- cbind(temp_mean, rep("year mean", length=13))
-colnames(temp2) <- c("year", "temp", "data_type")
+ROMS <- cbind(ROMS_nonsurvey, rep("ROMS", length(ROMS_nonsurvey$mean_temp)))
+colnames(ROMS) <- c("year", "temp", "source")
 
-all_years <- rbind(temp2, missing_years)
-all_years <- all_years[order(all_years$year), ]
-
-all_years$temp <- as.numeric(all_years$temp)
-all_years$year <- as.integer(all_years$year)
+# Combine together and sort by year
+CEATTLE_temp <- rbind(ROMS, survey)
+CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 
 # Plot all mean temperatures 
-mean_temp_plot <- ggplot(all_years, aes(x=year, y=temp)) +
-  geom_line(color="gray") +
-  geom_point(aes(color=data_type)) +
-  scale_color_viridis(discrete = TRUE, direction=-1) +  # invert colors
+mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=temp)) +
+  geom_line(color="gray", linetype="dotted") +
+  geom_point(aes(color=source)) +
+  scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
   theme_sleek() +
   ylab("temperature")
-# mean_temp_plot
+mean_temp_plot
 
 ggsave(filename="plots/temperature/survey_mean_temp.png", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
 
 
 # Temperature distribution per year -------------------------------------------
-temp_dist_years <- ggplot(temp_all, aes(x=temp_100)) +
+temp_dist_years <- ggplot(survey_temp, aes(x=temp_100)) +
   geom_histogram() +
   theme_sleek() +
   xlab("temperature") + ylab(" ") +
@@ -81,8 +78,8 @@ temp_hake_min <- min(temp_hake$temp_100_kriged)
 weighted_mean <- weighted.mean(temp_hake$temp_100_kriged, temp_hake$hake_biomass)
 
 # Plot histogram of kriged temp values vs. overall temperature 
-temp_comp <- rbind(cbind(temp_all$temp_100, 
-                         rep("survey", length(temp_all$temp_100))),
+temp_comp <- rbind(cbind(survey_temp$temp_100, 
+                         rep("survey", length(survey_temp$temp_100))),
                    cbind(temp_hake$temp_100_kriged, 
                          rep("kriged, biomass > 0", length(temp_hake$temp_100_kriged))))
 temp_comp <- as.data.frame(temp_comp)
