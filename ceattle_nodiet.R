@@ -1,6 +1,6 @@
 # Run CEATTLE for hake data with no diet data 
-# devtools::install_github("grantdadams/Rceattle")
-library(Rceattle)
+# devtools::install_github("grantdadams/Rceattle@dev")
+# library(Rceattle)
 
 library(r4ss)
 library(reshape2)
@@ -70,7 +70,7 @@ biom_plot <- ggplot(biom, aes(x=year, y=value)) +
   geom_line(aes(color=variable, linetype=type)) +
   scale_linetype_manual(values=c("dashed", "solid")) +  # specify line types
   # geom_errorbar(aes(ymin=value-error, ymax=value+error, color=variable), width=0, alpha=0.3) +
-  scale_color_viridis(discrete = TRUE, begin = 0.15, end = 0.85) +  # specify colors
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +  # specify colors
   theme_sleek() +
   ylab("Biomass (mt)") +
   labs(color = "model")
@@ -97,7 +97,7 @@ recruitment$year <- as.numeric(recruitment$year)
 
 recruit_plot <- ggplot(recruitment, aes(x=year, y=value)) +
   geom_line(aes(color=variable, linetype=variable)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.15, end = 0.85) +  # specify colors
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +  # specify colors
   scale_linetype_manual(values=c("solid", "dotted", "solid")) +
   theme_sleek() +
   ylab("Recruitment") +
