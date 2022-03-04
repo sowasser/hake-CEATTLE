@@ -11,7 +11,7 @@ library(viridis)
 
 # Run CEATTLE -----------------------------------------------------------------
 # mydata <- Rceattle::read_data( file = "data/hake_from_ss.xlsx")
-hake_nodiet <- Rceattle::read_data( file = "data/hake220203.xlsx")
+hake_nodiet <- Rceattle::read_data( file = "data/hake220303.xlsx")
 
 # mydata$projyr <- 2022  # change to 2022 to match assessment
 hake_nodiet$projyr <- 2022  # change to 2022 to match assessment
@@ -32,21 +32,13 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_nodiet,
                               msmMode = 0, # Single species mode
                               phase = "default")
 
-plot_biomass(Rceattle =  nodiet_run)
-plot_recruitment(Rceattle =  nodiet_run, add_ci = TRUE)
-plot_catch(Rceattle =  nodiet_run, incl_proj = F)
-
-plot_ssb(Rceattle = nodiet_run)
-plot_selectivity(Rceattle = nodiet_run)
-plot_logindex(Rceattle = nodiet_run)
-
 # Check what all comes out of CEATTLE
 ceattle_stuff <- nodiet_run$quantities
 
 
 # Compare spawning stock biomass & total biomass between SS3 and CEATTLE ------
 # Pull out SSB & total biomass from CEATTLE & combine
-ceattle_ssb <- c(nodiet_run$quantities$biomassSSB)
+ceattle_ssb <- (c(nodiet_run$quantities$biomassSSB) * 2)
 ceattle_biomass <- c(nodiet_run$quantities$biomass)
 
 ceattle_biom_wide <- as.data.frame(cbind(1966:2022, ceattle_ssb, ceattle_biomass))
