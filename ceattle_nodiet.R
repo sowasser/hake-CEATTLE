@@ -11,7 +11,7 @@ library(viridis)
 
 # Run CEATTLE -----------------------------------------------------------------
 # mydata <- Rceattle::read_data( file = "data/hake_from_ss.xlsx")
-hake_nodiet <- Rceattle::read_data( file = "data/hake220307.xlsx")
+hake_nodiet <- Rceattle::read_data( file = "data/hake_singlesp_220307.xlsx")
 
 # ss_run <- Rceattle::fit_mod(data_list = mydata,
 #                             inits = NULL, # Initial parameters = 0
