@@ -20,7 +20,7 @@ ROMS_mean <- summer_ROMS %>% group_by(Year) %>%
   summarise(mean_temp = mean(H2)) 
 
 # Only keep years that don't overlap with the survey
-ROMS_nonsurvey <- filter(ROMS_mean, Year %in% c(1980:1994, missing_years))
+# ROMS_nonsurvey <- filter(ROMS_mean, Year %in% c(1980:1994))
 
 # Find mean from survey
 survey_mean <- survey_temp %>% group_by(year) %>%
@@ -29,7 +29,7 @@ survey_mean <- survey_temp %>% group_by(year) %>%
 survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
 colnames(survey) <- c("year", "temp", "source")
 
-ROMS <- cbind(ROMS_nonsurvey, rep("ROMS", length(ROMS_nonsurvey$mean_temp)))
+ROMS <- cbind(ROMS_mean, rep("ROMS", length(ROMS_mean$mean_temp)))
 colnames(ROMS) <- c("year", "temp", "source")
 
 # Combine together and sort by year
@@ -37,15 +37,15 @@ CEATTLE_temp <- rbind(ROMS, survey)
 CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 
 # Plot all mean temperatures 
-mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=temp)) +
-  geom_line(color="gray", linetype="dotted") +
-  geom_point(aes(color=source)) +
+mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=temp, color=source)) +
+  geom_line(linetype="dotted") +
+  geom_point() +
   scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
   theme_sleek() +
   ylab("temperature")
 mean_temp_plot
 
-ggsave(filename="plots/temperature/survey_mean_temp.png", mean_temp_plot,
+ggsave(filename="plots/temperature/mean_temp.png", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
 
 
