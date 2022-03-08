@@ -44,16 +44,15 @@ vignettes/*.pdf
 *.Rproj
 
 # Ignore folders & files that don't need to be tracked on git
-AEP_class/
 Resources/
 plots/
 FB4/
 From Grant/
-hake_assessment/
 old/
 From Isaac/
-Rceattle documentation.html
 ROMS*.csv
+2020_Hake_Assessment/
+Arrowtooth_Flounder/
 
 # Ignore specific file types
 *.docx
