@@ -6,6 +6,7 @@ library(ggplot2)
 library(ggsidekick)
 library(viridis)
 library(fishmethods)
+library(tidyr)
 
 stomach_summary <- read.csv("data/diet/hake_stomachs_summary.csv")
 full_stomachs <- read.csv("data/diet/full_stomachs.csv")
@@ -138,4 +139,34 @@ history_plot <- ggplot(diet_history, aes(x=source, y=prop, fill=stage)) +
 
 ggsave(filename="plots/diet/diet_history.png", history_plot,
        width=350, height=200, units="mm", dpi=300)
+
+# Full analysis of hake predation ---------------------------------------------
+# diet_all <- read.table("data/diet/From Isaac/hake_diet_history_all.csv", sep = ",", header = TRUE)
+# diet2 <- melt(diet_all, id.vars = "Prey")
+# diet3 <- diet2 %>% drop_na(value)
+# 
+# history_plot_all <- ggplot(diet3, aes(x=variable, fill=Prey)) +
+#   geom_bar(position = "fill") +
+#   theme_sleek() +
+#   theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
+#   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+#   ylab("proportion")
+# 
+# ggsave(filename="~/Desktop/diet_history.png", history_plot_all,
+#        width=1000, height=1000, units="mm", dpi=300)
+
+# Generalized diet
+diet_sum <- read.csv("data/diet/From Isaac/hake_diet_history_sum.csv")
+diet2 <- melt(diet_sum, id.vars = "Prey") %>% drop_na(value)
+
+history_plot_sum <- ggplot(diet2, aes(x=variable, fill=Prey)) +
+  geom_bar(position = "fill") +
+  theme_sleek() +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("proportion")
+
+ggsave(filename="~/Desktop/diet_history_sum.png", history_plot_sum,
+       width=700, height=500, units="mm", dpi=300)
+
 
