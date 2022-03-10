@@ -128,17 +128,19 @@ ggsave(filename="plots/diet/weight_hist.png", weight_hist,
 
 # Comparison with historic cannibalism data -----------------------------------
 diet_history <- read.csv("data/diet/From Isaac/hake_diet_history.csv")
+history2 <- melt(diet_history, id.vars = c("stage", "source", "year"))
 
-history_plot <- ggplot(diet_history, aes(x=source, y=prop, fill=stage)) +
+history_plot <- ggplot(history2, aes(x=source, y=value, fill=stage)) +
   geom_bar(stat = "identity") +
   theme_sleek() +
   theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  ylab("proportion")
-# history_plot
+  ylab(" ") +
+  facet_wrap(~variable, ncol=1, scales = "free_y")
+history_plot
 
 ggsave(filename="plots/diet/diet_history.png", history_plot,
-       width=350, height=200, units="mm", dpi=300)
+       width=300, height=250, units="mm", dpi=300)
 
 # Full analysis of hake predation ---------------------------------------------
 # diet_all <- read.table("data/diet/From Isaac/hake_diet_history_all.csv", sep = ",", header = TRUE)
