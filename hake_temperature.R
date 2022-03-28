@@ -9,16 +9,12 @@ library(ggsidekick)
 library(viridis)
 
 survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
-summer_ROMS <- read.csv("data/temperature/summer_ROMS.csv")[, -2]
+summer_ROMS <- read.csv("data/temperature/ROMS_summer_mean.csv")
 
 missing_years <- c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
                    2014, 2016, 2018, 2020)
 
-# Subset ROMS dataset & combine with survey mean ------------------------------
-# Find yearly mean (of the summer months here)
-ROMS_mean <- summer_ROMS %>% group_by(Year) %>%
-  summarise(mean_temp = mean(H2)) 
-
+# Combine summer ROMS mean with survey mean -----------------------------------
 # Only keep years that don't overlap with the survey
 # ROMS_nonsurvey <- filter(ROMS_mean, Year %in% c(1980:1994))
 
@@ -29,7 +25,7 @@ survey_mean <- survey_temp %>% group_by(year) %>%
 survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
 colnames(survey) <- c("year", "temp", "source")
 
-ROMS <- cbind(ROMS_mean, rep("ROMS", length(ROMS_mean$mean_temp)))
+ROMS <- cbind(summer_ROMS, rep("ROMS", length(summer_ROMS$mean_temp)))
 colnames(ROMS) <- c("year", "temp", "source")
 
 # Combine together and sort by year
