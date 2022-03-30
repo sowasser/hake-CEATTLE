@@ -1,5 +1,7 @@
-# Script for analyzing the hake diet data from US vessels. Data are split
-# between the predators (all hake) and the prey that are hake.
+# Script for analyzing diet data for hake. First is for visualizing diet 
+# proportion by observation and by weight for input in CEATTLE. Second is 
+# analyzing the hake diet data from the US acoustic trawl survey. Data are 
+# split between the predators (all hake) and the prey that are hake.
 
 library(dplyr)
 library(ggplot2)
@@ -7,6 +9,27 @@ library(ggsidekick)
 library(viridis)
 library(fishmethods)
 library(tidyr)
+
+# Data from CEATTLE -----------------------------------------------------------
+stomach_obs <- read.csv("data/diet/uobsage.csv")
+stomach_wt <- read.csv("data/diet/uobswtage.csv")
+
+obs_prop <- ggplot(stomach_obs, aes(x=Prey_age, y=Stomach_proportion_by_number)) +
+  geom_bar(stat = "identity") +
+  ylim(0, 1) +
+  theme_sleek() +
+  facet_wrap(~Pred_age)
+obs_prop
+
+wt_prop <- ggplot(stomach_wt, aes(x=Prey_age, y=Stomach_proportion_by_weight)) +
+  geom_bar(stat = "identity") +
+  ylim(0, 1) +
+  theme_sleek() +
+  facet_wrap(~Pred_age)
+wt_prop
+
+
+# Acoustic trawl survey data --------------------------------------------------
 
 stomach_summary <- read.csv("data/diet/hake_stomachs_summary.csv")
 full_stomachs <- read.csv("data/diet/full_stomachs.csv")

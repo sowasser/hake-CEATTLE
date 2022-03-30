@@ -1,8 +1,7 @@
 # Run CEATTLE for hake data with no diet data 
 devtools::install_github("grantdadams/Rceattle@dev")
-# library(Rceattle)
+library(Rceattle)
 
-library(r4ss)
 library(reshape2)
 library(dplyr)
 library(ggplot2)
