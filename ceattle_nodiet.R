@@ -35,7 +35,10 @@ ceattle_biomass <- c(nodiet_run$quantities$biomass)
 ceattle_biom_wide <- as.data.frame(cbind(years, ceattle_ssb, ceattle_biomass))
 colnames(ceattle_biom_wide) <- c("year", "SSB", "Total Biomass")
 ceattle_biom <- melt(ceattle_biom_wide, id.vars = "year")
-colnames(ceattle_biom)[2:3] <- c("type", "CEATTLE")
+colnames(ceattle_biom)[2:3] <- c("type", "CEATTLE no diet")
+
+write.csv(ceattle_biom, "data/ceattle_nodiet_biom.csv", row.names = FALSE)
+
 
 # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
 ss_ssb_werror <- read.table("data/assessment/ssb.txt")
@@ -68,6 +71,8 @@ ggsave(filename="plots/CEATTLE/allbiom_ss3_ceattle.png", biom_plot,
 
 # Compare recruitment between SS3 and CEATTLE ---------------------------------
 ceattle_R <- c(nodiet_run$quantities$R)
+write.csv(ceattle_R, "data/ceattle_nodiet_R.csv", row.names = FALSE)
+
 ss_R <- read.table("data/assessment/recruitment.txt")[15:57,]
 
 recruitment_wide <- as.data.frame(cbind(years, ceattle_R, ss_R[, 2]))
