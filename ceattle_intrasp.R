@@ -42,7 +42,7 @@ run_ceattle <- function(wt, df) {
                                file = NULL, # Don't save
                                # debug = 1, # 1 = estimate, 0 = don't estimate
                                random_rec = FALSE, # No random recruitment
-                               msmMode = 0, # Single species mode
+                               msmMode = 1, # Multi-species mode
                                phase = "default")
   return(ceattle)
 }
