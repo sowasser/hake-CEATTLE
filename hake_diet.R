@@ -30,7 +30,6 @@ wt_prop
 
 
 # Acoustic trawl survey data --------------------------------------------------
-
 stomach_summary <- read.csv("data/diet/hake_stomachs_summary.csv")
 full_stomachs <- read.csv("data/diet/full_stomachs.csv")
 hake_predator <- read.csv("data/diet/hake_predator_all.csv")
@@ -46,6 +45,17 @@ per_year
 
 ggsave(filename="plots/diet/stomachs_per_year.png", per_year,
        width=150, height=100, units="mm", dpi=300)
+
+# Full stomach pred ages ------------------------------------------------------
+full_pred_age <- ggplot(full_stomachs, aes(x=age)) +
+  geom_histogram() +
+  theme_sleek() +
+  xlab("predator age") + ylab(" ")
+full_pred_age
+
+ggsave(filename="plots/diet/full_predator_age.png", full_pred_age,
+       width=150, height=100, units="mm", dpi=300)
+
 
 # Empty vs. hake_containing stomachs ------------------------------------------
 empty_hake_length <- ggplot(hake_predator, aes(x=fork_length.cm, fill=scientific_name)) +
@@ -72,7 +82,6 @@ ggsave(filename="plots/diet/emptyvshake_age.png", empty_hake_age,
   
 
 # Predator hake dynamics ------------------------------------------------------
-# Overall lengths 
 pred_lengths <- ggplot(hake_predator, aes(x=fork_length.cm, fill=sex)) +
   geom_histogram() +
   theme_sleek() +
