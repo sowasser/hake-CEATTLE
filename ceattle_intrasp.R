@@ -1,5 +1,5 @@
 # Run CEATTLE for hake data with no diet data 
-devtools::install_github("grantdadams/Rceattle@dev")
+# devtools::install_github("grantdadams/Rceattle@dev")
 library(Rceattle)
 
 library(reshape2)
@@ -8,10 +8,8 @@ library(ggplot2)
 library(ggsidekick)
 library(viridis)
 
-# Run CEATTLE -----------------------------------------------------------------
-# # mydata <- Rceattle::read_data( file = "data/hake_from_ss.xlsx")
-# hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220401.xlsx")
-# 
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220401.xlsx")
+
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 #                                  inits = NULL, # Initial parameters = 0
@@ -136,10 +134,10 @@ recruitment <- melt(recruitment_wide, id.vars = "year")
 # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
 ss_1 <- cbind(1981:2022, rep("SS + 1", (length(years)-1)), ss_R[1:42, 2])
 colnames(ss_1) <- c("year", "variable", "value")
+
 recruitment <- rbind(recruitment, ss_1)
 recruitment$value <- as.numeric(recruitment$value)
 recruitment$year <- as.numeric(recruitment$year)
-
 recruit_plot <- ggplot(recruitment, aes(x=year, y=value)) +
   geom_line(aes(color=variable)) +
   scale_color_viridis(discrete = TRUE) + 
