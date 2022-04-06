@@ -11,13 +11,13 @@ library(viridis)
 hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220401.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
-# intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                  inits = NULL, # Initial parameters = 0
-#                                  file = NULL, # Don't save
-#                                  # debug = 1, # 1 = estimate, 0 = don't estimate
-#                                  random_rec = FALSE, # No random recruitment
-#                                  msmMode = 0, # Single species mode
-#                                  phase = "default")
+intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
+                                 inits = NULL, # Initial parameters = 0
+                                 file = NULL, # Don't save
+                                 # debug = 1, # 1 = estimate, 0 = don't estimate
+                                 random_rec = FALSE, # No random recruitment
+                                 msmMode = 1, # Multispecies mode
+                                 phase = "default")
 
 
 # Run CEATTLE with differing diet weight proportions --------------------------
@@ -73,12 +73,18 @@ ceattle_biomass <- function(run, name) {
   return(all_biom)
 }
 
-all_test <- cbind(ceattle_biomass(wt05_run, "CEATTLE - 0.5% cannibalism"), 
-                  ceattle_biomass(wt10_run, "CEATTLE - 10% cannibalism"),
-                  ceattle_biomass(wt30_run, "CEATTLE - 30% cannibalism"),
-                  ceattle_biomass(wt50_run, "CEATTLE - 50% cannibalism"),
-                  ceattle_biomass(wt80_run, "CEATTLE - 80% cannibalism"))
-all_test <- all_test[, c(1:3, 6 ,9, 12, 15)]
+# # Run this when every model run works
+# all_test <- cbind(ceattle_biomass(wt05_run, "CEATTLE - 0.5% cannibalism"), 
+#                   ceattle_biomass(wt10_run, "CEATTLE - 10% cannibalism"),
+#                   ceattle_biomass(wt30_run, "CEATTLE - 30% cannibalism"),
+#                   ceattle_biomass(wt50_run, "CEATTLE - 50% cannibalism"),
+#                   ceattle_biomass(wt80_run, "CEATTLE - 80% cannibalism"))
+# all_test <- all_test[, c(1:3, 6, 9, 12, 15)]
+
+# Just the model runs that are working
+all_test <- cbind(ceattle_biomass(intrasp_run, "CEATTLE - intrasp"), 
+                  ceattle_biomass(wt10_run, "CEATTLE - 10% cannibalism"))
+all_test <- all_test[, c(1:3, 6)]
 
 # Read in no diet data
 nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
