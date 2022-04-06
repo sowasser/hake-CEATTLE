@@ -28,6 +28,18 @@ wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.
 wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
+# Plot stomacch contents curves
+prop <- as.data.frame(cbind(1:20, wt05, wt10, wt30, wt50, wt80))
+colnames(prop)[1] <- "age"
+prop_all <- melt(prop, id.vars = "age")
+
+stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("stomach proportion")
+stomach_props
+
 zeros <- rep(0, 19)
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -47,11 +59,11 @@ run_ceattle <- function(wt, df) {
   return(ceattle)
 }
 
-wt05_run <- run_ceattle(wt05, hake_intrasp)
-wt10_run <- run_ceattle(wt10, hake_intrasp)
-wt30_run <- run_ceattle(wt30, hake_intrasp)
-wt50_run <- run_ceattle(wt50, hake_intrasp)
-wt80_run <- run_ceattle(wt80, hake_intrasp)
+run_wt05 <- run_ceattle(wt05, hake_intrasp)
+run_wt10 <- run_ceattle(wt10, hake_intrasp)
+run_wt30 <- run_ceattle(wt30, hake_intrasp)
+run_wt50 <- run_ceattle(wt50, hake_intrasp)
+run_wt80 <- run_ceattle(wt80, hake_intrasp)
 
 
 # Check what all comes out of CEATTLE
@@ -74,16 +86,16 @@ ceattle_biomass <- function(run, name) {
 }
 
 # # Run this when every model run works
-# all_test <- cbind(ceattle_biomass(wt05_run, "CEATTLE - 0.5% cannibalism"), 
-#                   ceattle_biomass(wt10_run, "CEATTLE - 10% cannibalism"),
-#                   ceattle_biomass(wt30_run, "CEATTLE - 30% cannibalism"),
-#                   ceattle_biomass(wt50_run, "CEATTLE - 50% cannibalism"),
-#                   ceattle_biomass(wt80_run, "CEATTLE - 80% cannibalism"))
+# all_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"), 
+#                   ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
+#                   ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
+#                   ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
+#                   ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
 # all_test <- all_test[, c(1:3, 6, 9, 12, 15)]
 
 # Just the model runs that are working
 all_test <- cbind(ceattle_biomass(intrasp_run, "CEATTLE - intrasp"), 
-                  ceattle_biomass(wt10_run, "CEATTLE - 10% cannibalism"))
+                  ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"))
 all_test <- all_test[, c(1:3, 6)]
 
 # Read in no diet data
