@@ -1,5 +1,5 @@
 # Run CEATTLE for hake data with no diet data 
-# devtools::install_github("grantdadams/Rceattle@dev")
+devtools::install_github("grantdadams/Rceattle@dev")
 library(Rceattle)
 
 library(reshape2)
@@ -28,7 +28,7 @@ wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.
 wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
-# Plot stomacch contents curves
+# Plot stomach contents curves
 prop <- as.data.frame(cbind(1:20, wt05, wt10, wt30, wt50, wt80))
 colnames(prop)[1] <- "age"
 prop_all <- melt(prop, id.vars = "age")
@@ -69,10 +69,10 @@ run_wt80 <- run_ceattle(wt80, hake_intrasp)
 # Check what all comes out of CEATTLE
 # ceattle_stuff <- intrasp_run$quantities
 
-years <- 1980:2022
-
 
 # Compare intraspecies CEATTLE runs to no diet & assessment -------------------
+years <- 1980:2022
+
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
   ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -86,7 +86,7 @@ ceattle_biomass <- function(run, name) {
 }
 
 # # Run this when every model run works
-# all_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"), 
+# all_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
 #                   ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
 #                   ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
 #                   ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
@@ -94,9 +94,8 @@ ceattle_biomass <- function(run, name) {
 # all_test <- all_test[, c(1:3, 6, 9, 12, 15)]
 
 # Just the model runs that are working
-all_test <- cbind(ceattle_biomass(intrasp_run, "CEATTLE - intrasp"), 
-                  ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"))
-all_test <- all_test[, c(1:3, 6)]
+all_test <- ceattle_biomass(intrasp_run, "CEATTLE - intrasp")
+
 
 # Read in no diet data
 nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
