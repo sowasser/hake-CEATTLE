@@ -21,16 +21,18 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 
 
 # Run CEATTLE with differing diet weight proportions --------------------------
+# Pull out data from base intrasp run
+wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
+wts_short <- wts[wts != 0]
+
 # Set different diet weight proportion distributions
+
 wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
 wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
 wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
 wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
-# Pull out data from base intrasp run
-wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
-wts_short <- wts[wts != 0]
 
 # Plot stomach contents curves
 prop <- as.data.frame(cbind(1:15, wt05, wt10, wt30, wt50, wt80, wts_short))
@@ -52,7 +54,7 @@ run_ceattle <- function(wt, df) {
   for(i in wt) {
     new_wt <- append(new_wt, c(i, zeros))
   }
-  df$UobsWtAge$Stomach_proportion_by_weight <- wt
+  df$UobsWtAge$Stomach_proportion_by_weight <- new_wt
   ceattle <- Rceattle::fit_mod(data_list = df,
                                inits = NULL, # Initial parameters = 0
                                file = NULL, # Don't save
@@ -89,16 +91,16 @@ ceattle_biomass <- function(run, name) {
   return(all_biom)
 }
 
-# # Run this when every model run works
-# all_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
-#                   ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
-#                   ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
-#                   ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
-#                   ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
-# all_test <- all_test[, c(1:3, 6, 9, 12, 15)]
+# Run this when every model run works
+all_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
+                  ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
+                  ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
+                  ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
+                  ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
+all_test <- all_test[, c(1:3, 6, 9, 12, 15)]
 
-# Just the model runs that are working
-all_test <- ceattle_biomass(intrasp_run, "CEATTLE - intrasp")
+# # Just the model runs that are working
+# all_test <- ceattle_biomass(intrasp_run, "CEATTLE - intrasp")
 
 
 # Read in no diet data
@@ -134,9 +136,9 @@ ggsave(filename="plots/CEATTLE/intrasp_test_biomass.png", biom_plot,
        width=200, height=150, units="mm", dpi=300)
 
 # Compare recruitment
-ceattle_R <- cbind(c(wt05_run$quantities$R), c(wt10_run$quantities$R), 
-                   c(wt30_run$quantities$R), c(wt50_run$quantities$R),
-                   c(wt80_run$quantities$R))
+ceattle_R <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R), 
+                   c(run_wt30$quantities$R), c(run_wt50$quantities$R),
+                   c(run_wt80$quantities$R))
 
 nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
 
