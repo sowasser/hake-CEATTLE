@@ -22,15 +22,19 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 
 # Run CEATTLE with differing diet weight proportions --------------------------
 # Set different diet weight proportion distributions
-wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
-wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
-wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
-wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
+wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
+wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+
+# Pull out data from base intrasp run
+wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
+wts_short <- wts[wts != 0]
 
 # Plot stomach contents curves
-prop <- as.data.frame(cbind(1:20, wt05, wt10, wt30, wt50, wt80))
-colnames(prop)[1] <- "age"
+prop <- as.data.frame(cbind(1:15, wt05, wt10, wt30, wt50, wt80, wts_short))
+colnames(prop)[c(1, 7)] <- c("age", "Grant's")
 prop_all <- melt(prop, id.vars = "age")
 
 stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
@@ -40,7 +44,7 @@ stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
   ylab("stomach proportion")
 stomach_props
 
-zeros <- rep(0, 19)
+zeros <- rep(0, 14)
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
 run_ceattle <- function(wt, df) {
