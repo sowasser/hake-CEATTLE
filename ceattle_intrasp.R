@@ -116,7 +116,7 @@ plot_biom <- function(df) {
   
   plot <- ggplot(biom, aes(x=year, y=value)) +
     geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE) +  
+    scale_color_viridis(discrete = TRUE, direction = -1) +  
     theme_sleek() +
     ylab("Biomass (mt)") +
     labs(color = "model") +
@@ -159,7 +159,7 @@ plot_R <- function(df) {
   
   plot <- ggplot(df, aes(x=year, y=value)) +
     geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE) + 
+    scale_color_viridis(discrete = TRUE, direction = -1) + 
     theme_sleek() +
     ylab("Recruitment") +
     labs(color = "model")
