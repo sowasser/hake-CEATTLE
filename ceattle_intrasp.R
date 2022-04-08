@@ -11,13 +11,13 @@ library(viridis)
 hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220401.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
-intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-                                 inits = NULL, # Initial parameters = 0
-                                 file = NULL, # Don't save
-                                 # debug = 1, # 1 = estimate, 0 = don't estimate
-                                 random_rec = FALSE, # No random recruitment
-                                 msmMode = 1, # Multispecies mode
-                                 phase = "default")
+# intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
+#                                  inits = NULL, # Initial parameters = 0
+#                                  file = NULL, # Don't save
+#                                  # debug = 1, # 1 = estimate, 0 = don't estimate
+#                                  random_rec = FALSE, # No random recruitment
+#                                  msmMode = 1, # Multispecies mode
+#                                  phase = "default")
 
 
 # Run CEATTLE with differing diet weight proportions --------------------------
@@ -26,27 +26,22 @@ wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
 wts_short <- wts[wts != 0]
 
 # Set different diet weight proportion distributions
-wt001 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.009, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001)
+wt001 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001)
 wt005 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
 wt01 <- c(0.0, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01)
 wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
-wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
-wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
-wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
+# Plot stomach contents curves
+prop <- as.data.frame(cbind(1:15, wt001, wt005, wt01, wt05, wts_short))
+colnames(prop)[c(1, 6)] <- c("age", "Grant's")
+prop_all <- melt(prop, id.vars = "age")
 
-# # Plot stomach contents curves
-# prop <- as.data.frame(cbind(1:15, wt05, wt10, wt30, wt50, wt80, wts_short))
-# colnames(prop)[c(1, 7)] <- c("age", "Grant's")
-# prop_all <- melt(prop, id.vars = "age")
-# 
-# stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
-#   geom_bar(stat = "identity", position = "dodge") +
-#   theme_sleek() +
-#   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-#   ylab("stomach proportion")
-# stomach_props
+stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("stomach proportion")
+stomach_props
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -97,22 +92,6 @@ low_test <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
                   ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"))
 low_test <- low_test[, c(1:3, 6, 9, 12)]
 
-# Run high-cannibalism models
-run_wt05 <- run_ceattle(wt05, hake_intrasp)
-run_wt10 <- run_ceattle(wt10, hake_intrasp)
-run_wt30 <- run_ceattle(wt30, hake_intrasp)
-run_wt50 <- run_ceattle(wt50, hake_intrasp)
-run_wt80 <- run_ceattle(wt80, hake_intrasp)
-
-high_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
-                   ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
-                   ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
-                   ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
-                   ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
-high_test <- high_test[, c(1:3, 6, 9, 12, 15)]
-
-
-
 
 # Plot biomass ----------------------------------------------------------------
 # Read in no diet data
@@ -147,53 +126,98 @@ plot_biom <- function(df) {
 }
 
 # Low-cannibalism plot
-low_plot <- plot_biom(low_test)
-low_plot
+low_biom_plot <- plot_biom(low_test)
+low_biom_plot
 
-ggsave(filename="plots/CEATTLE/low_intrasp_biomass.png", low_plot,
-       width=200, height=150, units="mm", dpi=300)
-
-# High-cannibalism plot
-high_plot <- plot_biom(high_test)
-high_plot
-
-ggsave(filename="plots/CEATTLE/high_intrasp_biomass.png", high_plot,
+ggsave(filename="plots/CEATTLE/low_intrasp_biomass.png", low_biom_plot,
        width=200, height=150, units="mm", dpi=300)
 
 
-# Compare recruitment
-ceattle_R <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R), 
-                   c(run_wt30$quantities$R), c(run_wt50$quantities$R),
-                   c(run_wt80$quantities$R))
-
+# Plot recruitment ------------------------------------------------------------
 nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
-
 ss_R <- read.table("data/assessment/recruitment.txt")[15:57,]
 
-recruitment_wide <- as.data.frame(cbind(years, ceattle_R, nodiet_R))
-colnames(recruitment_wide) <- c("year", 
-                                "CEATTLE - 0.5% cannibalism", 
-                                "CEATTLE - 10% cannibalism", 
-                                "CEATTLE - 30% cannibalism", 
-                                "CEATTLE - 50% cannibalism",
-                                "CEATTLE - 80% cannibalism",
-                                "CEATTLE - no diet")
-recruitment <- melt(recruitment_wide, id.vars = "year")
+low_R_data <- cbind(c(run_wt001$quantities$R), c(run_wt005$quantities$R),
+                    c(run_wt01$quantities$R), c(run_wt05$quantities$R))
+low_R_wide <- as.data.frame(cbind(years, low_R_data, nodiet_R))
+colnames(low_R_wide) <- c("year",
+                          "CEATTLE - 0.01% cannibalism",
+                          "CEATTLE - 0.05% cannibalism",
+                          "CEATTLE - 0.1% cannibalism",
+                          "CEATTLE - 0.5% cannibalism",
+                          "CEATTLE - no diet")
+low_R <- melt(low_R_wide, id.vars = "year")
 
 # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
 ss_1 <- cbind(1981:2022, rep("SS + 1", (length(years)-1)), ss_R[1:42, 2])
 colnames(ss_1) <- c("year", "variable", "value")
 
-recruitment <- rbind(recruitment, ss_1)
-recruitment$value <- as.numeric(recruitment$value)
-recruitment$year <- as.numeric(recruitment$year)
-recruit_plot <- ggplot(recruitment, aes(x=year, y=value)) +
-  geom_line(aes(color=variable)) +
-  scale_color_viridis(discrete = TRUE) + 
-  theme_sleek() +
-  ylab("Recruitment") +
-  labs(color = "model")
-recruit_plot
+plot_R <- function(df) {
+  df <- rbind(df, ss_1)
+  df$value <- as.numeric(df$value)
+  df$year <- as.numeric(df$year)
+  
+  plot <- ggplot(df, aes(x=year, y=value)) +
+    geom_line(aes(color=variable)) +
+    scale_color_viridis(discrete = TRUE) + 
+    theme_sleek() +
+    ylab("Recruitment") +
+    labs(color = "model")
+  
+  return(plot)
+}
 
-ggsave(filename="plots/CEATTLE/intrasp_test_recruit.png", recruit_plot,
+low_R_plot <- plot_R(low_R)
+low_R_plot
+
+ggsave(filename="plots/CEATTLE/low_intrasp_R.png", low_R_plot,
        width=200, height=100, units="mm", dpi=300)
+
+
+# Run everything with higher amounts of cannibalism (not converging 100%) -----
+# wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+# wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
+# wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+# wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+# 
+# run_wt05 <- run_ceattle(wt05, hake_intrasp)
+# run_wt10 <- run_ceattle(wt10, hake_intrasp)
+# run_wt30 <- run_ceattle(wt30, hake_intrasp)
+# run_wt50 <- run_ceattle(wt50, hake_intrasp)
+# run_wt80 <- run_ceattle(wt80, hake_intrasp)
+# 
+# high_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
+#                    ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
+#                    ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
+#                    ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
+#                    ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
+# high_test <- high_test[, c(1:3, 6, 9, 12, 15)]
+# 
+# 
+# # High-cannibalism biomass plot
+# high_biom_plot <- plot_biom(high_test)
+# high_biom_plot
+# 
+# ggsave(filename="plots/CEATTLE/high_intrasp_biomass.png", high_biom_plot,
+#        width=200, height=150, units="mm", dpi=300)
+# 
+# 
+# # High-cannibalism recruitment plot
+# high_R_data <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),
+#                      c(run_wt30$quantities$R), c(run_wt50$quantities$R),
+#                      c(run_wt80$quantities$R))
+# high_R_wide <- as.data.frame(cbind(years, high_R_data, nodiet_R))
+# colnames(high_R_wide) <- c("year",
+#                            "CEATTLE - 0.5% cannibalism",
+#                            "CEATTLE - 10% cannibalism",
+#                            "CEATTLE - 30% cannibalism",
+#                            "CEATTLE - 50% cannibalism",
+#                            "CEATTLE - 80% cannibalism",
+#                            "CEATTLE - no diet")
+# high_R <- melt(high_R_wide, id.vars = "year")
+# 
+# high_R_plot <- plot_R(high_R)
+# high_R_plot
+# 
+# ggsave(filename="plots/CEATTLE/high_intrasp_R.png", high_R_plot,
+#        width=200, height=100, units="mm", dpi=300)
