@@ -86,11 +86,11 @@ run_wt005 <- run_ceattle(wt005, hake_intrasp)
 run_wt01 <- run_ceattle(wt01, hake_intrasp)
 run_wt05 <- run_ceattle(wt05, hake_intrasp)
 
-low_test <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
+low_biom <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
                   ceattle_biomass(run_wt005, "CEATTLE - 0.05% cannibalism"),
                   ceattle_biomass(run_wt01, "CEATTLE - 0.1% cannibalism"),
                   ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"))
-low_test <- low_test[, c(1:3, 6, 9, 12)]
+low_biom <- low_biom[, c(1:3, 6, 9, 12)]
 
 
 # Plot biomass ----------------------------------------------------------------
@@ -126,7 +126,7 @@ plot_biom <- function(df) {
 }
 
 # Low-cannibalism plot
-low_biom_plot <- plot_biom(low_test)
+low_biom_plot <- plot_biom(low_biom)
 low_biom_plot
 
 ggsave(filename="plots/CEATTLE/low_intrasp_biomass.png", low_biom_plot,
@@ -171,6 +171,25 @@ low_R_plot <- plot_R(low_R)
 low_R_plot
 
 ggsave(filename="plots/CEATTLE/low_intrasp_R.png", low_R_plot,
+       width=200, height=100, units="mm", dpi=300)
+
+
+# Calculate and plot difference btw no diet & each cannibalism run ------------
+nodiet_biom4 <- cbind(nodiet_biom[, 3], nodiet_biom[, 3],
+                      nodiet_biom[, 3], nodiet_biom[, 3])
+delta_biom_wide <- low_biom[44:86, c(3:6)] - nodiet_biom4
+delta_biom_wide <- cbind(years, delta_biom_wide)
+delta_biom <- melt(delta_biom_wide, id.vars = "years")
+
+biom_difference <- ggplot(delta_biom2, aes(x=years, y=value)) +
+  geom_line(aes(color=variable)) +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.336) +  # colors to match biomass plot  
+  theme_sleek() +
+  ylab("Biomass (mt)") + xlab("year")
+  labs(color = "model") 
+biom_difference
+
+ggsave(filename="plots/CEATTLE/low_intrasp_biom_difference.png", biom_difference,
        width=200, height=100, units="mm", dpi=300)
 
 
@@ -221,3 +240,4 @@ ggsave(filename="plots/CEATTLE/low_intrasp_R.png", low_R_plot,
 # 
 # ggsave(filename="plots/CEATTLE/high_intrasp_R.png", high_R_plot,
 #        width=200, height=100, units="mm", dpi=300)
+
