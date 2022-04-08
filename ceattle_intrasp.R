@@ -61,11 +61,17 @@ run_ceattle <- function(wt, df) {
   return(ceattle)
 }
 
+# Run low-cannibalism models
+run_wt001 <- run_ceattle(wt001, hake_intrasp)
+run_wt005 <- run_ceattle(wt005, hake_intrasp)
+run_wt01 <- run_ceattle(wt01, hake_intrasp)
+run_wt05 <- run_ceattle(wt05, hake_intrasp)
+
 # Check what all comes out of CEATTLE
-# ceattle_stuff <- intrasp_run$quantities
+ceattle_stuff <- run_wt001$quantities
 
 
-# Compare intraspecies CEATTLE runs to no diet & assessment -------------------
+# Plot biomass in comparison to no diet & asssessment -------------------------
 years <- 1980:2022
 
 # Pull out SSB & overall biomass from CEATTLE runs
@@ -80,20 +86,12 @@ ceattle_biomass <- function(run, name) {
   return(all_biom)
 }
 
-# Run low-cannibalism models
-run_wt001 <- run_ceattle(wt001, hake_intrasp)
-run_wt005 <- run_ceattle(wt005, hake_intrasp)
-run_wt01 <- run_ceattle(wt01, hake_intrasp)
-run_wt05 <- run_ceattle(wt05, hake_intrasp)
-
 low_biom <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
                   ceattle_biomass(run_wt005, "CEATTLE - 0.05% cannibalism"),
                   ceattle_biomass(run_wt01, "CEATTLE - 0.1% cannibalism"),
                   ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"))
 low_biom <- low_biom[, c(1:3, 6, 9, 12)]
 
-
-# Plot biomass ----------------------------------------------------------------
 # Read in no diet data
 nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
 colnames(nodiet_biom)[3] <- "CEATTLE - no diet"
@@ -191,6 +189,11 @@ biom_difference
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/low_intrasp_biom_difference.png", 
        biom_difference, width=200, height=100, units="mm", dpi=300)
+
+
+# Numbers-at-age comparison
+
+
 
 
 # Run everything with higher amounts of cannibalism (not converging 100%) -----
