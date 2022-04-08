@@ -129,8 +129,8 @@ plot_biom <- function(df) {
 low_biom_plot <- plot_biom(low_biom)
 low_biom_plot
 
-ggsave(filename="plots/CEATTLE/low_intrasp_biomass.png", low_biom_plot,
-       width=200, height=150, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/low_intrasp_biomass.png", 
+       low_biom_plot, width=200, height=150, units="mm", dpi=300)
 
 
 # Plot recruitment ------------------------------------------------------------
@@ -170,8 +170,8 @@ plot_R <- function(df) {
 low_R_plot <- plot_R(low_R)
 low_R_plot
 
-ggsave(filename="plots/CEATTLE/low_intrasp_R.png", low_R_plot,
-       width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/low_intrasp_R.png", 
+       low_R_plot, width=200, height=100, units="mm", dpi=300)
 
 
 # Calculate and plot difference btw no diet & each cannibalism run ------------
@@ -189,8 +189,8 @@ biom_difference <- ggplot(delta_biom2, aes(x=years, y=value)) +
   labs(color = "model") 
 biom_difference
 
-ggsave(filename="plots/CEATTLE/low_intrasp_biom_difference.png", biom_difference,
-       width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/low_intrasp_biom_difference.png", 
+       biom_difference, width=200, height=100, units="mm", dpi=300)
 
 
 # Run everything with higher amounts of cannibalism (not converging 100%) -----
