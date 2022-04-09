@@ -46,8 +46,8 @@ write.csv(nodiet_R, "data/ceattle_nodiet_R.csv", row.names = FALSE)
 # Numbers at age --------------------------------------------------------------
 nbyage_raw <- as.data.frame(as.table(nodiet_run$quantities$NByage))
 
-toDelete <- seq(0, nrow(nbyage_raw), 2)
-nbyage <- nbyage_raw[-toDelete, -c(1:2)]
+# Remove rows with 0s, artifact of a single-sex model
+nbyage <- nbyage_raw[-seq(0, nrow(nbyage_raw), 2), -c(1:2)]
 
 levels(nbyage$Var3) <- c(1:20)
 levels(nbyage$Var4) <- c(1980:2022)
@@ -71,8 +71,8 @@ new_nbyage <- function(df, name) {
   return(df3)
 }
 
-b <- new_nbyage(b1_wide, "SS - beginning")
-m <- new_nbyage(m1_wide, "SS - middle")
+b <- new_nbyage(b_wide, "SS - beginning")
+m <- new_nbyage(m_wide, "SS - middle")
 
 nbyage_ss <- rbind(b, m)
 

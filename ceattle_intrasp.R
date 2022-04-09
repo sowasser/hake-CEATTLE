@@ -1,5 +1,5 @@
 # Run CEATTLE for hake data with no diet data 
-devtools::install_github("grantdadams/Rceattle@dev")
+# devtools::install_github("grantdadams/Rceattle@dev")
 library(Rceattle)
 
 library(reshape2)
@@ -21,27 +21,26 @@ hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220401.xlsx")
 
 
 # Run CEATTLE with differing diet weight proportions --------------------------
-# Pull out data from base intrasp run
-wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
-wts_short <- wts[wts != 0]
-
 # Set different diet weight proportion distributions
 wt001 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001)
 wt005 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
 wt01 <- c(0.0, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01)
 wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
 
-# Plot stomach contents curves
-prop <- as.data.frame(cbind(1:15, wt001, wt005, wt01, wt05, wts_short))
-colnames(prop)[c(1, 6)] <- c("age", "Grant's")
-prop_all <- melt(prop, id.vars = "age")
-
-stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  ylab("stomach proportion")
-stomach_props
+# # Plot stomach contents curves
+# # Pull out data from base intrasp run
+# wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
+# wts_short <- wts[wts != 0]
+# prop <- as.data.frame(cbind(1:15, wt001, wt005, wt01, wt05, wts_short))
+# colnames(prop)[c(1, 6)] <- c("age", "Grant's")
+# prop_all <- melt(prop, id.vars = "age")
+# 
+# stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   theme_sleek() +
+#   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+#   ylab("stomach proportion")
+# stomach_props
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -68,7 +67,7 @@ run_wt01 <- run_ceattle(wt01, hake_intrasp)
 run_wt05 <- run_ceattle(wt05, hake_intrasp)
 
 # Check what all comes out of CEATTLE
-ceattle_stuff <- run_wt001$quantities
+# ceattle_stuff <- run_wt001$quantities
 
 
 # Plot biomass in comparison to no diet & asssessment -------------------------
@@ -191,9 +190,45 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/low_intrasp_biom_differenc
        biom_difference, width=200, height=100, units="mm", dpi=300)
 
 
-# Numbers-at-age comparison
+# Numbers-at-age for each model run -------------------------------------------
+# Read in data from no diet CEATTLE run
+nbyage_nodiet <- read.csv("data/ceattle_nodiet_nbyage.csv")
+nbyage_nodiet <- cbind(nbyage_nodiet, rep("CEATTLE - no diet", nrow(nbyage_nodiet)))
+colnames(nbyage_nodiet)[4] <- "model"
 
+extract_nbyage <- function(run, name) {
+  df <- as.data.frame(as.table(run$quantities$NByage))
+  
+  df <- df[-seq(0, nrow(df), 2), -c(1:2)]
+  levels(df$Var3) <- c(1:20)
+  levels(df$Var4) <- c(1980:2022)
+  colnames(df) <- c("age", "year", "numbers")
+  
+  df <- cbind(df, rep(name, nrow(df)))
+  colnames(df)[4] <- "model"
+  
+  return(df)
+}
 
+nbyage_all <- rbind(extract_nbyage(run_wt001, "CEATTLE - 0.01% cannibalism"),
+                    extract_nbyage(run_wt005, "CEATTLE - 0.05% cannibalism"),
+                    extract_nbyage(run_wt01, "CEATTLE - 0.1% cannibalism"),
+                    extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
+                    nbyage_nodiet)
+
+# Calculate mean numbers at age & plot
+nbyage_mean <- nbyage_all %>% group_by(age, model) %>%
+  summarize(mean_number = mean(numbers))
+
+nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean_number, fill=model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.166) +
+  xlab("age") + ylab("numbers") 
+nbyage_plot_mean
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", 
+       nbyage_plot_mean, width=200, height=120, units="mm", dpi=300)
 
 
 # Run everything with higher amounts of cannibalism (not converging 100%) -----
