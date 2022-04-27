@@ -48,6 +48,8 @@ all_prey <- merge(prey_of_hake_comp, prey_of_hake_size, all.y = TRUE)[, c("Prey_
                                                                           "Prey_Weight_g",
                                                                           "Prey_Maturity",
                                                                           "Prey_Length1")]
+
+
 # Subset cannibalized prey
 hake_prey <- all_prey %>%
   filter(Prey_Com_Name == "Pacific Hake")
@@ -79,3 +81,9 @@ prey_length <- ggplot(hake_prey, aes(x = (Prey_Length1/10))) +
 prey_length
 
 
+### Combine predator & prey datasets & write new .csvs ------------------------
+write.csv(all_pred, "data/diet/full_hake_pred.csv")
+write.csv(all_prey, "data/diet/full_prey.csv")
+
+all_hake <- merge(all_pred, all_prey, all = TRUE)
+write.csv(all_hake, "data/diet/full_hake_diet.csv")
