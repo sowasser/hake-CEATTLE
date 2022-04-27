@@ -4,10 +4,10 @@ library(ggplot2)
 library(ggsidekick)
 library(FSA)
 library(dplyr)
+library(tidyr)
 
-all_hake <- read.csv("data/diet/full_hake_diet.csv")
-all_pred <- read.csv("data/diet/full_hake_pred.csv")
-all_prey <- read.csv("data/diet/full_prey.csv")
+all_pred <- read.csv("data/diet/Full dataset/full_hake_pred.csv")
+all_prey <- read.csv("data/diet/Full dataset/full_prey.csv")
 
 ### Parameterize length to age calculation  -----------------------------------
 hake_ages <- 0:15
@@ -55,5 +55,24 @@ new_prey$prey_ages[new_prey$FL_cm > params[1]] <- 15
 # Round to whole number 
 new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
 
+
 ### Combine into new dataset & prep for use in CEATTLE ------------------------
-aged_datset <- all_hake <- merge(new_pred, new_prey, all = TRUE)
+aged_dataset <- all_hake <- merge(new_pred, new_prey, all = TRUE)
+
+# Add column to represent whether the prey were hake 
+aged_dataset$cannibalism <- ifelse(aged_dataset$Prey_Com_Name == "Pacific Hake", 1, 0)
+aged_dataset$cannibalism[is.na(aged_dataset$cannibalism)] <- 0
+
+# Create new, organized dataframe for rates of cannibalism, fill in predator info
+aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "prey_ages", "cannibalism")] %>%
+  arrange(Predator_ID, Year) %>%
+  fill(Year) %>%
+  fill(pred_ages)
+
+diet_prop_overall <- aged_subset %>% 
+  group_by(pred_ages, prey_ages) %>%
+  summarize(sample_size = n()) %>%
+  mutate(prop = sample_size / sum(sample_size))
+  
+
+
