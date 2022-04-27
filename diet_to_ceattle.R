@@ -1,30 +1,59 @@
 # Script for updating the hake intraspecies predation data for use in CEATTLE
 
-library(r4ss)
-library(readxl)
+library(ggplot2)
+library(ggsidekick)
+library(FSA)
 library(dplyr)
-library(tidyr)
 
 all_hake <- read.csv("data/diet/full_hake_diet.csv")
 all_pred <- read.csv("data/diet/full_hake_pred.csv")
 all_prey <- read.csv("data/diet/full_prey.csv")
 
-### Create weight-age keys ----------------------------------------------------
+### Parameterize length to age calculation  -----------------------------------
 hake_ages <- 0:15
 
-# Mean weights from empirical weight-at-age table
-hake_wt <- c(0.022340741,	0.111942593,	0.258737037,	0.381925926,	0.472466667,	
-             0.531718519,	0.58675,	0.647811111,	0.710514815,	0.765505556,	
-             0.824953704,	0.928575926,	0.986738889,	1.024092593,
-             1.082364815,	1.212831481, 10)
+# Read in maturity data
+maturity <- read.csv("~/Desktop/Local/hake-CEATTLE/Resources/hake-assessment-master/data/hake-maturity-data.csv")
 
-# Plot just to make sure everything makes sense
-test <- as.data.frame(cbind(hake_ages, hake_wt))
-ggplot(test, aes(x = hake_ages, y = hake_wt)) +
-  geom_point() +
-  theme_sleek()
+# Estimate VBGF (http://derekogle.com/fishR/2019-12-31-ggplot-vonB-fitPlot-1)
+vb <- vbFuns(param="Typical")  # define von Bert function
+# Get reasonable starting values, fit model, extract parameters
+f.starts <- vbStarts(Length_cm ~ Age, data = maturity)
+f.fit <- nls(Length_cm ~ vb(Age, Linf, K, t0), data = maturity, start = f.starts) 
+params <- coef(f.fit) 
 
-# Cut weight data into age categories
-pred_ages <- cut(all_pred$Predator_Weight_kg, breaks = hake_wt, right = TRUE, labels = hake_ages)
+# Calculate ages from lengths in dataset
+age_calc <- function(lengths, Linf, K, t0) {
+  ages <- c()
+  for(L in lengths) {
+    a <- max(1, ((-log(1 - L/Linf))/K + t0))
+    ages <- c(ages, a)
+  }
+  
+  return(ages)
+}
 
+### Run predator age calculation ----------------------------------------------
+pred_ages <- age_calc(lengths = all_pred$FL_cm, 
+                      Linf = params[1], K = params[2], t0 = params[3])
+
+# Add ages column to predator dataset 
 new_pred <- cbind(all_pred, pred_ages)
+# Fill in age = 15 for any length > Linf
+new_pred$pred_ages[new_pred$FL_cm > params[1]] <- 15
+# Round to whole number 
+new_pred$pred_ages <- round(new_pred$pred_ages, digits = 0)
+
+### Run prey age calculation --------------------------------------------------
+prey_ages <- age_calc(lengths = (all_prey$Prey_Length1 / 10),  # prey are in mm
+                      Linf = params[1], K = params[2], t0 = params[3])
+
+# Add ages column to predator dataset 
+new_prey <- cbind(all_prey, prey_ages)
+# Fill in age = 15 for any length > Linf
+new_prey$prey_ages[new_prey$FL_cm > params[1]] <- 15
+# Round to whole number 
+new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
+
+### Combine into new dataset & prep for use in CEATTLE ------------------------
+aged_datset <- all_hake <- merge(new_pred, new_prey, all = TRUE)
