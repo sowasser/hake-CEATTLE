@@ -43,17 +43,19 @@ new_pred <- cbind(all_pred, pred_ages)
 new_pred$pred_ages[new_pred$FL_cm > params[1]] <- 15
 # Round to whole number 
 new_pred$pred_ages <- round(new_pred$pred_ages, digits = 0)
+# Set any ages > 15 to 15 (accumulator age)
+new_pred$pred_ages[new_pred$pred_ages > 15] <- 15
 
 ### Run prey age calculation --------------------------------------------------
 prey_ages <- age_calc(lengths = (all_prey$Prey_Length1 / 10),  # prey are in mm
                       Linf = params[1], K = params[2], t0 = params[3])
 
-# Add ages column to predator dataset 
+# Add ages column to prey dataset 
 new_prey <- cbind(all_prey, prey_ages)
-# Fill in age = 15 for any length > Linf
-new_prey$prey_ages[new_prey$FL_cm > params[1]] <- 15
 # Round to whole number 
 new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
+# Replace any non-hake prey items with NA
+new_prey$prey_ages[new_prey$Prey_Com_Name != "Pacific Hake"] <- NA
 
 
 ### Combine into new dataset & prep for use in CEATTLE ------------------------
@@ -64,15 +66,19 @@ aged_dataset$cannibalism <- ifelse(aged_dataset$Prey_Com_Name == "Pacific Hake",
 aged_dataset$cannibalism[is.na(aged_dataset$cannibalism)] <- 0
 
 # Create new, organized dataframe for rates of cannibalism, fill in predator info
-aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "prey_ages", "cannibalism")] %>%
+aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Name", "prey_ages", "Prey_Weight_g", "cannibalism")] %>%
   arrange(Predator_ID, Year) %>%
   fill(Year) %>%
   fill(pred_ages)
 
+# Get number of stomachs per predator age
+stomachs_n <- aged_subset %>%
+  group_by(pred_ages, prey_ages) %>%
+  summarize(sample_size = n())
+
+# Get proportion by weight for each predator & prey age
 diet_prop_overall <- aged_subset %>% 
   group_by(pred_ages, prey_ages) %>%
   summarize(sample_size = n()) %>%
   mutate(prop = sample_size / sum(sample_size))
-  
-
 
