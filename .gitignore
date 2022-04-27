@@ -55,7 +55,6 @@ ROMS*.csv
 2020_Hake_Assessment/
 Arrowtooth_Flounder/
 Full dataset/
-full*.csv
 
 # Ignore specific file types
 *.docx
