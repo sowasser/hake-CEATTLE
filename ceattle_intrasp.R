@@ -1,5 +1,5 @@
 # Run CEATTLE for hake data with no diet data 
-# devtools::install_github("grantdadams/Rceattle@dev")
+devtools::install_github("grantdadams/Rceattle@dev")
 library(Rceattle)
 
 library(reshape2)
