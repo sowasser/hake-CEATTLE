@@ -79,13 +79,31 @@ aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Na
 stomachs_n <- aged_subset %>%
   group_by(pred_ages) %>%
   summarize(sample_size = n())
+  
+# Total stomach weight per predator age
+total_wt <- aged_subset %>%
+  group_by(pred_ages) %>%
+  summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
 
-cannibalism <- aged_subset %>%
-  filter(Prey_Com_Name == "Pacific Hake")
-
-# Get proportion by weight for each predator & prey age
-diet_prop_overall <- aged_subset %>% 
+# Combine summarized datasets and calculate stomach weight proportions (overall)
+intrasp <- aged_subset %>%
+  filter(Prey_Com_Name == "Pacific Hake" & !is.na(Predator_ID)) %>%
   group_by(pred_ages, prey_ages) %>%
-  summarize(sample_size = n()) %>%
-  mutate(prop = sample_size / sum(sample_size))
+  summarize(prey_wt = sum(Prey_Weight_g)) %>%
+  left_join(stomachs_n) %>%
+  left_join(total_wt) %>%
+  mutate(wt_prop = (prey_wt / total_wt))
+
+# Keep only the needed columns 
+intrasp <- intrasp[, c("pred_ages", "prey_ages", "sample_size", "wt_prop")]
+
+# Fill dataframe with missing predator and prey ages
+all_ages <- as.data.frame(cbind(pred_ages = rep(1:15, each = 15), 
+                                prey_ages = rep(1:15, 15), 
+                                sample_size = rep(NA, 225), 
+                                wt_prop = rep(NA, 225)))
+
+intrasp_full <- intrasp %>%
+  full_join(all_ages) %>%
+  arrange(pred_ages, prey_ages)
 
