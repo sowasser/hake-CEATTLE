@@ -2,6 +2,7 @@
 
 library(ggplot2)
 library(ggsidekick)
+library(viridis)
 library(FSA)
 library(dplyr)
 library(tidyr)
@@ -115,3 +116,15 @@ intrasp_full[is.na(intrasp_full)] <- 0
 
 # Create new .csv with new values
 write.csv(intrasp_full, "data/diet/full_hake_diet.csv")
+
+# Plot hake diet
+df <- melt(intrasp[, -3], id.vars = c("pred_ages", "prey_ages"))
+
+diet_plot <- ggplot(df, aes(x=as.factor(pred_ages), y=value, fill=as.factor(prey_ages))) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  xlab("predator hake age") + ylab("diet proportion by weight") +
+  labs(fill = "prey hake age")
+diet_plot
