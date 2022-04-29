@@ -98,12 +98,20 @@ intrasp <- aged_subset %>%
 intrasp <- intrasp[, c("pred_ages", "prey_ages", "sample_size", "wt_prop")]
 
 # Fill dataframe with missing predator and prey ages
-all_ages <- as.data.frame(cbind(pred_ages = rep(1:15, each = 15), 
-                                prey_ages = rep(1:15, 15), 
-                                sample_size = rep(NA, 225), 
-                                wt_prop = rep(NA, 225)))
+all_ages <- data.frame(pred_ages = rep(1:15, each = 15), 
+                       prey_ages = rep(1:15, 15), 
+                       sample_size = rep(NA, 225), 
+                       wt_prop = rep(NA, 225))
 
+# Merge dataframe of all values w/ data, remove replicated rows, fill values
 intrasp_full <- intrasp %>%
   full_join(all_ages) %>%
-  arrange(pred_ages, prey_ages)
+  arrange(pred_ages, prey_ages) %>%
+  distinct(pred_ages, prey_ages, .keep_all = TRUE) %>%
+  fill(sample_size)
 
+# Replace remaining NAs with 0s
+intrasp_full[is.na(intrasp_full)] <- 0
+
+# Create new .csv with new values
+write.csv(intrasp_full, "data/diet/full_hake_diet.csv")
