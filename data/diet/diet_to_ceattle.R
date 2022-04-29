@@ -62,12 +62,12 @@ new_prey$prey_ages[new_prey$Prey_Com_Name != "Pacific Hake"] <- NA
 aged_dataset <- merge(new_pred, new_prey, all = TRUE)
 
 # Look at instances where prey hake age = NA - all are immature
-prey_hake_NA <- aged_dataset %>%
+aged_dataset %>%
   filter(Prey_Com_Name == "Pacific Hake") %>%
   filter(is.na(prey_ages))
 
 # Replace those NAs with age 1
-aged_dataset$prey_ages[is.na(aged_dataset$prey_ages) & aged_dataset$Prey_Com_Name == "Pacific Hake"] <- 0
+aged_dataset$prey_ages[is.na(aged_dataset$prey_ages) & aged_dataset$Prey_Com_Name == "Pacific Hake"] <- 1
 
 # Create new, organized dataframe for rates of cannibalism, fill in predator info
 aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Name", "prey_ages", "Prey_Weight_g")] %>%
