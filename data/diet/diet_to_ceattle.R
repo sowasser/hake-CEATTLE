@@ -115,7 +115,9 @@ intrasp_full <- intrasp %>%
 intrasp_full[is.na(intrasp_full)] <- 0
 
 # Create new .csv with new values
-write.csv(intrasp_full, "data/diet/full_hake_diet.csv")
+# Update column names to match CEATTLE data input
+colnames(intrasp_full)[c(3, 4)] <- c("Sample_size", "Stomach_proportion_by_weight")
+write.csv(intrasp_full, "data/diet/full_hake_diet.csv", row.names = FALSE)
 
 # Plot hake diet
 df <- melt(intrasp[, -3], id.vars = c("pred_ages", "prey_ages"))
