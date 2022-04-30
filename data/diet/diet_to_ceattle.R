@@ -59,7 +59,7 @@ new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
 new_prey$prey_ages[new_prey$Prey_Com_Name != "Pacific Hake"] <- NA
 
 
-### Combine into new dataset & prep for use in CEATTLE ------------------------
+### Combine into new dataset --------------------------------------------------
 aged_dataset <- merge(new_pred, new_prey, all = TRUE)
 
 # Look at instances where prey hake age = NA - all are immature
@@ -76,6 +76,8 @@ aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Na
   fill(Year) %>%
   fill(pred_ages)
 
+
+# Create overall intraspecies predation dataset -------------------------------
 # Get number of stomachs per predator age
 stomachs_n <- aged_subset %>%
   group_by(pred_ages) %>%
@@ -130,3 +132,41 @@ diet_plot <- ggplot(df, aes(x=as.factor(pred_ages), y=value, fill=as.factor(prey
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age")
 diet_plot
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/cannibalism_overall.png", 
+       diet_plot, width=200, height=120, units="mm", dpi=300)
+
+
+### See if it's worth doing time-varying (yearly) predation -------------------
+stomachs_yearly <- aged_subset %>%
+  group_by(Year, pred_ages) %>%
+  summarize(sample_size = n())
+
+total_wt_yearly <- aged_subset %>%
+  group_by(pred_ages) %>%
+  summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
+
+intrasp_yearly <- aged_subset %>%
+  filter(Prey_Com_Name == "Pacific Hake" & !is.na(Predator_ID)) %>%
+  group_by(Year, pred_ages, prey_ages) %>%
+  summarize(prey_wt = sum(Prey_Weight_g)) %>%
+  left_join(stomachs_yearly) %>%
+  left_join(total_wt_yearly) %>%
+  mutate(wt_prop = (prey_wt / total_wt))
+
+intrasp_yearly2 <- melt(intrasp_yearly[, c("Year", "pred_ages", "prey_ages", "wt_prop")],
+                        id.vars = c("Year", "pred_ages", "prey_ages"))
+
+diet_plot_yearly <- ggplot(intrasp_yearly2, aes(x=as.factor(pred_ages), y=value, fill=as.factor(prey_ages))) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  theme_sleek() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  xlab("predator hake age") + ylab("diet proportion by weight") +
+  labs(fill = "prey hake age") +
+  facet_wrap(~Year)
+diet_plot_yearly
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/cannibalism_yearly.png", 
+       diet_plot_yearly, width=300, height=200, units="mm", dpi=300)
+
