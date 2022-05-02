@@ -97,6 +97,9 @@ intrasp <- aged_subset %>%
   left_join(total_wt) %>%
   mutate(wt_prop = (prey_wt / total_wt))
 
+# Calculate overall percentage by wt
+mean(intrasp$wt_prop)
+
 # Keep only the needed columns 
 intrasp <- intrasp[, c("pred_ages", "prey_ages", "sample_size", "wt_prop")]
 
@@ -133,7 +136,7 @@ diet_plot <- ggplot(df, aes(x=as.factor(pred_ages), y=value, fill=as.factor(prey
   labs(fill = "prey hake age")
 diet_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/cannibalism_overall.png", 
+ggsave(filename = "plots/diet/cannibalism_overall.png", 
        diet_plot, width=200, height=120, units="mm", dpi=300)
 
 
@@ -167,6 +170,6 @@ diet_plot_yearly <- ggplot(intrasp_yearly2, aes(x=as.factor(pred_ages), y=value,
   facet_wrap(~Year)
 diet_plot_yearly
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/cannibalism_yearly.png", 
+ggsave(filename = "plots/diet/cannibalism_yearly.png", 
        diet_plot_yearly, width=300, height=200, units="mm", dpi=300)
 

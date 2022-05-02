@@ -133,7 +133,7 @@ nbyage_mean <- nbyage_all %>% group_by(age, model) %>%
 nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_sleek() +
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.66, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   xlab("age") + ylab("numbers") 
 nbyage_plot_mean
 

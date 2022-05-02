@@ -62,17 +62,30 @@ hake_hake <- merge(all_pred, hake_prey, all.y = TRUE)
 
 
 ### Plot general trends in data -----------------------------------------------
+# Occurrences of predation over 100 n
+prey_subset <- prey_of_hake_comp %>% 
+  group_by(Prey_Com_Name) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 100) %>%
+  select(-freq)
+
+prey_sp <- ggplot(prey_subset, aes(y = fct_infreq(Prey_Com_Name),
+                                   fill = ifelse(Prey_Com_Name == "Pacific Hake", "highlighted", "normal"))) +
+  geom_bar(position = "dodge", show.legend = FALSE) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
+  xlab("predation greater than 100 occurrences") + ylab("prey common name") +
+  theme_sleek()
+prey_sp
+
+ggsave(filename = "plots/diet/hake_prey_species.png", prey_sp, 
+       width=300, height=200, units="mm", dpi=300)
+
 pred_fl <- ggplot(predator_hake, aes(x = FL_cm)) +
   geom_histogram() +
   xlab("fork length (cm)") + ylab(" ") +
   theme_sleek()
 pred_fl
-
-prey_sp <- ggplot(prey_of_hake_comp, aes(y = fct_infreq(Prey_Com_Name))) +
-  geom_bar(position = "dodge") +
-  xlab(" ") + ylab("prey common name") +
-  theme_sleek()
-prey_sp
 
 prey_length <- ggplot(hake_prey, aes(x = (Prey_Length1/10))) +
   geom_histogram() +

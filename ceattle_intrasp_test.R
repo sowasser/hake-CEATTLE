@@ -136,7 +136,7 @@ plot_biom <- function(df) {
 test_biom_plot <- plot_biom(test_biom)
 test_biom_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/test_intrasp_biomass.png", 
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_biomass.png", 
        test_biom_plot, width=200, height=150, units="mm", dpi=300)
 
 
