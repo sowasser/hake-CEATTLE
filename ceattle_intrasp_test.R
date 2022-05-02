@@ -24,10 +24,10 @@ hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220429.xlsx")
 
 # Run CEATTLE with differing diet weight proportions --------------------------
 # Set different diet weight proportion distributions
-wt001 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001)
-wt005 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
-wt01 <- c(0.0, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01)
-wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
+wt01 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001)
+wt05 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
+wt1 <- c(0.0, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01)
+wt5 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
 wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
 wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
 wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
@@ -67,10 +67,10 @@ run_ceattle <- function(wt, df) {
 }
 
 # Run low-cannibalism models
-run_wt001 <- run_ceattle(wt001, hake_intrasp)
-run_wt005 <- run_ceattle(wt005, hake_intrasp)
 run_wt01 <- run_ceattle(wt01, hake_intrasp)
 run_wt05 <- run_ceattle(wt05, hake_intrasp)
+run_wt1 <- run_ceattle(wt1, hake_intrasp)
+run_wt5 <- run_ceattle(wt5, hake_intrasp)
 run_wt10 <- run_ceattle(wt10, hake_intrasp)
 run_wt30 <- run_ceattle(wt30, hake_intrasp)
 run_wt50 <- run_ceattle(wt50, hake_intrasp)
@@ -95,15 +95,11 @@ ceattle_biomass <- function(run, name) {
   return(all_biom)
 }
 
-test_biom <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
-                   ceattle_biomass(run_wt005, "CEATTLE - 0.05% cannibalism"),
-                   ceattle_biomass(run_wt01, "CEATTLE - 0.1% cannibalism"),
-                   ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
+test_biom <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
                    ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
-                   ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
                    ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
                    ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
-test_biom <- test_biom[, c(1:3, 6, 9, 12, 15, 18, 21, 24, 27)]
+test_biom <- test_biom[, c(1:3, 6, 9, 12)]
 
 # Read in no diet data
 nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
@@ -148,18 +144,12 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/test_intrasp_biomass.png",
 nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
 ss_R <- read.table("data/assessment/recruitment.txt")[15:57,]
 
-R_test_all <- cbind(c(run_wt001$quantities$R), c(run_wt005$quantities$R),
-                    c(run_wt01$quantities$R), c(run_wt05$quantities$R), 
-                    c(run_wt10$quantities$R), c(run_wt30$quantities$R), 
+R_test_all <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),  
                     c(run_wt50$quantities$R), c(run_wt80$quantities$R))
 R_test_wide <- as.data.frame(cbind(years, R_test_all, nodiet_R))
 colnames(R_test_wide) <- c("year",
-                           "CEATTLE - 0.01% cannibalism",
-                           "CEATTLE - 0.05% cannibalism",
-                           "CEATTLE - 0.1% cannibalism",
                            "CEATTLE - 0.5% cannibalism",
                            "CEATTLE - 10% cannibalism",
-                           "CEATTLE - 30% cannibalism",
                            "CEATTLE - 50% cannibalism",
                            "CEATTLE - 80% cannibalism",
                            "CEATTLE - no diet")
@@ -230,12 +220,8 @@ extract_nbyage <- function(run, name) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_nbyage(run_wt001, "CEATTLE - 0.01% cannibalism"),
-                         extract_nbyage(run_wt005, "CEATTLE - 0.05% cannibalism"),
-                         extract_nbyage(run_wt01, "CEATTLE - 0.1% cannibalism"),
-                         extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
+nbyage_test_all <- rbind(extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
                          extract_nbyage(run_wt10, "CEATTLE - 10% cannibalism"),
-                         extract_nbyage(run_wt30, "CEATTLE - 30% cannibalism"),
                          extract_nbyage(run_wt50, "CEATTLE - 50% cannibalism"),
                          extract_nbyage(run_wt80, "CEATTLE - 80% cannibalism"),
                          nbyage_nodiet)
