@@ -28,6 +28,10 @@ wt001 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009, 
 wt005 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
 wt01 <- c(0.0, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01)
 wt05 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
+wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
+wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
 # # Plot stomach contents curves
 # # Pull out data from base intrasp run
@@ -67,6 +71,10 @@ run_wt001 <- run_ceattle(wt001, hake_intrasp)
 run_wt005 <- run_ceattle(wt005, hake_intrasp)
 run_wt01 <- run_ceattle(wt01, hake_intrasp)
 run_wt05 <- run_ceattle(wt05, hake_intrasp)
+run_wt10 <- run_ceattle(wt10, hake_intrasp)
+run_wt30 <- run_ceattle(wt30, hake_intrasp)
+run_wt50 <- run_ceattle(wt50, hake_intrasp)
+run_wt80 <- run_ceattle(wt80, hake_intrasp)
 
 # Check what all comes out of CEATTLE
 # ceattle_stuff <- run_wt001$quantities
@@ -87,11 +95,15 @@ ceattle_biomass <- function(run, name) {
   return(all_biom)
 }
 
-low_biom <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
-                  ceattle_biomass(run_wt005, "CEATTLE - 0.05% cannibalism"),
-                  ceattle_biomass(run_wt01, "CEATTLE - 0.1% cannibalism"),
-                  ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"))
-low_biom <- low_biom[, c(1:3, 6, 9, 12)]
+test_biom <- cbind(ceattle_biomass(run_wt001, "CEATTLE - 0.01% cannibalism"),
+                   ceattle_biomass(run_wt005, "CEATTLE - 0.05% cannibalism"),
+                   ceattle_biomass(run_wt01, "CEATTLE - 0.1% cannibalism"),
+                   ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
+                   ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
+                   ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
+                   ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
+                   ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
+test_biom <- test_biom[, c(1:3, 6, 9, 12, 15, 18, 21, 24, 27)]
 
 # Read in no diet data
 nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
@@ -125,27 +137,33 @@ plot_biom <- function(df) {
 }
 
 # Low-cannibalism plot
-low_biom_plot <- plot_biom(low_biom)
-low_biom_plot
+test_biom_plot <- plot_biom(test_biom)
+test_biom_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/low_intrasp_biomass.png", 
-       low_biom_plot, width=200, height=150, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/test_intrasp_biomass.png", 
+       test_biom_plot, width=200, height=150, units="mm", dpi=300)
 
 
 # Plot recruitment ------------------------------------------------------------
 nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
 ss_R <- read.table("data/assessment/recruitment.txt")[15:57,]
 
-low_R_data <- cbind(c(run_wt001$quantities$R), c(run_wt005$quantities$R),
-                    c(run_wt01$quantities$R), c(run_wt05$quantities$R))
-low_R_wide <- as.data.frame(cbind(years, low_R_data, nodiet_R))
-colnames(low_R_wide) <- c("year",
-                          "CEATTLE - 0.01% cannibalism",
-                          "CEATTLE - 0.05% cannibalism",
-                          "CEATTLE - 0.1% cannibalism",
-                          "CEATTLE - 0.5% cannibalism",
-                          "CEATTLE - no diet")
-low_R <- melt(low_R_wide, id.vars = "year")
+R_test_all <- cbind(c(run_wt001$quantities$R), c(run_wt005$quantities$R),
+                    c(run_wt01$quantities$R), c(run_wt05$quantities$R), 
+                    c(run_wt10$quantities$R), c(run_wt30$quantities$R), 
+                    c(run_wt50$quantities$R), c(run_wt80$quantities$R))
+R_test_wide <- as.data.frame(cbind(years, R_test_all, nodiet_R))
+colnames(R_test_wide) <- c("year",
+                           "CEATTLE - 0.01% cannibalism",
+                           "CEATTLE - 0.05% cannibalism",
+                           "CEATTLE - 0.1% cannibalism",
+                           "CEATTLE - 0.5% cannibalism",
+                           "CEATTLE - 10% cannibalism",
+                           "CEATTLE - 30% cannibalism",
+                           "CEATTLE - 50% cannibalism",
+                           "CEATTLE - 80% cannibalism",
+                           "CEATTLE - no diet")
+R_test <- melt(R_test_wide, id.vars = "year")
 
 # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
 ss_1 <- cbind(1981:2022, rep("SS + 1", (length(years)-1)), ss_R[1:42, 2])
@@ -166,30 +184,30 @@ plot_R <- function(df) {
   return(plot)
 }
 
-low_R_plot <- plot_R(low_R)
-low_R_plot
+test_R_plot <- plot_R(R_test)
+test_R_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/low_intrasp_R.png", 
-       low_R_plot, width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_R.png", 
+       test_R_plot, width=200, height=100, units="mm", dpi=300)
 
 
-# Calculate and plot difference btw no diet & each cannibalism run ------------
-nodiet_biom4 <- cbind(nodiet_biom[, 3], nodiet_biom[, 3],
-                      nodiet_biom[, 3], nodiet_biom[, 3])
-delta_biom_wide <- low_biom[44:86, c(3:6)] - nodiet_biom4
-delta_biom_wide <- cbind(years, delta_biom_wide)
-delta_biom <- melt(delta_biom_wide, id.vars = "years")
-
-biom_difference <- ggplot(delta_biom2, aes(x=years, y=value)) +
-  geom_line(aes(color=variable)) +
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.336) +  # colors to match biomass plot  
-  theme_sleek() +
-  ylab("Biomass (mt)") + xlab("year")
-  labs(color = "model") 
-biom_difference
-
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/low_intrasp_biom_difference.png", 
-       biom_difference, width=200, height=100, units="mm", dpi=300)
+# # Calculate and plot difference btw no diet & each cannibalism run ------------
+# nodiet_biom4 <- cbind(nodiet_biom[, 3], nodiet_biom[, 3],
+#                       nodiet_biom[, 3], nodiet_biom[, 3])
+# delta_biom_wide <- low_biom[44:86, c(3:6)] - nodiet_biom4
+# delta_biom_wide <- cbind(years, delta_biom_wide)
+# delta_biom <- melt(delta_biom_wide, id.vars = "years")
+# 
+# biom_difference <- ggplot(delta_biom2, aes(x=years, y=value)) +
+#   geom_line(aes(color=variable)) +
+#   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.336) +  # colors to match biomass plot  
+#   theme_sleek() +
+#   ylab("Biomass (mt)") + xlab("year")
+#   labs(color = "model") 
+# biom_difference
+# 
+# ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/low_intrasp_biom_difference.png", 
+#        biom_difference, width=200, height=100, units="mm", dpi=300)
 
 
 # Numbers-at-age for each model run -------------------------------------------
@@ -212,72 +230,26 @@ extract_nbyage <- function(run, name) {
   return(df)
 }
 
-nbyage_all <- rbind(extract_nbyage(run_wt001, "CEATTLE - 0.01% cannibalism"),
-                    extract_nbyage(run_wt005, "CEATTLE - 0.05% cannibalism"),
-                    extract_nbyage(run_wt01, "CEATTLE - 0.1% cannibalism"),
-                    extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
-                    nbyage_nodiet)
+nbyage_test_all <- rbind(extract_nbyage(run_wt001, "CEATTLE - 0.01% cannibalism"),
+                         extract_nbyage(run_wt005, "CEATTLE - 0.05% cannibalism"),
+                         extract_nbyage(run_wt01, "CEATTLE - 0.1% cannibalism"),
+                         extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
+                         extract_nbyage(run_wt10, "CEATTLE - 10% cannibalism"),
+                         extract_nbyage(run_wt30, "CEATTLE - 30% cannibalism"),
+                         extract_nbyage(run_wt50, "CEATTLE - 50% cannibalism"),
+                         extract_nbyage(run_wt80, "CEATTLE - 80% cannibalism"),
+                         nbyage_nodiet)
 
 # Calculate mean numbers at age & plot
-nbyage_mean <- nbyage_all %>% group_by(age, model) %>%
+nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
   summarize(mean_number = mean(numbers))
 
-nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean_number, fill=model)) +
+test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.166) +
   xlab("age") + ylab("numbers") 
-nbyage_plot_mean
+test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/nbyage_intrasp_test.png", 
-       nbyage_plot_mean, width=200, height=120, units="mm", dpi=300)
-
-
-# Run everything with higher amounts of cannibalism (not converging 100%) -----
-# wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-# wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
-# wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
-# wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
-# 
-# run_wt05 <- run_ceattle(wt05, hake_intrasp)
-# run_wt10 <- run_ceattle(wt10, hake_intrasp)
-# run_wt30 <- run_ceattle(wt30, hake_intrasp)
-# run_wt50 <- run_ceattle(wt50, hake_intrasp)
-# run_wt80 <- run_ceattle(wt80, hake_intrasp)
-# 
-# high_test <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
-#                    ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
-#                    ceattle_biomass(run_wt30, "CEATTLE - 30% cannibalism"),
-#                    ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
-#                    ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
-# high_test <- high_test[, c(1:3, 6, 9, 12, 15)]
-# 
-# 
-# # High-cannibalism biomass plot
-# high_biom_plot <- plot_biom(high_test)
-# high_biom_plot
-# 
-# ggsave(filename="plots/CEATTLE/high_intrasp_biomass.png", high_biom_plot,
-#        width=200, height=150, units="mm", dpi=300)
-# 
-# 
-# # High-cannibalism recruitment plot
-# high_R_data <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),
-#                      c(run_wt30$quantities$R), c(run_wt50$quantities$R),
-#                      c(run_wt80$quantities$R))
-# high_R_wide <- as.data.frame(cbind(years, high_R_data, nodiet_R))
-# colnames(high_R_wide) <- c("year",
-#                            "CEATTLE - 0.5% cannibalism",
-#                            "CEATTLE - 10% cannibalism",
-#                            "CEATTLE - 30% cannibalism",
-#                            "CEATTLE - 50% cannibalism",
-#                            "CEATTLE - 80% cannibalism",
-#                            "CEATTLE - no diet")
-# high_R <- melt(high_R_wide, id.vars = "year")
-# 
-# high_R_plot <- plot_R(high_R)
-# high_R_plot
-# 
-# ggsave(filename="plots/CEATTLE/high_intrasp_R.png", high_R_plot,
-#        width=200, height=100, units="mm", dpi=300)
-
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_nbyage_intrasp.png", 
+       test_nbyage_plot, width=200, height=120, units="mm", dpi=300)
