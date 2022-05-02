@@ -109,6 +109,20 @@ nbyage_nodiet <- read.csv("data/ceattle_nodiet_nbyage.csv")
 nbyage_nodiet <- cbind(nbyage_nodiet, rep("CEATTLE - no diet", nrow(nbyage_nodiet)))
 colnames(nbyage_nodiet)[4] <- "model"
 
+# Read in data from SS3 & average beginning & middle of the year
+nbyage_ss_all <- read.csv("data/assessment/nbyage.csv")
+colnames(nbyage_ss_all) <- c("year", "timing", c(0:20))
+
+nbyage_ss_wide <- nbyage_ss_all %>%
+  group_by(year) %>%
+  summarize_at(vars("0":"20"), mean)
+
+nbyage_ss <- melt(nbyage_ss_wide[, -2], id.vars = "year")
+nbyage_ss <- cbind(nbyage_ss, rep("Stock Synthesis", length(nbyage_ss$year)))
+colnames(nbyage_ss)[2:4] <- c("age", "numbers", "model")
+
+
+# Extract numbers at age for intraspecies predation model run
 extract_nbyage <- function(run, name) {
   df <- as.data.frame(as.table(run$quantities$NByage))
   
@@ -124,7 +138,7 @@ extract_nbyage <- function(run, name) {
 }
 
 nbyage_all <- rbind(extract_nbyage(intrasp_run, "CEATTLE - cannibalism"),
-                    nbyage_nodiet)
+                    nbyage_nodiet, nbyage_ss)
 
 # Calculate mean numbers at age & plot
 nbyage_mean <- nbyage_all %>% group_by(age, model) %>%
