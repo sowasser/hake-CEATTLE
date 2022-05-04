@@ -10,7 +10,7 @@ library(ggplot2)
 library(ggsidekick)
 library(viridis)
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220429.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220503.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
