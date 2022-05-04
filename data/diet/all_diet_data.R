@@ -82,18 +82,35 @@ prey_sp
 ggsave(filename = "plots/diet/hake_prey_species.png", prey_sp, 
        width=300, height=150, units="mm", dpi=300)
 
+# Lengths
 pred_fl <- ggplot(predator_hake, aes(x = FL_cm)) +
   geom_histogram() +
   xlab("fork length (cm)") + ylab(" ") +
   theme_sleek()
 pred_fl
 
-prey_length <- ggplot(hake_prey, aes(x = (Prey_Length1/10))) +
+prey_length <- ggplot(hake_hake, aes(x = (Prey_Length1/10))) +
   geom_histogram() +
   xlab("length (cm)") + ylab(" ") +
   theme_sleek()
 prey_length
 
+
+# Timing
+timing_all <- rbind(cbind(all_pred[, c("Month", "Year")], type = rep("all predator hake", length(all_pred$Month))),
+                    cbind(hake_hake[, c("Month", "Year")], type = rep("cannibalistic hake", length(hake_hake$Month)))) %>%
+  group_by(Year, Month, type) %>%
+  summarize(n = n()) %>%
+  filter(!is.na(Year)) 
+
+##### NB: This plot is not quite correct! Instances of cannibalism are counted twice #####
+timing <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  theme_sleek() +
+  facet_wrap(~ Year)
+timing
+  
 
 ### Write predator & prey datasets to .csvs -----------------------------------
 write.csv(all_pred, "data/diet/Full dataset/full_hake_pred.csv")
