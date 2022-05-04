@@ -53,9 +53,10 @@ full_stomachs <- merge(all_pred, all_prey, all.y = TRUE)
 hake_hake <- full_stomachs %>%
   filter(Prey_Com_Name == "Pacific Hake")
 
-# Label predator dataframe by instances of cannibalism
+# Label predator dataframe by instances of cannibalism & change order for plots
 pred_type <- all_pred
 pred_type$type <- ifelse(pred_type$Predator_ID %in% hake_hake$Predator_ID, "cannibalistic", "general predator")
+pred_type$type <- relevel(factor(pred_type$type), "general predator")
 
 
 ### Plot general trends in data -----------------------------------------------
@@ -104,21 +105,19 @@ prey_length
 timing_all <- pred_type %>%
   group_by(Year, Month, type) %>%
   summarize(n = n()) %>%
-  filter(!is.na(Year)) 
+  filter(!is.na(Year))
 
 timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
-  geom_bar(position = position_stack(reverse = TRUE), stat = "identity") +
-  guides(fill = guide_legend(reverse=TRUE)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab("sampling month") + ylab(" ") +
   facet_wrap(~ Year)
 timing_yearly
 
 timing <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
-  geom_bar(position = position_stack(reverse = TRUE), stat = "identity") +
-  guides(fill = guide_legend(reverse=TRUE)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab("sampling month") + ylab(" ") 
 timing
