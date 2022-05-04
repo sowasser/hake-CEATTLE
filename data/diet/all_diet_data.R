@@ -12,7 +12,7 @@ path <- "data/diet/Full dataset/v4/"
 # Filter predator dataset for just hake and collections from 1980 onwards
 predator_hake <- read.csv(paste0(path, "predator_information_v4.csv")) %>%
   filter(Predator_Com_Name == "Pacific Hake") %>%
-  filter(Collection_ID > 58) %>%
+  filter(Collection_ID > 58) %>%  # Years before 1980
   filter(!is.na(FL_cm))  # Remove observations without fork lengths
 
 # Filter collection info by hake predator collection IDs
@@ -26,10 +26,6 @@ prey_of_hake_comp <- read.csv(paste0(path, "prey_composition_v4.csv")) %>%
 # Filter prey size dataset by hake-predated-prey IDs
 prey_of_hake_size <-  read.csv(paste0(path, "prey_size_v4.csv")) %>%
   filter(Prey_Comp_ID %in% prey_of_hake_comp$Prey_Comp_ID)
-
-# Subset prey dataset by prey that are hake
-hake_prey <- prey_of_hake_size %>%
-  filter(Prey_Com_Name == "Pacific Hake")
 
 
 ### Combine then refine datasets ----------------------------------------------
@@ -50,36 +46,41 @@ all_prey <- merge(prey_of_hake_comp, prey_of_hake_size, all.y = TRUE)[, c("Prey_
                                                                           "Prey_Length1")]
 
 
-# Subset cannibalized prey
-hake_prey <- all_prey %>%
-  filter(Prey_Com_Name == "Pacific Hake")
-
 # Combine pred & prey togehter - this is just full hake stomachs.
 full_stomachs <- merge(all_pred, all_prey, all.y = TRUE)
 
-# Full cannibalism instances
-hake_hake <- merge(all_pred, hake_prey, all.y = TRUE)
+# Cannibalism instances
+hake_hake <- full_stomachs %>%
+  filter(Prey_Com_Name == "Pacific Hake")
 
 
 ### Plot general trends in data -----------------------------------------------
 # Occurrences of predation over 100 n
-prey_subset <- prey_of_hake_comp %>% 
+high_wt <- prey_of_hake_comp %>% 
   group_by(Prey_Com_Name) %>% 
-  mutate(freq = n()) %>% 
-  ungroup() %>% 
-  filter(freq > 100) %>%
-  select(-freq)
+  summarize(highest = sum(Prey_Weight_g)) %>%
+  slice_max(n = 10, order_by = highest)
 
-prey_sp <- ggplot(prey_subset, aes(y = fct_infreq(Prey_Com_Name),
-                                   fill = ifelse(Prey_Com_Name == "Pacific Hake", "highlighted", "normal"))) +
-  geom_bar(position = "dodge", show.legend = FALSE) +
+high_n <- prey_of_hake_comp %>% 
+  group_by(Prey_Com_Name) %>% 
+  summarize(highest = n()) %>%
+  slice_max(n = 10, order_by = highest)
+
+highest <- rbind(cbind(high_wt, variable = rep("weight (top 10)", 10)), 
+                 cbind(high_n, variable = rep("occurrence (top 10)", 10)))
+
+prey_sp <- ggplot(highest, aes(x = Prey_Com_Name, y = highest,
+                               fill = ifelse(Prey_Com_Name == "Pacific Hake", "highlighted", "normal"))) +
+  geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
+  coord_flip() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
-  xlab("predation greater than 100 occurrences") + ylab("prey common name") +
-  theme_sleek()
+  theme_sleek() +
+  xlab(" ") + ylab(" ") +
+  facet_wrap(~ variable, scales = "free")
 prey_sp
 
 ggsave(filename = "plots/diet/hake_prey_species.png", prey_sp, 
-       width=300, height=200, units="mm", dpi=300)
+       width=300, height=150, units="mm", dpi=300)
 
 pred_fl <- ggplot(predator_hake, aes(x = FL_cm)) +
   geom_histogram() +
