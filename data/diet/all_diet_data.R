@@ -4,7 +4,10 @@ library(dplyr)
 library(ggplot2)
 library(ggsidekick)
 library(viridis)
-library(forcats)
+library(rnaturalearth)
+library(sf)
+library(rnaturalearthdata)
+library(rgeos)
 
 path <- "data/diet/Full dataset/v4/"
 
@@ -121,6 +124,30 @@ timing <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
   theme_sleek() +
   xlab("sampling month") + ylab(" ") 
 timing
+
+# Location
+location_all <- pred_type %>%
+  group_by(Year, Latitude, Longitude, type) %>%
+  summarize(n = n()) %>%
+  filter(!is.na(Year)) %>%
+  arrange(type)
+
+# Create a plot of location of observations by latitude and longitude
+world <- ne_countries(scale = "medium", returnclass = "sf")
+sf_use_s2(FALSE)  # turn off spherical geometry
+
+locations <- ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
+  coord_sf(xlim = c(-135, -115), ylim = c(30, 60), expand = FALSE) + xlab("Longitude") + ylab("Latitude") + 
+  scale_x_continuous(breaks = seq(-135, -115, by = 10)) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  theme_sleek() +
+  facet_wrap(~Year, ncol = 7)
+
+ggsave(filename = "plots/diet/sampling_locations.png", locations, 
+       width=500, height=300, units="mm", dpi=300)
+  
   
 
 ### Write predator & prey datasets to .csvs -----------------------------------
