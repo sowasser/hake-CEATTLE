@@ -53,6 +53,10 @@ full_stomachs <- merge(all_pred, all_prey, all.y = TRUE)
 hake_hake <- full_stomachs %>%
   filter(Prey_Com_Name == "Pacific Hake")
 
+# Label predator dataframe by instances of cannibalism
+pred_type <- all_pred
+pred_type$type <- ifelse(pred_type$Predator_ID %in% hake_hake$Predator_ID, "cannibalistic", "general predator")
+
 
 ### Plot general trends in data -----------------------------------------------
 # Occurrences of predation over 100 n
@@ -97,18 +101,26 @@ prey_length
 
 
 # Timing
-timing_all <- rbind(cbind(all_pred[, c("Month", "Year")], type = rep("all predator hake", length(all_pred$Month))),
-                    cbind(hake_hake[, c("Month", "Year")], type = rep("cannibalistic hake", length(hake_hake$Month)))) %>%
+timing_all <- pred_type %>%
   group_by(Year, Month, type) %>%
   summarize(n = n()) %>%
   filter(!is.na(Year)) 
 
-##### NB: This plot is not quite correct! Instances of cannibalism are counted twice #####
-timing <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
+  geom_bar(position = position_stack(reverse = TRUE), stat = "identity") +
+  guides(fill = guide_legend(reverse=TRUE)) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
   theme_sleek() +
+  xlab("sampling month") + ylab(" ") +
   facet_wrap(~ Year)
+timing_yearly
+
+timing <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
+  geom_bar(position = position_stack(reverse = TRUE), stat = "identity") +
+  guides(fill = guide_legend(reverse=TRUE)) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
+  theme_sleek() +
+  xlab("sampling month") + ylab(" ") 
 timing
   
 
