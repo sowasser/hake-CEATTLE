@@ -146,7 +146,7 @@ stomachs_yearly <- aged_subset %>%
   summarize(sample_size = n())
 
 total_wt_yearly <- aged_subset %>%
-  group_by(pred_ages) %>%
+  group_by(Year, pred_ages) %>%
   summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
 
 intrasp_yearly <- aged_subset %>%
@@ -156,6 +156,9 @@ intrasp_yearly <- aged_subset %>%
   left_join(stomachs_yearly) %>%
   left_join(total_wt_yearly) %>%
   mutate(wt_prop = (prey_wt / total_wt))
+
+# Calculate overall percentage by wt to double check
+mean(intrasp_yearly$wt_prop)
 
 intrasp_yearly2 <- melt(intrasp_yearly[, c("Year", "pred_ages", "prey_ages", "wt_prop")],
                         id.vars = c("Year", "pred_ages", "prey_ages"))
