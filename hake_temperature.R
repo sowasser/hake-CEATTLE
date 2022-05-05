@@ -26,14 +26,14 @@ survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
 colnames(survey) <- c("year", "temp", "source")
 
 ROMS <- cbind(summer_ROMS, rep("ROMS", length(summer_ROMS$mean_temp)))
-colnames(ROMS) <- c("year", "temp", "source")
+colnames(ROMS) <- c("year", "mean_temp", "source")
 
 # Combine together and sort by year
 CEATTLE_temp <- rbind(ROMS, survey)
 CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 
 # Plot all mean temperatures 
-mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=temp, color=source)) +
+mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
   geom_line(linetype="dotted") +
   geom_point() +
   scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
@@ -43,7 +43,6 @@ mean_temp_plot
 
 ggsave(filename="plots/temperature/mean_temp.png", mean_temp_plot,
        width=150, height=100, units="mm", dpi=300)
-
 
 # Temperature distribution per year -------------------------------------------
 temp_dist_years <- ggplot(survey_temp, aes(x=temp_100)) +
@@ -104,8 +103,9 @@ temp_weighted <- temp_hake %>% group_by(year) %>%
   summarise(mean_temp = weighted.mean(temp_100_kriged, hake_biomass))
 
 # Combine into 1 dataset with labeled data sources, then plot
-means <- rbind(temp_mean, temp_kriged_mean, temp_hake_mean, temp_weighted)
-means <- cbind(means, c(rep("survey", 13), 
+means <- rbind(ROMS[, 1:2], survey_mean, temp_kriged_mean, temp_hake_mean, temp_weighted)
+means <- cbind(means, c(rep("summer ROMS", 41),
+                        rep("survey", 13), 
                         rep("kriged, all", 12), 
                         rep("kriged, biomass > 0", 12),
                         rep("kriged, weighted", 12)))
@@ -113,7 +113,7 @@ colnames(means)[3] <- "dataset"
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
-  geom_line(aes(color=dataset), size=1) +
+  geom_line(aes(color=dataset), size=1, linetype="dotted") +
   scale_color_viridis(discrete = TRUE) +   
   theme_sleek() +
   ylab("mean temperature")
