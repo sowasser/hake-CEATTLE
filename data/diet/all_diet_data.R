@@ -63,7 +63,7 @@ pred_type$type <- relevel(factor(pred_type$type), "general predator")
 
 
 ### Plot general trends in data -----------------------------------------------
-# Occurrences of predation over 100 n
+# Top prey items by occurrence and weight
 high_wt <- prey_of_hake_comp %>% 
   group_by(Prey_Com_Name) %>% 
   summarize(highest = sum(Prey_Weight_g)) %>%
@@ -88,7 +88,7 @@ prey_sp <- ggplot(highest, aes(x = Prey_Com_Name, y = highest,
 prey_sp
 
 ggsave(filename = "plots/diet/hake_prey_species.png", prey_sp, 
-       width=300, height=150, units="mm", dpi=300)
+       width=200, height=80, units="mm", dpi=300)
 
 # Lengths
 pred_fl <- ggplot(predator_hake, aes(x = FL_cm)) +
@@ -103,6 +103,21 @@ prey_length <- ggplot(hake_hake, aes(x = (Prey_Length1/10))) +
   theme_sleek()
 prey_length
 
+# Predator hake stomachs including prey hake by year
+cannibalism_all <- pred_type %>%
+  group_by(Year, type) %>%
+  summarize(n = n()) %>%
+  filter(!is.na(Year))
+
+cannibalism <- ggplot(cannibalism_all, aes(x = Year, y = n, fill = type)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  theme_sleek() +
+  ylab(" ")
+cannibalism
+
+ggsave(filename = "plots/diet/cannibalism.png", cannibalism, 
+       width=170, height=100, units="mm", dpi=300)
 
 # Timing
 timing_all <- pred_type %>%
@@ -118,12 +133,20 @@ timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type
   facet_wrap(~ Year)
 timing_yearly
 
-timing <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
+ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
+       width=200, height=150, units="mm", dpi=300)
+
+
+timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab("sampling month") + ylab(" ") 
-timing
+timing_overall
+
+ggsave(filename = "plots/diet/timing_overall.png", timing_overall, 
+       width=170, height=100, units="mm", dpi=300)
+
 
 # Location
 location_all <- pred_type %>%
@@ -136,20 +159,35 @@ location_all <- pred_type %>%
 world <- ne_countries(scale = "medium", returnclass = "sf")
 sf_use_s2(FALSE)  # turn off spherical geometry
 
-locations <- ggplot(data = world) +
+location_yearly <- ggplot(data = world) +
   geom_sf() +
   geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
-  coord_sf(xlim = c(-135, -115), ylim = c(30, 60), expand = FALSE) + xlab("Longitude") + ylab("Latitude") + 
-  scale_x_continuous(breaks = seq(-135, -115, by = 10)) +
+  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) + xlab("Longitude") + ylab("Latitude") + 
+  scale_x_continuous(breaks = seq(-130, -110, by = 10)) +
+  scale_y_continuous(breaks = seq(30, 50, by = 10)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
+  xlab(" ") + ylab(" ") +
   facet_wrap(~Year, ncol = 7)
 
-ggsave(filename = "plots/diet/sampling_locations.png", locations, 
-       width=500, height=300, units="mm", dpi=300)
-  
-  
+ggsave(filename = "plots/diet/locations_yearly.png", location_yearly, 
+       width=300, height=300, units="mm", dpi=300)
 
+location_overall <- ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
+  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) + xlab("Longitude") + ylab("Latitude") + 
+  scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
+  scale_y_continuous(breaks = seq(35, 55, by = 5)) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  theme_sleek() +
+  xlab(" ") + ylab(" ") 
+location_overall
+
+ggsave(filename = "plots/diet/locations_overall.png", location_overall, 
+       width=100, height=100, units="mm", dpi=300)
+  
+  
 ### Write predator & prey datasets to .csvs -----------------------------------
 write.csv(all_pred, "data/diet/Full dataset/full_hake_pred.csv")
 write.csv(all_prey, "data/diet/Full dataset/full_prey.csv")

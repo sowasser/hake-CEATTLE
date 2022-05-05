@@ -103,12 +103,11 @@ temp_weighted <- temp_hake %>% group_by(year) %>%
   summarise(mean_temp = weighted.mean(temp_100_kriged, hake_biomass))
 
 # Combine into 1 dataset with labeled data sources, then plot
-means <- rbind(ROMS[, 1:2], survey_mean, temp_kriged_mean, temp_hake_mean, temp_weighted)
+means <- rbind(ROMS[, 1:2], survey_mean, temp_kriged_mean, temp_weighted)
 means <- cbind(means, c(rep("summer ROMS", 41),
                         rep("survey", 13), 
                         rep("kriged, all", 12), 
-                        rep("kriged, biomass > 0", 12),
-                        rep("kriged, weighted", 12)))
+                        rep("kriged, biomass weighted", 12)))
 colnames(means)[3] <- "dataset"
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
