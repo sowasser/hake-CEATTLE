@@ -8,6 +8,7 @@ library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
 library(rgeos)
+library(purrr)
 
 path <- "data/diet/Full dataset/v4/"
 
@@ -128,6 +129,7 @@ timing_all <- pred_type %>%
 
 timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
   geom_bar(position = "stack", stat = "identity") +
+  scale_x_discrete(limits=factor(1:12)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab("sampling month") + ylab(" ") +
@@ -137,9 +139,11 @@ timing_yearly
 ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
        width=200, height=150, units="mm", dpi=300)
 
-timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
+timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, color = type, fill = type)) +
   geom_bar(position = "stack", stat = "identity") +
+  scale_x_discrete(limits=factor(1:12)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab("sampling month") + ylab(" ") 
 timing_overall
@@ -162,7 +166,7 @@ sf_use_s2(FALSE)  # turn off spherical geometry
 location_yearly <- ggplot(data = world) +
   geom_sf() +
   geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
-  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) + xlab("Longitude") + ylab("Latitude") + 
+  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
   scale_x_continuous(breaks = seq(-130, -110, by = 10)) +
   scale_y_continuous(breaks = seq(30, 50, by = 10)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
@@ -176,7 +180,7 @@ ggsave(filename = "plots/diet/locations_yearly.png", location_yearly,
 location_overall <- ggplot(data = world) +
   geom_sf() +
   geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
-  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) + xlab("Longitude") + ylab("Latitude") + 
+  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
@@ -186,6 +190,51 @@ location_overall
 
 ggsave(filename = "plots/diet/locations_overall.png", location_overall, 
        width=100, height=100, units="mm", dpi=300)
+
+
+### Inset timing plots in yearly location plots -------------------------------
+# Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
+get_inset <- function(df) {
+  plot <- ggplot(df, aes(x = as.factor(Month), y = n, fill = type)) +
+    geom_bar(position = "stack", stat = "identity") +
+    scale_x_discrete(limits = factor(1:12), breaks = c(1, 6, 12)) +
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    theme_sleek() +
+    theme(axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.x = element_text(size=rel(0.6)),
+          plot.background = element_rect(fill='transparent', color=NA)) + # transparent so no overlap w/map
+    theme(legend.position="none") 
+  return(plot)
+}
+
+annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) 
+{
+  layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+        geom = ggplot2:::GeomCustomAnn,
+        inherit.aes = TRUE, params = list(grob = grob, 
+                                          xmin = xmin, xmax = xmax, 
+                                          ymin = ymin, ymax = ymax))
+}
+
+inset_plot <- get_inset(timing_all)
+
+insets <- timing_all %>% 
+  split(f = .$Year) %>%
+  purrr::map(~annotation_custom2(
+    grob = ggplotGrob(get_inset(.)), 
+    data = data.frame(Year=unique(.$Year)),
+    ymin = 30, ymax = 40, xmin = -141, xmax = -124))
+
+location_timing <- location_yearly +
+  coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
+  scale_x_continuous(breaks = seq(-130, -120, by = 10)) +
+  insets
+  
+ggsave(filename = "plots/diet/location_timing.png", location_timing, 
+       width=200, height=250, units="mm", dpi=300)
   
   
 ### Write predator & prey datasets to .csvs -----------------------------------
