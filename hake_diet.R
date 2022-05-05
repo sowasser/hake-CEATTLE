@@ -29,6 +29,30 @@ per_year
 ggsave(filename="plots/diet/old/stomachs_per_year.png", per_year,
        width=150, height=100, units="mm", dpi=300)
 
+# Full stomach locations ------------------------------------------------------
+hake_locations <- full_stomachs %>%
+  group_by(year, td_latitude, td_longitude) %>%
+  summarize(n = n()) 
+
+# Create a plot of location of observations by latitude and longitude
+world <- ne_countries(scale = "medium", returnclass = "sf")
+sf_use_s2(FALSE)  # turn off spherical geometry
+
+hake_locations_yearly <- ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = hake_locations, aes(x = td_longitude, y = td_latitude, size = n), color = "#36868E") +
+  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
+  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
+  scale_y_continuous(breaks = seq(35, 55, by = 10)) +
+  theme_sleek() +
+  xlab(" ") + ylab(" ") +
+  facet_wrap(~year)
+hake_locations_yearly
+
+ggsave(filename = "plots/diet/old/cannibalism_locations.png", hake_locations_yearly, 
+       width=150, height=150, units="mm", dpi=300)
+
+
 # Full stomach pred ages ------------------------------------------------------
 full_pred_age <- ggplot(full_stomachs, aes(x=age)) +
   geom_histogram() +

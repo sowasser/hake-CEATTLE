@@ -167,8 +167,8 @@ location_yearly <- ggplot(data = world) +
   geom_sf() +
   geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
-  scale_x_continuous(breaks = seq(-130, -110, by = 10)) +
-  scale_y_continuous(breaks = seq(30, 50, by = 10)) +
+  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
+  scale_y_continuous(breaks = seq(35, 55, by = 10)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab(" ") + ylab(" ") +
@@ -230,7 +230,7 @@ insets <- timing_all %>%
 
 location_timing <- location_yearly +
   coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
-  scale_x_continuous(breaks = seq(-130, -120, by = 10)) +
+  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   insets
   
 ggsave(filename = "plots/diet/location_timing.png", location_timing, 
