@@ -66,10 +66,12 @@ temp_kriged <- read.csv("data/temperature/temp_100_matched_sophia.csv")
 temp_hake <- temp_kriged %>%
   filter(hake_biomass > 0)
 
+# Mean temp for hake presence
 temp_hake_mean <- mean(temp_hake$temp_100_kriged)
 temp_hake_max <- max(temp_hake$temp_100_kriged)
 temp_hake_min <- min(temp_hake$temp_100_kriged)
 
+# Mean, weighted by hake biomass
 weighted_mean <- weighted.mean(temp_hake$temp_100_kriged, temp_hake$hake_biomass)
 
 # Plot histogram of kriged temp values vs. overall temperature 

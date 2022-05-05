@@ -10,40 +10,23 @@ library(viridis)
 library(fishmethods)
 library(tidyr)
 
-# Data from CEATTLE -----------------------------------------------------------
-stomach_obs <- read.csv("data/diet/uobsage.csv")
-stomach_wt <- read.csv("data/diet/uobswtage.csv")
-
-obs_prop <- ggplot(stomach_obs, aes(x=Prey_age, y=Stomach_proportion_by_number)) +
-  geom_bar(stat = "identity") +
-  ylim(0, 1) +
-  theme_sleek() +
-  facet_wrap(~Pred_age)
-obs_prop
-
-wt_prop <- ggplot(stomach_wt, aes(x=Prey_age, y=Stomach_proportion_by_weight)) +
-  geom_bar(stat = "identity") +
-  ylim(0, 1) +
-  theme_sleek() +
-  facet_wrap(~Pred_age)
-wt_prop
-
 
 # Acoustic trawl survey data --------------------------------------------------
-stomach_summary <- read.csv("data/diet/hake_stomachs_summary.csv")
-full_stomachs <- read.csv("data/diet/full_stomachs.csv")
-hake_predator <- read.csv("data/diet/hake_predator_all.csv")
-all_stomachs <- read.csv("data/diet/hake_stomachs_all.csv")
+stomach_summary <- read.csv("data/diet/old/hake_stomachs_summary.csv")
+full_stomachs <- read.csv("data/diet/old/full_stomachs.csv")
+hake_predator <- read.csv("data/diet/old/hake_predator_all.csv")
+all_stomachs <- read.csv("data/diet/old/hake_stomachs_all.csv")
 
 # Total stomachs per year -----------------------------------------------------
-per_year <- ggplot(stomach_summary, aes(x=year, y=num_stomachs_tow, fill=type)) +
+per_year <- ggplot(stomach_summary, aes(x=year, y=num_stomachs_tow, fill=type, color=type)) +
   geom_bar(stat = "identity", position = "stack") +
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("year") + ylab("total stomachs")
 per_year
 
-ggsave(filename="plots/diet/stomachs_per_year.png", per_year,
+ggsave(filename="plots/diet/old/stomachs_per_year.png", per_year,
        width=150, height=100, units="mm", dpi=300)
 
 # Full stomach pred ages ------------------------------------------------------
@@ -53,7 +36,7 @@ full_pred_age <- ggplot(full_stomachs, aes(x=age)) +
   xlab("predator age") + ylab(" ")
 full_pred_age
 
-ggsave(filename="plots/diet/full_predator_age.png", full_pred_age,
+ggsave(filename="plots/diet/old/full_predator_age.png", full_pred_age,
        width=150, height=100, units="mm", dpi=300)
 
 
@@ -66,7 +49,7 @@ empty_hake_length <- ggplot(hake_predator, aes(x=fork_length.cm, fill=scientific
   labs(fill = "contents")
 empty_hake_length
 
-ggsave(filename="plots/diet/emptyvshake_length.png", empty_hake_length,
+ggsave(filename="plots/diet/old/emptyvshake_length.png", empty_hake_length,
        width=150, height=100, units="mm", dpi=300)
 
 empty_hake_age <- ggplot(hake_predator, aes(x=age, fill=scientific_name)) +
@@ -77,7 +60,7 @@ empty_hake_age <- ggplot(hake_predator, aes(x=age, fill=scientific_name)) +
   labs(fill = "contents")
 empty_hake_age
 
-ggsave(filename="plots/diet/emptyvshake_age.png", empty_hake_age,
+ggsave(filename="plots/diet/old/emptyvshake_age.png", empty_hake_age,
        width=150, height=100, units="mm", dpi=300)
   
 
@@ -89,7 +72,7 @@ pred_lengths <- ggplot(hake_predator, aes(x=fork_length.cm, fill=sex)) +
   xlab("fork length (cm)") + ylab(" ") 
 pred_lengths
 
-ggsave(filename="plots/diet/all_pred_lengths.png", pred_lengths,
+ggsave(filename="plots/diet/old/all_pred_lengths.png", pred_lengths,
        width=150, height=100, units="mm", dpi=300)
 
 pred_age <- ggplot(hake_predator, aes(x=age, fill=sex)) +
@@ -99,7 +82,7 @@ pred_age <- ggplot(hake_predator, aes(x=age, fill=sex)) +
   xlab("age") + ylab(" ")
 pred_age
 
-ggsave(filename="plots/diet/pred_age.png", pred_age,
+ggsave(filename="plots/diet/old/pred_age.png", pred_age,
        width=150, height=100, units="mm", dpi=300)
 
 pred_sex <- ggplot(hake_predator, aes(x=year, fill=sex)) +
@@ -109,7 +92,7 @@ pred_sex <- ggplot(hake_predator, aes(x=year, fill=sex)) +
   xlab("year") + ylab(" ")
 pred_sex
 
-ggsave(filename="plots/diet/pred_sex.png", pred_sex,
+ggsave(filename="plots/diet/old/pred_sex.png", pred_sex,
        width=150, height=100, units="mm", dpi=300)
 
 
@@ -132,7 +115,7 @@ length_hist <- ggplot(lengths, aes(x=length, fill=hake)) +
   xlab("length (cm)") + ylab(" ")
 length_hist
 
-ggsave(filename="plots/diet/length_hist.png", length_hist,
+ggsave(filename="plots/diet/old/length_hist.png", length_hist,
        width=150, height=100, units="mm", dpi=300)
 
 # Combine weights into one dataframe, excluding duplicate contents weights from
@@ -154,12 +137,12 @@ weight_hist <- ggplot(weights, aes(x=weight, fill=hake)) +
   xlab("weight (kg)") + ylab(" ")
 weight_hist
 
-ggsave(filename="plots/diet/weight_hist.png", weight_hist,
+ggsave(filename="plots/diet/old/weight_hist.png", weight_hist,
        width=150, height=100, units="mm", dpi=300)
 
 
 # Comparison with historic cannibalism data -----------------------------------
-diet_history <- read.csv("data/diet/From Isaac/hake_diet_history.csv")
+diet_history <- read.csv("data/diet/old/From Isaac/hake_diet_history.csv")
 history2 <- melt(diet_history, id.vars = c("stage", "source", "year"))
 
 history_plot <- ggplot(history2, aes(x=source, y=value, fill=stage)) +
@@ -171,36 +154,5 @@ history_plot <- ggplot(history2, aes(x=source, y=value, fill=stage)) +
   facet_wrap(~variable, ncol=1, scales = "free_y")
 history_plot
 
-ggsave(filename="plots/diet/diet_history.png", history_plot,
+ggsave(filename="plots/diet/old/diet_history.png", history_plot,
        width=300, height=250, units="mm", dpi=300)
-
-# Full analysis of hake predation ---------------------------------------------
-# diet_all <- read.table("data/diet/From Isaac/hake_diet_history_all.csv", sep = ",", header = TRUE)
-# diet2 <- melt(diet_all, id.vars = "Prey")
-# diet3 <- diet2 %>% drop_na(value)
-# 
-# history_plot_all <- ggplot(diet3, aes(x=variable, fill=Prey)) +
-#   geom_bar(position = "fill") +
-#   theme_sleek() +
-#   theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
-#   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-#   ylab("proportion")
-# 
-# ggsave(filename="~/Desktop/diet_history.png", history_plot_all,
-#        width=1000, height=1000, units="mm", dpi=300)
-
-# Generalized diet
-diet_sum <- read.csv("data/diet/From Isaac/hake_diet_history_sum.csv")
-diet2 <- melt(diet_sum, id.vars = "Prey") %>% drop_na(value)
-
-history_plot_sum <- ggplot(diet2, aes(x=variable, fill=Prey)) +
-  geom_bar(position = "fill") +
-  theme_sleek() +
-  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  ylab("proportion")
-
-ggsave(filename="~/Desktop/diet_history_sum.png", history_plot_sum,
-       width=700, height=500, units="mm", dpi=300)
-
-
