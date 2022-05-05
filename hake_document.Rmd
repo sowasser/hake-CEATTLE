@@ -1,13 +1,13 @@
 ---
 title: "Hake data sources for CEATTLE"
 author: "Sophia Wassermann"
-date: "1/26/2022"
+date: "4 May 2022"
 output:
-  pdf_document: default
   html_document:
     
     df_print: paged
     fig_captions: yes
+  pdf_document: default
 header-includes:
 - \usepackage[labelfont=bf]{caption}
 - \captionsetup{font=footnotesize}
@@ -27,17 +27,8 @@ CEATTLE is implemented through the [RCeattle](https://github.com/grantdadams/Rce
 
 ### Hake assessment
 
-The data inputs into CEATTLE include survey and fishery catch data, length and age composition, and empirical weight-at-age. These data are from the [hake assessment](https://github.com/pacific-hake/hake-assessment). A summary of the data are below.
+The data inputs into CEATTLE include survey and fishery catch data, length and age composition, and empirical weight-at-age. These data are from the [hake assessment](https://github.com/pacific-hake/hake-assessment). 
 
-![Hake catch by source (commercial and survey) for Canada and the US](./plots/assessment/catch.png)
-
-![Age composition for the US fishery by year and fleet.](./plots/assessment/catch_age_comp.png)
-
-![Length at age](./plots/assessment/length_age.png)
-
-![Weight at age](./plots/assessment/weight_age.png)
-
-<br />
 
 ### Temperature
 
@@ -47,7 +38,11 @@ Temperature data are used in two ways in CEATTLE: 1) a mean temperature per year
 
 ![Yearly temperature at 100m for the survey area from 1995-2019 and for the gridded, kriged temperatures where hake biomass was estimated to be greater than 0.](./plots/temperature/temp_hake_hist.png)
 
-Further temperature datasets are needed to provide an estimate for earlier (back to 1966 to match the assessment data) and missing years. In CEATTLE, any missing years will be coded as the mean temperature.
+For a full implementation of CEATTLE, temperature data back to 1980 are needed to produce the consumption estimates. The [Regional Ocean Modeling System (ROMS)](https://www.myroms.org/) includes temperature estimates for the California Current for 1980-2019. Even when filtered to represent only the summer months, the yearly means for the ROMS output for 1995-2019 are much lower than the kriged data and the survey temperatures. 
+
+![Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimate for that grid, mean survey temperatures, and mean ROMS output for the summer months](./plots/temperature/mean_temp_compared.png)
+
+Whether this difference reflects sampling bias or a true difference in estimation, and whether the deviance (within approximately 1.5°C) is enough to affect the outcomes of the model, are possible areas of exploration.
 
 <br />
 
@@ -82,10 +77,30 @@ $TCM$ and $TCO$, the maximum and optimal temperatures, have not been empirically
 
 This implementation of the CEATTLE model focuses on hake cannibalism, assumed across the literature to form a significant portion of the Pacific hake diet [(Ressler et al. 2007)](https://www.google.com/books/edition/Marine_Fisheries_Review/Fh2EDlfePrcC?hl=en&gbpv=1). Stomachs gathered from the hake survey, however, do not show a high rate of cannibalism. The dataset includes only 16 instances of hake cannibalism out of 3995 hake stomachs collected from 2005-2019, a rate of 0.4%.
 
-![Pacific hake stomachs collected during the hake survey from 2005-2019, overall and with hake as a prey item.](./plots/diet/stomachs_per_year.png)
+![Pacific hake stomachs collected during the hake survey from 2005-2019, overall and with hake as a prey item.](./plots/diet/old/stomachs_per_year.png)
 
 Looking at other sources of hake diet data, the cannibalism rate varies broadly from no cannibalism detected to over 80% of hake stomachs including hake as prey. These data are largely from adult hake. The one study that included juvenile hake found a cannibalism rate of 4.44%. The variability in cannibalism may be due to changes in the spatial overlap between adults and juveniles (as intra-cohort cannibalism is not generally detected - supported by the size disparity in predator and prey hake in the acoustic dataset) [(Ressler et al. 2007)](https://www.google.com/books/edition/Marine_Fisheries_Review/Fh2EDlfePrcC?hl=en&gbpv=1).
 
-![Rates of cannibalism from dditional sources of hake diet data for majority adults, with one dataset for juvenile hake.](./plots/diet/diet_history.png)
+![Rates of cannibalism from dditional sources of hake diet data for majority adults, with one dataset for juvenile hake.](./plots/diet/old/diet_history.png)
 
+While the occurrence of hake cannibalism is extremely variable, when they are present in the stomach, they constitute a large percentage by weight. A dataset from the Southwest Fisheries Science Center (SWFSC), which extends back to 1980, indicates some hake cannibalism, with hake appearing in the top 10 prey items by occurrence, dwarfed by euphausiids. In contrast, by weight hake represent by far the largest (or heaviest) component of the diet.
 
+![Top 10 hake prey items by occurrence and weight.](./plots/diet/hake_prey_species.png)
+
+While a large proportion of the hake diet appears to be cannibalism on occassion, occurrence is highly variable across years and largely reflects the intensity of sampling, as with a large sampling effort in the 1990s came an increase in the amount of cannibalsim detected.
+
+![Numbers of general hake predators and hake predators that consumed hake prey across the dataset.](./plots/diet/cannibalism.png)
+
+This high degree of variability may have many causes as hake are opportunistic predators. Perhaps the surveyed time and location did not intercept instances of overlap between small and large hake. Within this dataset, sampling was focused on the summer months, but with a higher relative proportion of hake cannibalism detected in the autumn (October and November).
+
+![Total general hake predators and hake predators that consumed hake prey by month of sampling across all years.](./plots/diet/timing_overall.png)
+
+The SWFSC dataset covers the Canadian coast up to 55°N to the Baja coast at 32°N, with relatively even sampling intensity for all years (1980-2019) combined. 
+
+![All sampling locations of general hake predators and hake predators that consumed hake prey across all years.](./plots/diet/locations_overall.png)
+
+There were slightly more instances of cannibalism detected below 40°, which is somewhat aligned with the more intense southern sampling in 1991 and 1999. In 1991 the sampling of hake occurred in November and in 1999, the bulk of the sampling of hake occurred in October, with a relatively high proportion of hake cannibalism detected.
+
+![Hake predators, general and instances of cannibalism, collected by sampling month and year.](./plots/diet/timing_yearly.png)
+
+![Locations of hake predators sampled, general and instances of cannibalism, by year.](./plots/diet/locations_yearly.png)
