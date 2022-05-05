@@ -119,7 +119,8 @@ cannibalism
 ggsave(filename = "plots/diet/cannibalism.png", cannibalism, 
        width=170, height=100, units="mm", dpi=300)
 
-# Timing
+
+### Plot timing of sample collection ------------------------------------------
 timing_all <- pred_type %>%
   group_by(Year, Month, type) %>%
   summarize(n = n()) %>%
@@ -136,7 +137,6 @@ timing_yearly
 ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
        width=200, height=150, units="mm", dpi=300)
 
-
 timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
@@ -148,7 +148,7 @@ ggsave(filename = "plots/diet/timing_overall.png", timing_overall,
        width=170, height=100, units="mm", dpi=300)
 
 
-# Location
+### Plot location of sample collection ----------------------------------------
 location_all <- pred_type %>%
   group_by(Year, Latitude, Longitude, type) %>%
   summarize(n = n()) %>%
@@ -168,10 +168,10 @@ location_yearly <- ggplot(data = world) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab(" ") + ylab(" ") +
-  facet_wrap(~Year, ncol = 7)
+  facet_wrap(~Year, ncol = 5)
 
 ggsave(filename = "plots/diet/locations_yearly.png", location_yearly, 
-       width=300, height=300, units="mm", dpi=300)
+       width=200, height=300, units="mm", dpi=300)
 
 location_overall <- ggplot(data = world) +
   geom_sf() +

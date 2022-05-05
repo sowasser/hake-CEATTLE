@@ -113,7 +113,7 @@ colnames(means)[3] <- "dataset"
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
   geom_line(aes(color=dataset), size=1, linetype="dotted") +
-  scale_color_viridis(discrete = TRUE) +   
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
   theme_sleek() +
   ylab("mean temperature")
 mean_temp_compared
