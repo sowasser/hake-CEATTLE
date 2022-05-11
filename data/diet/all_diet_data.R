@@ -13,6 +13,9 @@ library(purrr)
 path <- "data/diet/Full dataset/v4/"
 
 ### Read in and subset datasets -----------------------------------------------
+# All collection info
+collection <- read.csv(paste0(path, "collection_information_v4.csv"))
+
 # Filter predator dataset for just hake and collections from 1980 onwards
 predator_hake <- read.csv(paste0(path, "predator_information_v4.csv")) %>%
   filter(Predator_Com_Name == "Pacific Hake") %>%
@@ -64,6 +67,18 @@ pred_type$type <- relevel(factor(pred_type$type), "general predator")
 
 
 ### Plot general trends in data -----------------------------------------------
+# Overall number of collections
+yearly_n <- collection %>%
+  group_by(Year) %>%
+  summarize(n = n()) %>%
+  filter(Year >= 1980)
+collections_plot <- ggplot(yearly_n, aes(x = Year, y = n)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  theme_sleek() +
+  xlab(" ") + ylab("Number of collections")
+collections_plot
+  
+
 # Top prey items by occurrence and weight
 high_wt <- prey_of_hake_comp %>% 
   group_by(Prey_Com_Name) %>% 
