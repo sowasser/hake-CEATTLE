@@ -1,7 +1,7 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220503.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220524.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
