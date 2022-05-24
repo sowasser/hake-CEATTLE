@@ -50,15 +50,16 @@ new_pred$pred_ages[new_pred$pred_ages > 15] <- 15
 
 
 ### Run prey age calculation --------------------------------------------------
-prey_ages <- age_calc(lengths = (all_prey$Prey_Length1 / 10),  # prey are in mm
-                      Linf = params[1], K = params[2], t0 = params[3])
+prey_hake <- all_prey %>% filter(Prey_Com_Name == "Pacific Hake")
+
+prey_ages <- age_calc(lengths = (prey_hake$Prey_Length1 / 10),  # prey are in mm
+                      Linf = params[1], K = params[2], t0 = params[3]) 
+
 
 # Add ages column to prey dataset 
-new_prey <- cbind(all_prey, prey_ages)
+new_prey <- cbind(prey_hake, prey_ages)
 # Round to whole number 
 new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
-# Replace any non-hake prey items with NA
-new_prey$prey_ages[new_prey$Prey_Com_Name != "Pacific Hake"] <- NA
 
 
 # Plot fit --------------------------------------------------------------------
@@ -66,7 +67,7 @@ all_ages <- as.data.frame(rbind(cbind(age = maturity$Age, length = maturity$Leng
                                       data = rep("original", length(maturity$Age))),
                                 cbind(age = new_pred$pred_ages, length = new_pred$FL_cm, 
                                       data = rep("predator hake", length(new_pred$pred_ages))),
-                                cbind(age = new_prey$prey_ages, length = new_prey$Prey_Length1, 
+                                cbind(age = new_prey$prey_ages, length = (new_prey$Prey_Length1 / 10),  # prey are in mm
                                       data = rep("prey_hake", length(new_prey$prey_ages)))))
 all_ages$age <- as.numeric(all_ages$age)
 all_ages$length <- as.numeric(all_ages$length)
