@@ -1,6 +1,14 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
+# devtools::install_github("grantdadams/Rceattle@dev")
+library(Rceattle)
+library(reshape2)
+library(dplyr)
+library(ggplot2)
+library(ggsidekick)
+library(viridis)
+
 hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220524.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -173,11 +181,16 @@ intrasp_srv <- data.frame(year = 1995:2019,
 survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
 
 survey_plot <- ggplot(survey_all, aes(x=year, y=biomass, color=model)) +
-  geom_line() +
-  geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +
+  geom_line(linetype = "dotted") +
+  geom_point() +
+  # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
   theme_sleek() +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   xlab("year") + ylab("survey biomass") 
 survey_plot
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", 
+       survey_plot, width=200, height=120, units="mm", dpi=300)
+
 

@@ -3,14 +3,13 @@
 
 # devtools::install_github("grantdadams/Rceattle@dev")
 library(Rceattle)
-
 library(reshape2)
 library(dplyr)
 library(ggplot2)
 library(ggsidekick)
 library(viridis)
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220503.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220524.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -77,7 +76,7 @@ run_wt50 <- run_ceattle(wt50, hake_intrasp)
 run_wt80 <- run_ceattle(wt80, hake_intrasp)
 
 # Check what all comes out of CEATTLE
-# ceattle_stuff <- run_wt001$quantities
+ceattle_stuff <- run_wt05$quantities
 
 
 # Plot biomass in comparison to no diet & asssessment -------------------------
@@ -239,3 +238,38 @@ test_nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_nbyage_intrasp.png", 
        test_nbyage_plot, width=200, height=120, units="mm", dpi=300)
+
+
+### Compare survey biomass estimate from CEATTLE to true values ---------------
+nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
+nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
+
+survey <- read.csv("data/assessment/survey_data.csv")
+survey <- cbind(survey, model = rep("assessment", length(survey$year)))
+
+extract_srv <- function(run, name){
+  df <- data.frame(year = 1995:2019,
+                   biomass = run$quantities$srv_bio_hat,
+                   log_sd = run$quantities$srv_log_sd_hat,
+                   model = rep(name, length(1995:2019)))
+  return(df)
+}
+
+srv_test <- rbind(extract_srv(run_wt05, "CEATTLE - 0.5% cannibalism"),
+                  extract_srv(run_wt10, "CEATTLE - 10% cannibalism"),
+                  extract_srv(run_wt50, "CEATTLE - 50% cannibalism"),
+                  extract_srv(run_wt80, "CEATTLE - 80% cannibalism"),
+                  nodiet_srv)
+
+test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
+  geom_line(linetype = "dotted") +
+  geom_point() +
+  # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
+  theme_sleek() +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  xlab("year") + ylab("survey biomass") 
+test_survey_plot
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_survey_biomass.png", 
+       test_survey_plot, width=200, height=120, units="mm", dpi=300)
