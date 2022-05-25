@@ -153,12 +153,14 @@ nbyage_all <- rbind(extract_nbyage(intrasp_run, "CEATTLE - cannibalism"),
 
 # Calculate mean numbers at age & plot
 nbyage_mean <- nbyage_all %>% group_by(age, model) %>%
-  summarize(mean_number = mean(numbers))
+  summarize(mean = mean(numbers), sd = sd(numbers)) 
 
-nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean_number, fill=model)) +
+nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean, fill=model, color=model)) +
   geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin=mean, ymax=mean+sd), width=.2, position=position_dodge(.9)) +  # only upper error bars
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   xlab("age") + ylab("numbers") 
 nbyage_plot_mean
 
