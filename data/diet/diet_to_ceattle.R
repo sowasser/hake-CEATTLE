@@ -68,7 +68,7 @@ all_ages <- as.data.frame(rbind(cbind(age = maturity$Age, length = maturity$Leng
                                 cbind(age = new_pred$pred_ages, length = new_pred$FL_cm, 
                                       data = rep("predator hake", length(new_pred$pred_ages))),
                                 cbind(age = new_prey$prey_ages, length = (new_prey$Prey_Length1 / 10),  # prey are in mm
-                                      data = rep("prey_hake", length(new_prey$prey_ages)))))
+                                      data = rep("prey hake", length(new_prey$prey_ages)))))
 all_ages$age <- as.numeric(all_ages$age)
 all_ages$length <- as.numeric(all_ages$length)
 
@@ -80,6 +80,8 @@ growth_curve <- ggplot(all_ages, aes(x = age, y = length, color = data)) +
   theme_sleek()
 growth_curve
 
+ggsave(filename = "plots/diet/growth_curve.png", growth_curve, 
+       width=200, height=120, units="mm", dpi=300)
 
 
 ### Combine into new dataset --------------------------------------------------
