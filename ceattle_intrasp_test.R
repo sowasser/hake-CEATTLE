@@ -105,18 +105,18 @@ nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
 colnames(nodiet_biom)[3] <- "CEATTLE - no diet"
 
 # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
-ss_ssb_werror <- read.table("data/assessment/ssb.txt")
-ss_ssb <- ss_ssb_werror[15:57, 2]
+ss3_ssb_werror <- read.table("data/assessment/ssb.txt")
+ss3_ssb <- ss3_ssb_werror[15:57, 2]
 
-ss_biomass <- read.table("data/assessment/biomass.txt")
-ss_biom <- ss_biomass[15:57, 2]
+ss3_biomass <- read.table("data/assessment/biomass.txt")
+ss3_biom <- ss3_biomass[15:57, 2]
 
-ss_biom_wide <- as.data.frame(cbind(years, ss_ssb, ss_biom))
-colnames(ss_biom_wide) <- c("year", "SSB", "total biomass")
-ss_biom_all <- melt(ss_biom_wide, id.vars = "year")
+ss3_biom_wide <- as.data.frame(cbind(years, ss3_ssb, ss3_biom))
+colnames(ss3_biom_wide) <- c("year", "SSB", "total biomass")
+ss3_biom_all <- melt(ss3_biom_wide, id.vars = "year")
 
 plot_biom <- function(df) {
-  wide <- cbind(df, nodiet_biom[, 3], ss_biom_all[, 3])
+  wide <- cbind(df, nodiet_biom[, 3], ss3_biom_all[, 3])
   colnames(wide)[(ncol(wide)-1):ncol(wide)] <- c("CEATTLE - no diet", "Stock Synthesis")
   biom <- melt(wide, id.vars = c("year", "type"))
   
@@ -141,7 +141,7 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_bioma
 
 # Plot recruitment ------------------------------------------------------------
 nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
-ss_R <- read.table("data/assessment/recruitment.txt")[15:57,]
+ss3_R <- read.table("data/assessment/recruitment.txt")[15:57,]
 
 R_test_all <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),  
                     c(run_wt50$quantities$R), c(run_wt80$quantities$R))
@@ -155,11 +155,11 @@ colnames(R_test_wide) <- c("year",
 R_test <- melt(R_test_wide, id.vars = "year")
 
 # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
-ss_1 <- cbind(1981:2022, rep("SS + 1", (length(years)-1)), ss_R[1:42, 2])
-colnames(ss_1) <- c("year", "variable", "value")
+ss3_1 <- cbind(1981:2022, rep("SS + 1", (length(years)-1)), ss3_R[1:42, 2])
+colnames(ss3_1) <- c("year", "variable", "value")
 
 plot_R <- function(df) {
-  df <- rbind(df, ss_1)
+  df <- rbind(df, ss3_1)
   df$value <- as.numeric(df$value)
   df$year <- as.numeric(df$year)
   
