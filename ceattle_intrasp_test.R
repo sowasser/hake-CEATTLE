@@ -225,6 +225,9 @@ nbyage_test_all <- rbind(extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
                          extract_nbyage(run_wt80, "CEATTLE - 80% cannibalism"),
                          nbyage_nodiet)
 
+# Set 15 as accumulation age
+nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+
 # Calculate mean numbers at age & plot
 nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
   summarize(mean_number = mean(numbers))
@@ -232,6 +235,7 @@ nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
 test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_sleek() +
+  scale_x_discrete(labels = c(1:14, "15+")) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.166) +
   xlab("age") + ylab("numbers") 
 test_nbyage_plot
