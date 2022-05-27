@@ -9,6 +9,10 @@ library(ggsidekick)
 library(viridis)
 library(fishmethods)
 library(tidyr)
+library(rnaturalearth)
+library(sf)
+library(rnaturalearthdata)
+library(rgeos)
 
 
 # Acoustic trawl survey data --------------------------------------------------
@@ -29,10 +33,13 @@ per_year
 ggsave(filename="plots/diet/old/stomachs_per_year.png", per_year,
        width=150, height=100, units="mm", dpi=300)
 
-# Full stomach locations ------------------------------------------------------
-hake_locations <- full_stomachs %>%
-  group_by(year, td_latitude, td_longitude) %>%
-  summarize(n = n()) 
+# Full & empty stomach locations ----------------------------------------------
+hake_locations <- hake_predator %>%
+  group_by(year, td_latitude, td_longitude, common_name) %>%
+  summarize(n = n()) %>%
+  arrange(common_name)
+
+colnames(hake_locations)[4] <- "contents"
 
 # Create a plot of location of observations by latitude and longitude
 world <- ne_countries(scale = "medium", returnclass = "sf")
@@ -40,10 +47,11 @@ sf_use_s2(FALSE)  # turn off spherical geometry
 
 hake_locations_yearly <- ggplot(data = world) +
   geom_sf() +
-  geom_point(data = hake_locations, aes(x = td_longitude, y = td_latitude, size = n), color = "#36868E") +
+  geom_point(data = hake_locations, aes(x = td_longitude, y = td_latitude, size = n, color = contents)) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
   scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   scale_y_continuous(breaks = seq(35, 55, by = 10)) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab(" ") + ylab(" ") +
   facet_wrap(~year)
