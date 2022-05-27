@@ -20,7 +20,7 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  phase = "default")
 
 # Check what all comes out of CEATTLE
-ceattle_stuff <- intrasp_run$quantities
+# ceattle_stuff <- intrasp_run$quantities
 
 
 ### Plot biomass in comparison to no diet & assessment ------------------------
@@ -33,46 +33,44 @@ ceattle_biomass <- function(run, name) {
   wide <- as.data.frame(cbind(years, ssb, biom))
   colnames(wide) <- c("year", "SSB", "Total Biomass")
   all_biom <- melt(wide, id.vars = "year")
-  colnames(all_biom)[2:3] <- c("type", name)
+  all_biom2 <- cbind(all_biom, 
+                     error = rep(0, length(all_biom$year)),  # add error, 0 for now
+                     model = rep(name, length(all_biom$year)))  
+  colnames(all_biom2)[2:3] <- c("type", "value")
   
-  return(all_biom)
+  return(all_biom2)
 }
 
 biomass <- ceattle_biomass(intrasp_run, "CEATTLE - cannibalism")
 
 # Read in no diet data
 nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
-colnames(nodiet_biom)[3] <- "CEATTLE - no diet"
+colnames(nodiet_biom)[3] <- "value"
+nodiet_biom <- cbind(nodiet_biom, 
+                     error = rep(0, length(nodiet_biom$year)),  # add error, 0 for now
+                     model = rep("CEATTLE - no diet", length(nodiet_biom$year)))  
 
 # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
-ss3_ssb_werror <- read.table("data/assessment/ssb.txt")
-ss3_ssb <- ss3_ssb_werror[15:57, 2]
+ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[15:57, 2:3], type = rep("SSB", length(15:57)))
+ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[15:57, 2:3], type = rep("Total Biomass", length(15:57)))
 
-ss3_biomass <- read.table("data/assessment/biomass.txt")
-ss3_biom <- ss3_biomass[15:57, 2]
+ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
+                                rbind(ss3_ssb, ss3_biomass),
+                                model = rep("Stock Synthesis", length(ss3_ssb$V2) * 2)))
+colnames(ss3_biom)[2:3] <- c("value", "error")
+ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
 
-ss3_biom_wide <- as.data.frame(cbind(years, ss3_ssb, ss3_biom))
-colnames(ss3_biom_wide) <- c("year", "SSB", "total biomass")
-ss3_biom_all <- melt(ss3_biom_wide, id.vars = "year")
+biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
 
-plot_biom <- function(df) {
-  wide <- cbind(df, nodiet_biom[, 3], ss3_biom_all[, 3])
-  colnames(wide)[(ncol(wide)-1):ncol(wide)] <- c("CEATTLE - no diet", "Stock Synthesis")
-  biom <- melt(wide, id.vars = c("year", "type"))
-  
-  plot <- ggplot(biom, aes(x=year, y=value)) +
-    geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    theme_sleek() +
-    ylab("Biomass (mt)") +
-    labs(color = "model") +
-    facet_wrap(~type, ncol = 1)
-  
-  return(plot)
-}
-
-# Low-cannibalism plot
-biom_plot <- plot_biom(biomass)
+biom_plot <- ggplot(biom_all, aes(x=year, y=value, color = model, fill = model)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+  theme_sleek() +
+  ylab("Biomass (mt)") +
+  labs(color = "model") +
+  facet_wrap(~type, ncol = 1)
 biom_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_biomass.png", 
@@ -89,30 +87,25 @@ colnames(R_wide)[3] <- "R_nodiet"
 R <- melt(R_wide, id.vars = "year")
 
 # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
-ss3_1 <- cbind(year = 1980:2022, 
-              variable = rep("SS + 1", (length(years)-1)), 
-              value = ss3_R[1:42, 2],
-              error = ss3_R[1:42, 3])
+ss3_1 <- as.data.frame(cbind(year = 1981:2022, 
+                             variable = rep("SS + 1", (length(1981:2022))), 
+                             value = ss3_R[1:42, 2],
+                             error = ss3_R[1:42, 3]))
 
-plot_R <- function(df) {
-  df <- rbind(cbind(df, error = rep(0, length(2 * df$value))), ss3_1)
-  df$value <- as.numeric(df$value)
-  df$year <- as.numeric(df$year)
-  df$error <- as.numeric(df$error)
-  
-  plot <- ggplot(df, aes(x=year, y=value, color=variable, fill=variable)) +
-    geom_line(aes(color=variable)) +
-    geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    theme_sleek() +
-    ylab("Recruitment") +
-    labs(color = "model") +labs(fill = "model")
-  
-  return(plot)
-}
+R_all <- rbind(cbind(R, error = rep(0, length(2 * R$value))), 
+               ss3_1)
+R_all$value <- as.numeric(R_all$value)
+R_all$year <- as.numeric(R_all$year)
+R_all$error <- as.numeric(R_all$error)
 
-R_plot <- plot_R(R)
+R_plot <- ggplot(R_all, aes(x=year, y=value, color=variable, fill=variable)) +
+  geom_line(aes(color=variable)) +
+  geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+  theme_sleek() +
+  ylab("Recruitment") +
+  labs(color = "model") +labs(fill = "model")
 R_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_R.png", 
