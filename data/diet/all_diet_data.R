@@ -220,7 +220,7 @@ get_inset <- function(df) {
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          axis.text.x = element_text(size=rel(0.6)),
+          axis.text.x = element_text(size=rel(0.8)),  # inset axis tick font size
           plot.background = element_rect(fill='transparent', color=NA)) + # transparent so no overlap w/map
     theme(legend.position="none") 
   return(plot)
@@ -244,7 +244,7 @@ insets <- timing_all %>%
   purrr::map(~annotation_custom2(
     grob = ggplotGrob(get_inset(.)), 
     data = data.frame(Year=unique(.$Year)),
-    ymin = 30, ymax = 40, xmin = -141, xmax = -124))
+    ymin = 30.7, ymax = 40, xmin = -141, xmax = -124))  # position of insets
 
 # Bring everything together - add insets on to main plot (locations, created above)
 location_timing <- location_yearly +
@@ -253,7 +253,7 @@ location_timing <- location_yearly +
   insets
   
 ggsave(filename = "plots/diet/location_timing.png", location_timing, 
-       width=400, height=200, units="mm", dpi=300)
+       width=400, height=210, units="mm", dpi=300)
   
   
 ### Write predator & prey datasets to .csvs -----------------------------------
