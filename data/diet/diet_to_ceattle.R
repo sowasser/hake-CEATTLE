@@ -50,16 +50,15 @@ new_pred$pred_ages[new_pred$pred_ages > 15] <- 15
 
 
 ### Run prey age calculation --------------------------------------------------
-prey_hake <- all_prey %>% filter(Prey_Com_Name == "Pacific Hake")
-
-prey_ages <- age_calc(lengths = (prey_hake$Prey_Length1 / 10),  # prey are in mm
+prey_ages <- age_calc(lengths = (all_prey$Prey_Length1 / 10),  # prey are in mm
                       Linf = params[1], K = params[2], t0 = params[3]) 
 
-
-# Add ages column to prey dataset 
-new_prey <- cbind(prey_hake, prey_ages)
+# Add ages column to prey dataset - includes non-hake prey
+new_prey <- cbind(all_prey, prey_ages)
 # Round to whole number 
 new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
+# Filter prey dataset to only include hake
+new_hake_prey <- new_prey %>% filter(Prey_Com_Name == "Pacific Hake")
 
 
 # Plot fit --------------------------------------------------------------------
@@ -67,8 +66,8 @@ all_ages <- as.data.frame(rbind(cbind(age = maturity$Age, length = maturity$Leng
                                       data = rep("original", length(maturity$Age))),
                                 cbind(age = new_pred$pred_ages, length = new_pred$FL_cm, 
                                       data = rep("predator hake", length(new_pred$pred_ages))),
-                                cbind(age = new_prey$prey_ages, length = (new_prey$Prey_Length1 / 10),  # prey are in mm
-                                      data = rep("prey hake", length(new_prey$prey_ages)))))
+                                cbind(age = new_hake_prey$prey_ages, length = (new_hake_prey$Prey_Length1 / 10),  # prey are in mm
+                                      data = rep("prey hake", length(new_hake_prey$prey_ages)))))
 all_ages$age <- as.numeric(all_ages$age)
 all_ages$length <- as.numeric(all_ages$length)
 
@@ -85,7 +84,7 @@ ggsave(filename = "plots/diet/growth_curve.png", growth_curve,
 
 
 ### Combine into new dataset --------------------------------------------------
-aged_dataset <- merge(new_pred, new_prey, all = TRUE)
+aged_dataset <- merge(new_pred, new_prey, by = "Predator_ID")  # using all prey data here
 
 # Look at instances where prey hake age = NA - all are immature
 aged_dataset %>%
