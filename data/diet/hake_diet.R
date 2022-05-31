@@ -54,11 +54,11 @@ hake_locations_yearly <- ggplot(data = world) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab(" ") + ylab(" ") +
-  facet_wrap(~year)
+  facet_wrap(~year, ncol = 5)
 hake_locations_yearly
 
 ggsave(filename = "plots/diet/old/cannibalism_locations.png", hake_locations_yearly, 
-       width=150, height=150, units="mm", dpi=300)
+       width=200, height=150, units="mm", dpi=300)
 
 
 # Full stomach pred ages ------------------------------------------------------
