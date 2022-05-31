@@ -187,10 +187,10 @@ location_yearly <- ggplot(data = world) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab(" ") + ylab(" ") +
-  facet_wrap(~Year, ncol = 5)
+  facet_wrap(~Year, ncol = 8)
 
 ggsave(filename = "plots/diet/locations_yearly.png", location_yearly, 
-       width=200, height=300, units="mm", dpi=300)
+       width=400, height=200, units="mm", dpi=300)
 
 location_overall <- ggplot(data = world) +
   geom_sf() +
@@ -210,6 +210,7 @@ ggsave(filename = "plots/diet/locations_overall.png", location_overall,
 ### Inset timing plots in yearly location plots -------------------------------
 # Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
 get_inset <- function(df) {
+  # Create plot for the inset 
   plot <- ggplot(df, aes(x = as.factor(Month), y = n, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_x_discrete(limits = factor(1:12), breaks = c(1, 6, 12)) +
@@ -225,6 +226,7 @@ get_inset <- function(df) {
   return(plot)
 }
 
+# Function for defining how the inset will be positioned
 annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) 
 {
   layer(data = data, stat = StatIdentity, position = PositionIdentity, 
@@ -234,8 +236,9 @@ annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax
                                           ymin = ymin, ymax = ymax))
 }
 
-inset_plot <- get_inset(timing_all)
+inset_plot <- get_inset(timing_all)  # Actually create insets
 
+# How the insets will be mapped on to the main plots (applying above function)
 insets <- timing_all %>% 
   split(f = .$Year) %>%
   purrr::map(~annotation_custom2(
@@ -243,13 +246,14 @@ insets <- timing_all %>%
     data = data.frame(Year=unique(.$Year)),
     ymin = 30, ymax = 40, xmin = -141, xmax = -124))
 
+# Bring everything together - add insets on to main plot (locations, created above)
 location_timing <- location_yearly +
   coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
   scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   insets
   
 ggsave(filename = "plots/diet/location_timing.png", location_timing, 
-       width=200, height=250, units="mm", dpi=300)
+       width=400, height=200, units="mm", dpi=300)
   
   
 ### Write predator & prey datasets to .csvs -----------------------------------
