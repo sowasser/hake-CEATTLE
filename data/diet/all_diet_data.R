@@ -71,19 +71,20 @@ combine_diet <- function(pred_species, prey_species) {
     xlab(" ") + ylab("Number of collections")
   
   # Top prey items by occurrence and weight
-  high_wt <- prey_comp %>% 
-    group_by(Prey_Com_Name) %>% 
+  high_wt <- prey_comp %>%
+    group_by(Prey_Com_Name) %>%
     summarize(highest = sum(Prey_Weight_g)) %>%
     slice_max(n = 10, order_by = highest)
-  
-  high_n <- prey_comp %>% 
-    group_by(Prey_Com_Name) %>% 
+
+  high_n <- prey_comp %>%
+    group_by(Prey_Com_Name) %>%
     summarize(highest = n()) %>%
     slice_max(n = 10, order_by = highest)
-  
-  highest <- rbind(cbind(high_wt, variable = rep("weight (top 10)", 10)), 
-                   cbind(high_n, variable = rep("occurrence (top 10)", 10)))
-  
+
+  # Combine together and select *actual* top 10, in the case of a tie
+  highest <- rbind(cbind(high_wt[1:10,], variable = rep("weight (top 10)", 10)),
+                   cbind(high_n[1:10,], variable = rep("occurrence (top 10)", 10)))
+
   prey_sp_plot <- ggplot(highest, aes(x = Prey_Com_Name, y = highest,
                                       fill = ifelse(Prey_Com_Name == prey_species, "highlighted", "normal"))) +
     geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
@@ -97,6 +98,7 @@ combine_diet <- function(pred_species, prey_species) {
   
 }
 
+# Subset diet data for hake predator & prey -----------------------------------
 hake_hake <- combine_diet("Pacific Hake", "Pacific Hake")
 
 # Look at plots
@@ -105,6 +107,13 @@ hake_hake[[5]]  # top prey species
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
+
+# Subset diet for arrowtooth flounder predator & hake prey --------------------
+arrowtooth_hake <- combine_diet("Arrowtooth Flounder", "Pacific Hake")
+
+# Look at plots
+arrowtooth_hake[[4]]
+arrowtooth_hake[[5]]
 
 
 # Look at instances of cannibalism in hake ------------------------------------
