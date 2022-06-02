@@ -12,9 +12,8 @@ library(purrr)
 
 path <- "data/diet/Full dataset/v4/"
 
-combine_diet <- function(pred_species, prey_species) {
-  # Read in and combine diet data by species ----------------------------------
-  
+### Combine diet data, subset for species of interest -------------------------
+combine_diet <- function(pred_species, prey_species, label_specific) {
   # All collection info
   collection <- read.csv(paste0(path, "collection_information_v4.csv"))
   
@@ -94,49 +93,47 @@ combine_diet <- function(pred_species, prey_species) {
     xlab(" ") + ylab(" ") +
     facet_wrap(~ variable, scales = "free")
   
-  return(list(all_pred, all_prey, predated, collections_plot, prey_sp_plot))
+  # Plot timing & location of instances of predation of interest
+  pred_type <- all_pred
+  pred_type$type <- ifelse(pred_type$Predator_ID %in% predated$Predator_ID, label_specific, "general predator")
+  pred_type$type <- relevel(factor(pred_type$type), "general predator")
+  
+  predation_all <- pred_type %>%
+    group_by(Year, type) %>%
+    summarize(n = n()) %>%
+    filter(!is.na(Year))
+  
+  predation_yearly <- ggplot(predation_all, aes(x = Year, y = n, fill = type)) +
+    geom_bar(position = "stack", stat = "identity") +
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    theme_sleek() +
+    ylab(" ")
+  
+  return(list(all_pred, all_prey, predated, collections_plot, prey_sp_plot, predation_yearly))
   
 }
 
 # Subset diet data for hake predator & prey -----------------------------------
-hake_hake <- combine_diet("Pacific Hake", "Pacific Hake")
+hake_hake <- combine_diet("Pacific Hake", "Pacific Hake", "cannibalistic")
 
 # Look at plots
 hake_hake[[4]]  # number of collections
 hake_hake[[5]]  # top prey species
+hake_hake[[6]]  # yearly predation by type
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
 
+ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
+       width=170, height=100, units="mm", dpi=300)
+
 # Subset diet for arrowtooth flounder predator & hake prey --------------------
-arrowtooth_hake <- combine_diet("Arrowtooth Flounder", "Pacific Hake")
+arrowtooth_hake <- combine_diet("Arrowtooth Flounder", "Pacific Hake", "hake predation")
 
 # Look at plots
 arrowtooth_hake[[4]]
 arrowtooth_hake[[5]]
-
-
-# Look at instances of cannibalism in hake ------------------------------------
-# Label predator dataframe by instances of cannibalism & change order for plots
-pred_type <- hake_hake[[1]]
-pred_type$type <- ifelse(pred_type$Predator_ID %in% hake_hake[[3]]$Predator_ID, "cannibalistic", "general predator")
-pred_type$type <- relevel(factor(pred_type$type), "general predator")
-
-# Predator hake stomachs including prey hake by year
-cannibalism_all <- pred_type %>%
-  group_by(Year, type) %>%
-  summarize(n = n()) %>%
-  filter(!is.na(Year))
-
-cannibalism <- ggplot(cannibalism_all, aes(x = Year, y = n, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
-  ylab(" ")
-cannibalism
-
-ggsave(filename = "plots/diet/cannibalism.png", cannibalism, 
-       width=170, height=100, units="mm", dpi=300)
+arrowtooth_hake[[6]]
 
 
 ### Plot timing of sample collection ------------------------------------------
@@ -262,3 +259,5 @@ ggsave(filename = "plots/diet/location_timing.png", location_timing,
 ### Write predator & prey datasets to .csvs -----------------------------------
 write.csv(hake_hake[[1]], "data/diet/Full dataset/full_hake_pred.csv")
 write.csv(hake_hake[[2]], "data/diet/Full dataset/full_prey.csv")
+
+
