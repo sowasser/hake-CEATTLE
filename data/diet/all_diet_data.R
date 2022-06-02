@@ -92,7 +92,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   highest <- rbind(cbind(high_wt[1:10,], variable = rep("weight (top 10)", 10)),
                    cbind(high_n[1:10,], variable = rep("occurrence (top 10)", 10)))
 
-  prey_sp_plot <- ggplot(highest, aes(x = Prey_Com_Name, y = highest,
+  prey_sp_plot <- ggplot(highest, aes(x = reorder(Prey_Com_Name, highest), y = highest,
                                       fill = ifelse(Prey_Com_Name == prey_species, "highlighted", "normal"))) +
     geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
     coord_flip() +
