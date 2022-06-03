@@ -39,25 +39,39 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   prey_comp <- read.csv(paste0(path, "prey_composition_v4.csv")) %>%
     filter(Predator_ID %in% predator$Predator_ID)
   
-  # Filter prey size dataset by hake-predated-prey IDs
-  prey_size <-  read.csv(paste0(path, "prey_size_v4.csv")) %>%
-    filter(Prey_Comp_ID %in% prey_comp$Prey_Comp_ID)
+  if(pred_species == "Pacific Hake" | pred_species == "California Sea Lion") {
+    # Filter prey size dataset by hake-predated-prey IDs
+    prey_size <-  read.csv(paste0(path, "prey_size_v4.csv")) %>%
+      filter(Prey_Comp_ID %in% prey_comp$Prey_Comp_ID)
+    
+    # Combine collection info with predator info
+    all_pred <- merge(collection, predator, all.y = TRUE)[, c("Month", 
+                                                              "Year", 
+                                                              "Latitude", 
+                                                              "Longitude",
+                                                              "Predator_ID", 
+                                                              "FL_cm", 
+                                                              "Predator_Weight_kg")]
+    
+    
+    all_prey <- merge(prey_comp, prey_size, all.y = TRUE)[, c("Prey_Com_Name", 
+                                                              "Predator_ID", 
+                                                              "Prey_Weight_g",
+                                                              "Prey_Maturity",
+                                                              "Prey_Length1")]
+  }
   
-  # Combine collection info with predator info
-  all_pred <- merge(collection, predator, all.y = TRUE)[, c("Month", 
-                                                            "Year", 
-                                                            "Latitude", 
-                                                            "Longitude",
-                                                            "Predator_ID", 
-                                                            "FL_cm", 
-                                                            "Predator_Weight_kg")]
-  
-  
-  all_prey <- merge(prey_comp, prey_size, all.y = TRUE)[, c("Prey_Com_Name", 
-                                                            "Predator_ID", 
-                                                            "Prey_Weight_g",
-                                                            "Prey_Maturity",
-                                                            "Prey_Length1")]
+  if(pred_species == "Arrowtooth Flounder") {
+    all_pred <- merge(collection, predator, all.y = TRUE)[, c("Month", 
+                                                              "Year", 
+                                                              "Latitude", 
+                                                              "Longitude",
+                                                              "Predator_ID", 
+                                                              "FL_cm", 
+                                                              "Predator_Weight_kg")]
+    
+    all_prey <- prey_comp[, c("Prey_Com_Name", "Predator_ID")]
+  }
   
   # Combine pred & prey together
   all_stomachs <- merge(all_pred, all_prey, all.y = TRUE)
@@ -66,17 +80,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     filter(Prey_Com_Name == prey_species)
   
   # Plot general trends in the data ------------------------------------------
-  # Overall number of collections
-  yearly_n <- collection %>%
-    group_by(Year) %>%
-    summarize(n = n()) %>%
-    filter(Year >= 1980)
-  
-  collections_plot <- ggplot(yearly_n, aes(x = Year, y = n)) +
-    geom_bar(position = "dodge", stat = "identity") +
-    theme_sleek() +
-    xlab(" ") + ylab("Number of collections")
-  
   # Top prey items by occurrence and weight
   high_wt <- prey_comp %>%
     group_by(Prey_Com_Name) %>%
@@ -117,7 +120,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     theme_sleek() +
     ylab(" ")
   
-  return(list(all_pred, all_prey, predated, collections_plot, prey_sp_plot, predation_yearly))
+  return(list(all_pred, all_prey, predated, prey_sp_plot, predation_yearly))
   
 }
 
@@ -125,23 +128,24 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
 hake_hake <- combine_diet(type = "stomach", "Pacific Hake", "Pacific Hake", "cannibalistic")
 
 # Look at plots
-hake_hake[[4]]  # number of collections
-hake_hake[[5]]  # top prey species
-hake_hake[[6]]  # yearly predation by type
+hake_hake[[4]]  # top prey species
+hake_hake[[5]]  # yearly predation by type
 
-ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
+ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[4]], 
        width=200, height=80, units="mm", dpi=300)
 
-ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
+ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[5]], 
        width=170, height=100, units="mm", dpi=300)
 
 # Subset diet for arrowtooth flounder predator & hake prey --------------------
 arrowtooth_hake <- combine_diet(type = "stomach", "Arrowtooth Flounder", "Pacific Hake", "hake predation")
 
+ATF_pred <- arrowtooth_hake[[1]]
+ATF_prey <- arrowtooth_hake[[3]]  # Almost no prey information for arrowtooth.
+
 # Look at plots
-arrowtooth_hake[[4]]
+arrowtooth_hake[[4]] # top prey species
 arrowtooth_hake[[5]]
-arrowtooth_hake[[6]]
 
 ggsave(filename = "plots/diet/ATF_prey_species.png", arrowtooth_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
@@ -149,10 +153,11 @@ ggsave(filename = "plots/diet/ATF_prey_species.png", arrowtooth_hake[[5]],
 # Subset of diet for CA sea lion predator & hake prey -------------------------
 sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "hake predation")
 
+CASL_pred <- sealion_hake[[1]]
+
 # Look at plots
-sealion_hake[[4]]
-sealion_hake[[5]]
-sealion_hake[[6]]
+sealion_hake[[4]]  # top prey species
+sealion_hake[[5]]  # yearly predation by type
 
 ggsave(filename = "plots/diet/sealion_prey_species.png", sealion_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
