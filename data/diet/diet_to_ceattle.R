@@ -5,8 +5,9 @@ library(ggsidekick)
 library(viridis)
 library(dplyr)
 library(tidyr)
+library(reshape2)
 
-# Read in full aged datasets & remove unecessary index column
+# Read in full aged datasets & remove index column
 new_pred <- read.csv("data/diet/Full dataset/full_aged_pred.csv")[, -1]
 new_prey <- read.csv("data/diet/Full dataset/full_aged_prey.csv")[, -1]
 
@@ -22,11 +23,31 @@ aged_dataset %>%
 # Replace those NAs with age 1
 aged_dataset$prey_ages[is.na(aged_dataset$prey_ages) & aged_dataset$Prey_Com_Name == "Pacific Hake"] <- 1
 
-# Create new, organized dataframe for rates of cannibalism, fill in predator info
-aged_subset <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Name", "prey_ages", "Prey_Weight_g")] %>%
-  arrange(Predator_ID, Year) %>%
-  fill(Year) %>%
-  fill(pred_ages)
+# Get total stomach weights for each predator and proportional weight for prey hake
+aged_wt <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Name", "prey_ages", "Prey_Weight_g")] %>%
+  group_by(Predator_ID) %>%
+  mutate(stomach_wt = sum(Prey_Weight_g, na.rm = TRUE)) %>%
+  filter(Prey_Com_Name == "Pacific Hake") %>%
+  mutate(hake_prey_wt = Prey_Weight_g / stomach_wt) 
+
+hake_prop <- as.data.frame(aged_wt[, c("Predator_ID", "prey_ages", "hake_prey_wt")])
+
+hake_prop_wide <- hake_prop %>%
+  # Remove duplicate rows - same pred ID, multiple hake prey but same prey wts - maybe wt is for all items of that species?
+  distinct() %>%  
+  pivot_wider(id_cols = Predator_ID,  # rows to stay the same
+              names_from = prey_ages,  # columns to convert to wide
+              values_from = hake_prey_wt,  # values to fill in
+              values_fill = 0)  # what to fill for missing values
+
+# Something tells me that this end product isn't correct, but I can't find
+# where I might be going wrong....
+
+hake_prop_wide <- cbind(pred_ages = hake_prop$pred_ages, 
+                        prey_a1 = hake_prop_wide[, 3], 
+                        prey_a2 = hake_prop_wide[, 4],
+                        prey_a3 = hake_prop_wide[, 5],
+                        prey_a5 = hake_prop_wide[, 2])
 
 
 # Create overall intraspecies predation dataset -------------------------------
