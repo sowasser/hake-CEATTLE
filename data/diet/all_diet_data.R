@@ -24,7 +24,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
       filter(Collection_ID > 58) %>%  # Years before 1980
       filter(!is.na(FL_cm))  # Remove observations without fork lengths
   }
-  
   if(type == "scat") {  # no lengths for scat data!
     predator <- read.csv(paste0(path, "predator_information_v4.csv")) %>%
       filter(Predator_Com_Name == pred_species) %>%
@@ -39,7 +38,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   prey_comp <- read.csv(paste0(path, "prey_composition_v4.csv")) %>%
     filter(Predator_ID %in% predator$Predator_ID)
   
-  if(pred_species == "Pacific Hake" | pred_species == "California Sea Lion") {
+  if(pred_species == "Pacific Hake") {
     # Filter prey size dataset by hake-predated-prey IDs
     prey_size <-  read.csv(paste0(path, "prey_size_v4.csv")) %>%
       filter(Prey_Comp_ID %in% prey_comp$Prey_Comp_ID)
@@ -52,16 +51,14 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
                                                               "Predator_ID", 
                                                               "FL_cm", 
                                                               "Predator_Weight_kg")]
-    
-    
     all_prey <- merge(prey_comp, prey_size, all.y = TRUE)[, c("Prey_Com_Name", 
                                                               "Predator_ID", 
                                                               "Prey_Weight_g",
                                                               "Prey_Maturity",
                                                               "Prey_Length1")]
   }
-  
   if(pred_species == "Arrowtooth Flounder") {
+    # No size info for arrowtooth, so combine predator info with prey comp
     all_pred <- merge(collection, predator, all.y = TRUE)[, c("Month", 
                                                               "Year", 
                                                               "Latitude", 
@@ -69,8 +66,25 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
                                                               "Predator_ID", 
                                                               "FL_cm", 
                                                               "Predator_Weight_kg")]
-    
     all_prey <- prey_comp[, c("Prey_Com_Name", "Predator_ID")]
+  }
+  
+  if(pred_species == "California Sea Lion") {
+    # Filter prey size dataset by hake-predated-prey IDs
+    # No predator size information for CA sea lion; only back-calculated length/weight for prey
+    prey_size <-  read.csv(paste0(path, "prey_size_v4.csv")) %>%
+      filter(Prey_Comp_ID %in% prey_comp$Prey_Comp_ID)
+    
+    # Combine collection info with predator info
+    all_pred <- merge(collection, predator, all.y = TRUE)[, c("Month", 
+                                                              "Year", 
+                                                              "Latitude", 
+                                                              "Longitude",
+                                                              "Predator_ID")]
+    all_prey <- merge(prey_comp, prey_size, all.y = TRUE)[, c("Prey_Com_Name", 
+                                                              "Predator_ID", 
+                                                              "Prey_Length_BC_mm",  
+                                                              "Prey_Weight_Ind_BC_g")] 
   }
   
   # Combine pred & prey together
@@ -154,6 +168,7 @@ ggsave(filename = "plots/diet/ATF_prey_species.png", arrowtooth_hake[[5]],
 sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "hake predation")
 
 CASL_pred <- sealion_hake[[1]]
+CASL_prey_hake <- sealion_hake[[3]]
 
 # Look at plots
 sealion_hake[[4]]  # top prey species
@@ -161,6 +176,11 @@ sealion_hake[[5]]  # yearly predation by type
 
 ggsave(filename = "plots/diet/sealion_prey_species.png", sealion_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
+
+# Subset of diet for CA sea lion predator & ATF prey --------------------------
+sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")
+
+CASL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
 
 
 ### Plot timing of sample collection ------------------------------------------
