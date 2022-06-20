@@ -1,4 +1,5 @@
 # Script for comparison of hake diet datasets
+library(tidyverse)
 
 ### Read in & investigate SWFSC dataset ---------------------------------------
 # Read in collection info for dataset 3 - NWFSC data from Alicia 
@@ -21,7 +22,11 @@ SWFSC_prey3 <- read.csv("data/diet/Full dataset/v4/prey_composition_v4.csv") %>%
 SWFSC_cannibals <- SWFSC_prey3 %>%
   filter(Prey_Com_Name == "Pacific Hake")  # None!!
 
-unique(SWFSC_prey3$Prey_Com_Name)  # no hake!!
+unique(SWFSC_prey3$Prey_Com_Name)  # no gadoids, the generalized category from NWFSC
+
+SWFSC_gadoids <- SWFSC_prey3 %>%
+  filter(Prey_Com_Name == "bony fish")  # closest to hake?
+
 
 # Look a little at predator structure
 unique(SWFSC_collect3$Year)  # All years represented
