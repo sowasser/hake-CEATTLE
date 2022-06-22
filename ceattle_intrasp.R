@@ -22,6 +22,17 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 # Check what all comes out of CEATTLE
 ceattle_stuff <- intrasp_run$quantities
 
+# # Rceattle diagmostics
+# plot_index(intrasp_run)
+# plot_catch(intrasp_run)
+# plot_selectivity(intrasp_run)
+# plot_mortality(intrasp_run)
+# plot_indexresidual(intrasp_run)
+# plot_logindex(intrasp_run)
+# plot_recruitment(intrasp_run, add_ci = TRUE)
+# plot_comp(intrasp_run)
+# plot_srv_comp(intrasp_run)
+
 
 ### Plot biomass in comparison to no diet & assessment ------------------------
 years <- 1980:2022
@@ -92,13 +103,13 @@ plot_R <- function() {
   ss3_R <- read.table("data/assessment/recruitment.txt")[15:57,]
   
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
-  colnames(R_wide)[3] <- "R_nodiet"
+  colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - nodiet")
   
   R <- melt(R_wide, id.vars = "year")
   
-  # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
+  # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
   ss3_1 <- as.data.frame(cbind(year = 1981:2022, 
-                               variable = rep("SS + 1", (length(1981:2022))), 
+                               variable = rep("SS3 + 1", (length(1981:2022))), 
                                value = ss3_R[1:42, 2],
                                error = ss3_R[1:42, 3]))
   
@@ -158,12 +169,12 @@ plot_nbyage <- function(output) {
     group_by(year) %>%
     summarize_at(vars("0":"20"), mean)
   
-  nbyage_ss <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
-  nbyage_ss <- cbind(nbyage_ss, rep("Stock Synthesis", length(nbyage_ss$year)))
-  colnames(nbyage_ss)[2:4] <- c("age", "numbers", "model")
+  nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
+  nbyage_ss3 <- cbind(nbyage_ss3, rep("Stock Synthesis", length(nbyage_ss3$year)))
+  colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
   
   # Combine with nbyage from intrasp run
-  nbyage_all <- rbind(nbyage, nbyage_nodiet, nbyage_ss)
+  nbyage_all <- rbind(nbyage, nbyage_nodiet, nbyage_ss3)
   
   # Set 15 as accumulation age
   nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
