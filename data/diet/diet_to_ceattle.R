@@ -103,16 +103,55 @@ ggsave(filename = "plots/diet/cannibalism_overall.png",
        diet_plot, width=200, height=120, units="mm", dpi=300)
 
 
+### Reshape data for Dirichlet modeling ---------------------------------------
+hake_dirichlet <- aged_dataset %>%
+  select(Predator_ID, Year, pred_ages, Prey_Com_Name, prey_ages, Prey_Weight_g) %>%
+  # Find total stomach weight for each predator
+  group_by(Predator_ID) %>%
+  mutate(stomach_wt = sum(Prey_Weight_g, na.rm = TRUE)) %>% 
+  # Select only prey hake and find weight proportion
+  filter(Prey_Com_Name == "Pacific Hake") %>%  
+  mutate(hake_prey_wt = Prey_Weight_g / stomach_wt) %>%
+  ungroup() %>%
+  distinct() %>%  # Remove duplicates - keep only one record per predator
+  select(Predator_ID, pred_ages, prey_ages, hake_prey_wt) %>%
+  pivot_wider(id_cols = c(Predator_ID, pred_ages),  # rows to stay the same
+              names_from = prey_ages,  # columns to convert to wide
+              values_from = hake_prey_wt,  # values to fill in
+              values_fill = 0) %>%  # what to fill for missing values 
+  arrange(pred_ages)
+
+# Re-order and rename data for final dataset
+hake_dirichlet <- hake_dirichlet[, c(2, 4, 5, 6, 3)]
+colnames(hake_dirichlet)[2:5] <- c("prey_a1", "prey_a2", "prey_a3", "prey_a5")
+unique(as.character(hake_dirichlet$pred_ages))
+hake_dirichlet$pred_ages <- recode(as.character(hake_dirichlet$pred_ages), 
+                                   "1" = "pred_a1", "2" = "pred_a2",
+                                   "3" = "pred_a3", "4" = "pred_a4",
+                                   "5" = "pred_a5", "6" = "pred_a6",
+                                   "7" = "pred_a7", "8" = "pred_a8",
+                                   "9" = "pred_a9", "10" = "pred_a10",
+                                   "11" = "pred_a11", "13" = "pred_a13",
+                                   "15" = "pred_a15")
+
+# Add "wtg" column from Dirichlet example dataset
+hake_dirichlet <- cbind(hake_dirichlet[, 1], 
+                        wtg = rep(1, length(hake_dirichlet[, 1])),
+                        hake_dirichlet[, 2:5])
+
+write.csv(hake_dirichlet, "data/diet/hake_for_dirichlet.csv", row.names = FALSE)
+  
+
 ### See if it's worth doing time-varying (yearly) predation -------------------
-stomachs_yearly <- aged_subset %>%
+stomachs_yearly <- aged_dataset %>%
   group_by(Year, pred_ages) %>%
   summarize(sample_size = n())
 
-total_wt_yearly <- aged_subset %>%
+total_wt_yearly <- aged_dataset %>%
   group_by(Year, pred_ages) %>%
   summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
 
-intrasp_yearly <- aged_subset %>%
+intrasp_yearly <- aged_dataset %>%
   filter(Prey_Com_Name == "Pacific Hake" & !is.na(Predator_ID)) %>%
   group_by(Year, pred_ages, prey_ages) %>%
   summarize(prey_wt = sum(Prey_Weight_g)) %>%
