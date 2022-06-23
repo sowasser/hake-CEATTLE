@@ -1,5 +1,7 @@
 # Script for updating the hake intraspecies predation data for use in CEATTLE
 
+# THIS IS BROKEN!!!
+
 library(ggplot2)
 library(ggsidekick)
 library(viridis)
@@ -8,9 +10,8 @@ library(tidyr)
 library(reshape2)
 
 # Read in full aged datasets & remove index column
-new_pred <- read.csv("data/diet/Full dataset/full_aged_pred.csv")[, -1]
-new_prey <- read.csv("data/diet/Full dataset/full_aged_prey.csv")[, -1]
-
+new_pred <- read.csv("data/diet/Full dataset/hake_aged_pred.csv")
+new_prey <- read.csv("data/diet/Full dataset/hake_aged_prey.csv")
 
 ### Combine into new dataset --------------------------------------------------
 aged_dataset <- merge(new_pred, new_prey, by = "Predator_ID")  # using all prey data here

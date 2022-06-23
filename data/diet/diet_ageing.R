@@ -8,8 +8,8 @@ library(FSA)
 library(dplyr)
 library(tidyr)
 
-all_pred <- read.csv("data/diet/Full dataset/full_hake_pred.csv")
-all_prey <- read.csv("data/diet/Full dataset/full_prey.csv")
+all_pred <- read.csv("data/diet/Full dataset/hake_pred.csv")
+all_prey <- read.csv("data/diet/Full dataset/hake_prey.csv")
 
 ### Parameterize length to age calculation  -----------------------------------
 hake_ages <- 0:15
@@ -84,5 +84,5 @@ ggsave(filename = "plots/diet/growth_curve.png", growth_curve,
 
 
 # Write aged datasets to file -------------------------------------------------
-write.csv(new_pred, "data/diet/Full dataset/full_aged_pred.csv", row.names = FALSE)
-write.csv(new_prey, "data/diet/Full dataset/full_aged_prey.csv", row.names = FALSE)
+write.csv(new_pred, "data/diet/Full dataset/hake_aged_pred.csv", row.names = FALSE)
+write.csv(new_prey, "data/diet/Full dataset/hake_aged_prey.csv", row.names = FALSE)

@@ -307,8 +307,8 @@ CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
 
   
 ### Write predator & prey datasets to .csvs -----------------------------------
-write.csv(hake_hake[[1]], "data/diet/Full dataset/full_hake_pred.csv")
-write.csv(hake_hake[[2]], "data/diet/Full dataset/full_hake_prey.csv")
+write.csv(hake_hake[[1]], "data/diet/Full dataset/hake_pred.csv", row.names = FALSE)
+write.csv(hake_hake[[2]], "data/diet/Full dataset/hake_prey.csv", row.names = FALSE)
 
-write.csv(sealion_hake[[1]], "data/diet/Full dataset/full_CSL_pred.csv")
-write.csv(sealion_hake[[2]], "data/diet/Full dataset/full_CSL_prey.csv")
+write.csv(sealion_hake[[1]], "data/diet/Full dataset/CSL_pred.csv", row.names = FALSE)
+write.csv(sealion_hake[[2]], "data/diet/Full dataset/CSL_prey.csv", row.names = FALSE)
