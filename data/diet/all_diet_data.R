@@ -245,66 +245,65 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
               prey_sp_plot, predation_yearly, location_overall, location_timing))  # plots
 }
 
-# Subset diet data for hake predator & prey -----------------------------------
+
+### Subset diet data for hake predator & prey ---------------------------------
 hake_hake <- combine_diet(type = "stomach", "Pacific Hake", "Pacific Hake", "cannibalistic")
 
 # Look at plots
-all_pred <- hake_hake[[1]]
-all_prey <- hake_hake[[2]]
-predated <- hake_hake[[3]]
-pred_type <- hake_hake[[4]]
+hake_pred <- hake_hake[[1]]
+hake_prey <- hake_hake[[2]]
 hake_hake[[5]]  # top prey species
 hake_hake[[6]]  # yearly predation by type
-hake_hake[[7]]  # overall locations by predation type
+hake_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
        width=170, height=100, units="mm", dpi=300)
-ggsave(filename = "plots/diet/locations_overall.png", hake_hake[[7]], 
+ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[7]], 
        width=100, height=100, units="mm", dpi=300)
-ggsave(filename = "plots/diet/location_timing.png", hake_hake[[8]], 
+ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]], 
        width=400, height=210, units="mm", dpi=300)
 
-# Subset diet for arrowtooth flounder predator & hake prey --------------------
+
+### Subset diet for arrowtooth flounder predator & hake prey ------------------
 arrowtooth_hake <- combine_diet(type = "stomach", "Arrowtooth Flounder", "Pacific Hake", "hake predation")
 
 ATF_pred <- arrowtooth_hake[[1]]
 ATF_prey <- arrowtooth_hake[[3]]  # Almost no prey information for arrowtooth.
 
 # Look at plots
-arrowtooth_hake[[4]] # top prey species
-arrowtooth_hake[[5]]
+arrowtooth_hake[[5]]  # top prey species
+arrowtooth_hake[[6]]  # yearly predation by type
+arrowtooth_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/ATF_prey_species.png", arrowtooth_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
+ggsave(filename = "plots/diet/ATF_locations_overall.png", arrowtooth_hake[[7]], 
+       width=100, height=100, units="mm", dpi=300)
 
-# Subset of diet for CA sea lion predator & hake prey -------------------------
+
+### Subset of diet for CA sea lion predator & hake prey -----------------------
 sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "hake predation")
 
 CSL_pred <- sealion_hake[[1]]
 CSL_prey_hake <- sealion_hake[[3]]
 
 # Look at plots
-sealion_hake[[4]]  # top prey species
-sealion_hake[[5]]  # yearly predation by type
+sealion_hake[[5]]  # top prey species
+sealion_hake[[6]]  # yearly predation by type
+sealion_hake[[7]]  # overall locations of predation by type
 
-ggsave(filename = "plots/diet/sealion_prey_species.png", sealion_hake[[5]], 
+ggsave(filename = "plots/diet/CSL_prey_species.png", sealion_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
+ggsave(filename = "plots/diet/CSL_locations_overall.png", sealion_hake[[7]], 
+       width=100, height=100, units="mm", dpi=300)
 
-# Subset of diet for CA sea lion predator & ATF prey --------------------------
+# Subset of diet for CA sea lion predator & ATF prey 
 sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")
-
 CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
 
-
-
-  
   
 ### Write predator & prey datasets to .csvs -----------------------------------
-
-
-
-
 write.csv(hake_hake[[1]], "data/diet/Full dataset/full_hake_pred.csv")
 write.csv(hake_hake[[2]], "data/diet/Full dataset/full_prey.csv")
