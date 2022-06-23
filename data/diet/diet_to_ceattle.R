@@ -1,12 +1,8 @@
 # Script for updating the hake intraspecies predation data for use in CEATTLE
 
-# THIS IS BROKEN!!!
-
-library(ggplot2)
+library(tidyverse)
 library(ggsidekick)
 library(viridis)
-library(dplyr)
-library(tidyr)
 library(reshape2)
 
 # Read in full aged datasets & remove index column
@@ -31,39 +27,32 @@ aged_wt <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Name",
   filter(Prey_Com_Name == "Pacific Hake") %>%
   mutate(hake_prey_wt = Prey_Weight_g / stomach_wt) 
 
-hake_prop <- as.data.frame(aged_wt[, c("Predator_ID", "prey_ages", "hake_prey_wt")])
-
-hake_prop_wide <- hake_prop %>%
-  # Remove duplicate rows - same pred ID, multiple hake prey but same prey wts - maybe wt is for all items of that species?
-  distinct() %>%  
-  pivot_wider(id_cols = Predator_ID,  # rows to stay the same
+# Remove duplicate rows - same pred ID, multiple hake prey but same prey wts - generalized for that prey species
+hake_prop_wide <- as.data.frame(aged_wt[, c("Predator_ID", "pred_ages", "prey_ages", "hake_prey_wt")]) %>%
+  distinct() %>%
+  pivot_wider(id_cols = c(Predator_ID, pred_ages),  # rows to stay the same
               names_from = prey_ages,  # columns to convert to wide
               values_from = hake_prey_wt,  # values to fill in
               values_fill = 0)  # what to fill for missing values
 
-# Something tells me that this end product isn't correct, but I can't find
-# where I might be going wrong....
-
-hake_prop_wide <- cbind(pred_ages = hake_prop$pred_ages, 
-                        prey_a1 = hake_prop_wide[, 3], 
-                        prey_a2 = hake_prop_wide[, 4],
-                        prey_a3 = hake_prop_wide[, 5],
-                        prey_a5 = hake_prop_wide[, 2])
+# Re-order and re-name columns
+hake_prop_wide <- hake_prop_wide[, c(2, 4, 5, 6, 3)]
+colnames(hake_prop_wide)[2:5] <- c("prey_a1", "prey_a2", "prey_a3", "prey_a5")
 
 
 # Create overall intraspecies predation dataset -------------------------------
 # Get number of stomachs per predator age
-stomachs_n <- aged_subset %>%
+stomachs_n <- aged_dataset %>%
   group_by(pred_ages) %>%
   summarize(sample_size = n())
   
 # Total stomach weight per predator age
-total_wt <- aged_subset %>%
+total_wt <- aged_dataset %>%
   group_by(pred_ages) %>%
   summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
 
 # Combine summarized datasets and calculate stomach weight proportions (overall)
-intrasp <- aged_subset %>%
+intrasp <- aged_dataset %>%
   filter(Prey_Com_Name == "Pacific Hake" & !is.na(Predator_ID)) %>%
   group_by(pred_ages, prey_ages) %>%
   summarize(prey_wt = sum(Prey_Weight_g)) %>%
@@ -87,8 +76,8 @@ all_ages <- data.frame(pred_ages = rep(1:15, each = 15),
 intrasp_full <- intrasp %>%
   full_join(all_ages) %>%
   arrange(pred_ages, prey_ages) %>%
-  distinct(pred_ages, prey_ages, .keep_all = TRUE) %>%
-  fill(sample_size)
+  distinct(pred_ages, prey_ages, .keep_all = TRUE) %>% 
+  fill(sample_size)  # had an issue with this line, restarted R & it works!
 
 # Replace remaining NAs with 0s
 intrasp_full[is.na(intrasp_full)] <- 0
