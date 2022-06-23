@@ -20,10 +20,7 @@ high_n <- pred_prey %>%
   filter(Prey_Com_Name == "Pacific Hake") %>%
   arrange(-freq)
 
-# Combine and plot
-highest <- data.frame(predator = high_n$Predator_Com_Name[1:15],
-                      highest = high_n$freq[1:15])
-
+# Plot highest predators
 hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = freq)) +
   geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
   coord_flip() +
@@ -32,4 +29,5 @@ hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = f
 hake_pred_plot
 
 ggsave(filename = "plots/diet/hake_predators.png", hake_pred_plot, 
-       width=300, height=100, units="mm", dpi=300)
+       width=180, height=100, units="mm", dpi=300)
+

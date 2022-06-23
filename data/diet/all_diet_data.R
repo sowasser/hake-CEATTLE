@@ -93,7 +93,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   predated <- all_stomachs %>%
     filter(Prey_Com_Name == prey_species)
   
-  # Plot general trends in the data ------------------------------------------
+  ### Plot general trends in the data -----------------------------------------
   # Top prey items by occurrence and weight
   high_wt <- prey_comp %>%
     group_by(Prey_Com_Name) %>%
@@ -134,22 +134,137 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     theme_sleek() +
     ylab(" ")
   
-  return(list(all_pred, all_prey, predated, prey_sp_plot, predation_yearly))
+  ### Plot timing of sample collection ----------------------------------------
+  timing_all <- pred_type %>%
+    group_by(Year, Month, type) %>%
+    summarize(n = n()) %>%
+    filter(!is.na(Year))
   
+  timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
+    geom_bar(position = "stack", stat = "identity") +
+    scale_x_discrete(limits=factor(1:12)) +
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    theme_sleek() +
+    xlab("sampling month") + ylab(" ") +
+    facet_wrap(~ Year)
+  timing_yearly
+  
+  ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
+         width=200, height=150, units="mm", dpi=300)
+  
+  timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, color = type, fill = type)) +
+    geom_bar(position = "stack", stat = "identity") +
+    scale_x_discrete(limits=factor(1:12)) +
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    theme_sleek() +
+    xlab("sampling month") + ylab(" ") 
+  timing_overall
+  
+  ggsave(filename = "plots/diet/timing_overall.png", timing_overall, 
+         width=170, height=100, units="mm", dpi=300)
+  
+  ### Plot location of sample collection --------------------------------------
+  location_all <- pred_type %>%
+    group_by(Year, Latitude, Longitude, type) %>%
+    summarize(n = n()) %>%
+    filter(!is.na(Year)) %>%
+    arrange(type)
+  
+  # Create a plot of location of observations by latitude and longitude
+  world <- ne_countries(scale = "medium", returnclass = "sf")
+  sf_use_s2(FALSE)  # turn off spherical geometry
+  
+  location_yearly <- ggplot(data = world) +
+    geom_sf() +
+    geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
+    coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
+    scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
+    scale_y_continuous(breaks = seq(35, 55, by = 10)) +
+    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    theme_sleek() +
+    xlab(" ") + ylab(" ") +
+    facet_wrap(~Year, ncol = 8)
+  
+  location_overall <- ggplot(data = world) +
+    geom_sf() +
+    geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
+    coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
+    scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
+    scale_y_continuous(breaks = seq(35, 55, by = 5)) +
+    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    theme_sleek() +
+    xlab(" ") + ylab(" ") 
+  
+  ### Inset timing plots in yearly location plots -----------------------------
+  # Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
+  get_inset <- function(df) {
+    # Create plot for the inset 
+    plot <- ggplot(df, aes(x = as.factor(Month), y = n, fill = type)) +
+      geom_bar(position = "stack", stat = "identity") +
+      scale_x_discrete(limits = factor(1:12), breaks = c(1, 6, 12)) +
+      scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+      theme_sleek() +
+      theme(axis.title.y = element_blank(),
+            axis.title.x = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(size=rel(0.8)),  # inset axis tick font size
+            plot.background = element_rect(fill='transparent', color=NA)) + # transparent so no overlap w/map
+      theme(legend.position="none") 
+    return(plot)
+  }
+  
+  # Function for defining how the inset will be positioned
+  annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) 
+  {
+    layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+          geom = ggplot2:::GeomCustomAnn,
+          inherit.aes = TRUE, params = list(grob = grob, 
+                                            xmin = xmin, xmax = xmax, 
+                                            ymin = ymin, ymax = ymax))
+  }
+  
+  inset_plot <- get_inset(timing_all)  # Actually create insets
+  
+  # How the insets will be mapped on to the main plots (applying above function)
+  insets <- timing_all %>% 
+    split(f = .$Year) %>%
+    purrr::map(~annotation_custom2(
+      grob = ggplotGrob(get_inset(.)), 
+      data = data.frame(Year=unique(.$Year)),
+      ymin = 30.7, ymax = 40, xmin = -141, xmax = -124))  # position of insets
+  
+  # Bring everything together - add insets on to main plot (locations, created above)
+  location_timing <- location_yearly +
+    coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
+    scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
+    insets
+  
+  return(list(all_pred, all_prey, predated, pred_type,  # data
+              prey_sp_plot, predation_yearly, location_overall, location_timing))  # plots
 }
 
 # Subset diet data for hake predator & prey -----------------------------------
 hake_hake <- combine_diet(type = "stomach", "Pacific Hake", "Pacific Hake", "cannibalistic")
 
 # Look at plots
-hake_hake[[4]]  # top prey species
-hake_hake[[5]]  # yearly predation by type
+all_pred <- hake_hake[[1]]
+all_prey <- hake_hake[[2]]
+predated <- hake_hake[[3]]
+pred_type <- hake_hake[[4]]
+hake_hake[[5]]  # top prey species
+hake_hake[[6]]  # yearly predation by type
+hake_hake[[7]]  # overall locations by predation type
 
-ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[4]], 
+ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
-
-ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[5]], 
+ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
        width=170, height=100, units="mm", dpi=300)
+ggsave(filename = "plots/diet/locations_overall.png", hake_hake[[7]], 
+       width=100, height=100, units="mm", dpi=300)
+ggsave(filename = "plots/diet/location_timing.png", hake_hake[[8]], 
+       width=400, height=210, units="mm", dpi=300)
 
 # Subset diet for arrowtooth flounder predator & hake prey --------------------
 arrowtooth_hake <- combine_diet(type = "stomach", "Arrowtooth Flounder", "Pacific Hake", "hake predation")
@@ -167,8 +282,8 @@ ggsave(filename = "plots/diet/ATF_prey_species.png", arrowtooth_hake[[5]],
 # Subset of diet for CA sea lion predator & hake prey -------------------------
 sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "hake predation")
 
-CASL_pred <- sealion_hake[[1]]
-CASL_prey_hake <- sealion_hake[[3]]
+CSL_pred <- sealion_hake[[1]]
+CSL_prey_hake <- sealion_hake[[3]]
 
 # Look at plots
 sealion_hake[[4]]  # top prey species
@@ -180,129 +295,16 @@ ggsave(filename = "plots/diet/sealion_prey_species.png", sealion_hake[[5]],
 # Subset of diet for CA sea lion predator & ATF prey --------------------------
 sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")
 
-CASL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
+CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
 
 
-### Plot timing of sample collection ------------------------------------------
-timing_all <- pred_type %>%
-  group_by(Year, Month, type) %>%
-  summarize(n = n()) %>%
-  filter(!is.na(Year))
 
-timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_x_discrete(limits=factor(1:12)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
-  xlab("sampling month") + ylab(" ") +
-  facet_wrap(~ Year)
-timing_yearly
-
-ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
-       width=200, height=150, units="mm", dpi=300)
-
-timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, color = type, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_x_discrete(limits=factor(1:12)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
-  xlab("sampling month") + ylab(" ") 
-timing_overall
-
-ggsave(filename = "plots/diet/timing_overall.png", timing_overall, 
-       width=170, height=100, units="mm", dpi=300)
-
-
-### Plot location of sample collection ----------------------------------------
-location_all <- pred_type %>%
-  group_by(Year, Latitude, Longitude, type) %>%
-  summarize(n = n()) %>%
-  filter(!is.na(Year)) %>%
-  arrange(type)
-
-# Create a plot of location of observations by latitude and longitude
-world <- ne_countries(scale = "medium", returnclass = "sf")
-sf_use_s2(FALSE)  # turn off spherical geometry
-
-location_yearly <- ggplot(data = world) +
-  geom_sf() +
-  geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
-  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
-  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
-  scale_y_continuous(breaks = seq(35, 55, by = 10)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
-  xlab(" ") + ylab(" ") +
-  facet_wrap(~Year, ncol = 8)
-
-ggsave(filename = "plots/diet/locations_yearly.png", location_yearly, 
-       width=400, height=200, units="mm", dpi=300)
-
-location_overall <- ggplot(data = world) +
-  geom_sf() +
-  geom_point(data = location_all, aes(x = Longitude, y = Latitude, colour = type, size = n)) +
-  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
-  scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
-  scale_y_continuous(breaks = seq(35, 55, by = 5)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
-  xlab(" ") + ylab(" ") 
-location_overall
-
-ggsave(filename = "plots/diet/locations_overall.png", location_overall, 
-       width=100, height=100, units="mm", dpi=300)
-
-
-### Inset timing plots in yearly location plots -------------------------------
-# Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
-get_inset <- function(df) {
-  # Create plot for the inset 
-  plot <- ggplot(df, aes(x = as.factor(Month), y = n, fill = type)) +
-    geom_bar(position = "stack", stat = "identity") +
-    scale_x_discrete(limits = factor(1:12), breaks = c(1, 6, 12)) +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
-    theme(axis.title.y = element_blank(),
-          axis.title.x = element_blank(),
-          axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.text.x = element_text(size=rel(0.8)),  # inset axis tick font size
-          plot.background = element_rect(fill='transparent', color=NA)) + # transparent so no overlap w/map
-    theme(legend.position="none") 
-  return(plot)
-}
-
-# Function for defining how the inset will be positioned
-annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) 
-{
-  layer(data = data, stat = StatIdentity, position = PositionIdentity, 
-        geom = ggplot2:::GeomCustomAnn,
-        inherit.aes = TRUE, params = list(grob = grob, 
-                                          xmin = xmin, xmax = xmax, 
-                                          ymin = ymin, ymax = ymax))
-}
-
-inset_plot <- get_inset(timing_all)  # Actually create insets
-
-# How the insets will be mapped on to the main plots (applying above function)
-insets <- timing_all %>% 
-  split(f = .$Year) %>%
-  purrr::map(~annotation_custom2(
-    grob = ggplotGrob(get_inset(.)), 
-    data = data.frame(Year=unique(.$Year)),
-    ymin = 30.7, ymax = 40, xmin = -141, xmax = -124))  # position of insets
-
-# Bring everything together - add insets on to main plot (locations, created above)
-location_timing <- location_yearly +
-  coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
-  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
-  insets
-  
-ggsave(filename = "plots/diet/location_timing.png", location_timing, 
-       width=400, height=210, units="mm", dpi=300)
   
   
 ### Write predator & prey datasets to .csvs -----------------------------------
+
+
+
+
 write.csv(hake_hake[[1]], "data/diet/Full dataset/full_hake_pred.csv")
 write.csv(hake_hake[[2]], "data/diet/Full dataset/full_prey.csv")
