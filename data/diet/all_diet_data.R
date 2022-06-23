@@ -270,7 +270,8 @@ ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]],
 arrowtooth_hake <- combine_diet(type = "stomach", "Arrowtooth Flounder", "Pacific Hake", "hake predation")
 
 ATF_pred <- arrowtooth_hake[[1]]
-ATF_prey <- arrowtooth_hake[[3]]  # Almost no prey information for arrowtooth.
+ATF_prey <- arrowtooth_hake[[2]]  
+ATF_hake <- arrowtooth_hake[[3]]  # Almost no hake prey information for arrowtooth.
 
 # Look at plots
 arrowtooth_hake[[5]]  # top prey species
@@ -287,7 +288,8 @@ ggsave(filename = "plots/diet/ATF_locations_overall.png", arrowtooth_hake[[7]],
 sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "hake predation")
 
 CSL_pred <- sealion_hake[[1]]
-CSL_prey_hake <- sealion_hake[[3]]
+CSL_prey <- sealion_hake[[2]]
+CSL_hake <- sealion_hake[[3]]
 
 # Look at plots
 sealion_hake[[5]]  # top prey species
@@ -306,4 +308,7 @@ CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
   
 ### Write predator & prey datasets to .csvs -----------------------------------
 write.csv(hake_hake[[1]], "data/diet/Full dataset/full_hake_pred.csv")
-write.csv(hake_hake[[2]], "data/diet/Full dataset/full_prey.csv")
+write.csv(hake_hake[[2]], "data/diet/Full dataset/full_hake_prey.csv")
+
+write.csv(sealion_hake[[1]], "data/diet/Full dataset/full_CSL_pred.csv")
+write.csv(sealion_hake[[2]], "data/diet/Full dataset/full_CSL_prey.csv")
