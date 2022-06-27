@@ -57,7 +57,6 @@ Arrowtooth_Flounder/
 Full dataset/
 DirichletDietTool2020/
 
-
 # Ignore specific file types
 *.docx
 *.pdf
@@ -70,6 +69,7 @@ hake_document.log
 # Ignore Microsoft temporary files
 [~][$]*  
 
+# Ignore specific data files
 data/BS2017SS.xlsx
-
 data/diet/full_hake_diet.csv
+data/diet/all_FEAT_hake_diet_contents_2005-2019.xlsx
