@@ -10,7 +10,7 @@ CCTD_prey <- read.csv("data/diet/Full dataset/hake_aged_prey.csv")
 # Combine predators and prey together, generalize prey names to "other"
 CCTD_all <- merge(CCTD_pred, CCTD_prey, by = "Predator_ID") %>%
   mutate(prey_name = ifelse(Prey_Com_Name == "Pacific Hake", "Pacific Hake", "other")) %>%
-  select(Month, Year, Latitude, Longitude, pred_ages, prey_name, 
+  select(Predator_ID, Month, Year, Latitude, Longitude, pred_ages, prey_name, 
          Prey_Weight_g, Prey_Length1, prey_ages) %>%
   filter(Year <= 2004)  # remove years covered by FEAT 
 
@@ -33,15 +33,16 @@ FEAT_all$year <- lubridate::year(lubridate::ymd(FEAT_all$tow_timestamp))
 # Generalize prey categories to Pacific Hake & "other", select columns
 FEAT_all <- FEAT_all %>%
   mutate(prey_name = ifelse(prey_category_long == "Gadiformes", "Pacific Hake", "other")) %>%
-  select(month, year, tow_latitude, tow_longitude, predator_age, 
+  select(stomach_uuid, month, year, tow_latitude, tow_longitude, predator_age, 
          prey_name, content_wt_g, measure_value)
   
 
 ### Combine datasets ----------------------------------------------------------
-FEAT_all <- cbind(FEAT_all, prey_ages = rep(1, length(FEAT_all[, 1])),
-                   source = rep("FEAT", length(FEAT_all[, 1])))
+FEAT_all <- cbind(FEAT_all, 
+                  prey_ages = rep(1, length(FEAT_all[, 1])),
+                  source = rep("FEAT", length(FEAT_all[, 1])))
 
-labels <- c("month", "year", "latitude", "longitude", "predator_age", 
+labels <- c("Predator_ID", "month", "year", "latitude", "longitude", "predator_age", 
             "prey_name", "prey_wt", "prey_length", "prey_age", "source")
 
 colnames(CCTD_all) <- labels
