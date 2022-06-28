@@ -8,7 +8,6 @@ library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
 library(rgeos)
-library(purrr)
 
 path <- "data/diet/Full dataset/v4/"
 
@@ -147,7 +146,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     theme_sleek() +
     xlab("sampling month") + ylab(" ") +
     facet_wrap(~ Year)
-  timing_yearly
   
   ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
          width=200, height=150, units="mm", dpi=300)
@@ -159,7 +157,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     theme_sleek() +
     xlab("sampling month") + ylab(" ") 
-  timing_overall
   
   ggsave(filename = "plots/diet/timing_overall.png", timing_overall, 
          width=170, height=100, units="mm", dpi=300)
@@ -219,7 +216,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) 
   {
     layer(data = data, stat = StatIdentity, position = PositionIdentity, 
-          geom = ggplot2:::GeomCustomAnn,
+          geom = GeomCustomAnn,
           inherit.aes = TRUE, params = list(grob = grob, 
                                             xmin = xmin, xmax = xmax, 
                                             ymin = ymin, ymax = ymax))
@@ -232,7 +229,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     split(f = .$Year) %>%
     purrr::map(~annotation_custom2(
       grob = ggplotGrob(get_inset(.)), 
-      data = data.frame(Year=unique(.$Year)),
+      data = data.frame(Year = unique(.$Year)),
       ymin = 30.7, ymax = 40, xmin = -141, xmax = -124))  # position of insets
   
   # Bring everything together - add insets on to main plot (locations, created above)
