@@ -46,6 +46,8 @@ FEAT_all <- FEAT_all %>%
   
 
 ### Combine datasets ----------------------------------------------------------
+# Add column for prey ages. All are age 1 according to calculations in the 
+# diet_aging.R script
 FEAT_all <- cbind(FEAT_all, 
                   prey_ages = rep(1, length(FEAT_all[, 1])),
                   source = rep("FEAT", length(FEAT_all[, 1])))

@@ -61,21 +61,46 @@ new_prey$prey_ages <- round(new_prey$prey_ages, digits = 0)
 # Filter prey dataset to only include hake
 new_hake_prey <- new_prey %>% filter(Prey_Com_Name == "Pacific Hake")
 
+
+# Read in FEAT data -----------------------------------------------------------
+FEAT_data <- read.csv("data/diet/all_FEAT_diet.csv")
+FEAT_prey_lengths <- read.csv("data/diet/Old/hake_prey_lengths_FEAT.csv")
+
+# Add prey lengths based on stomach ID
+FEAT_hake <- merge(FEAT_data, FEAT_prey_lengths, by = "stomach_uuid", all.x = TRUE) %>%
+  filter(prey_category_long == "Gadiformes") %>%
+  select(predator_length_cm, predator_age, measure_value)
+
+FEAT_hake$prey_ages <- age_calc(lengths = FEAT_hake$measure_value, 
+                                Linf = params[1], K = params[2], t0 = params[3])
+
+FEAT_ages <- as.data.frame(rbind(cbind(age = FEAT_hake$predator_age, length = FEAT_hake$predator_length_cm, 
+                                       data = rep("FEAT predators", length(FEAT_hake$predator_ages)))))
+
 # Plot fit --------------------------------------------------------------------
-all_ages <- as.data.frame(rbind(cbind(age = maturity$Age, length = maturity$Length_cm, 
-                                      data = rep("original", length(maturity$Age))),
-                                cbind(age = new_pred$pred_ages, length = new_pred$FL_cm, 
-                                      data = rep("predator hake", length(new_pred$pred_ages))),
-                                cbind(age = new_hake_prey$prey_ages, length = (new_hake_prey$Prey_Length1 / 10),  # prey are in mm
-                                      data = rep("prey hake", length(new_hake_prey$prey_ages)))))
+all_ages <- as.data.frame(rbind(cbind(age = maturity$Age, 
+                                      length = maturity$Length_cm, 
+                                      data = rep("assessment", length(maturity$Age))),
+                                cbind(age = new_pred$pred_ages, 
+                                      length = new_pred$FL_cm, 
+                                      data = rep("CCTD predators", length(new_pred$pred_ages))),
+                                cbind(age = new_hake_prey$prey_ages, 
+                                      length = (new_hake_prey$Prey_Length1 / 10),  # prey are in mm
+                                      data = rep("CCTD prey", length(new_hake_prey$prey_ages))),
+                                cbind(age = FEAT_hake$predator_age, 
+                                      length = FEAT_hake$predator_length_cm, 
+                                      data = rep("FEAT predators", length(FEAT_hake$predator_age))),
+                                cbind(age = FEAT_hake$prey_ages, 
+                                      length = FEAT_hake$measure_value, 
+                                      data = rep("FEAT prey", length(FEAT_hake$prey_ages)))))
 all_ages$age <- as.numeric(all_ages$age)
 all_ages$length <- as.numeric(all_ages$length)
 
 all_ages <- na.omit(all_ages)
 
-growth_curve <- ggplot(all_ages, aes(x = age, y = length, color = data)) +
-  geom_point(alpha = 0.3) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+growth_curve <- ggplot(all_ages, aes(x = age, y = length, color = data, shape = data)) +
+  geom_point(alpha = 0.3, size = 3) +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   theme_sleek()
 growth_curve
 
