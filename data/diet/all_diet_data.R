@@ -299,7 +299,8 @@ ggsave(filename = "plots/diet/CSL_locations_overall.png", sealion_hake[[7]],
        width=100, height=100, units="mm", dpi=300)
 
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
-  geom_histogram() +
+  ggdist::stat_slab(aes(thickness = stat(pdf*n)), scale = 0.7) +
+  ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
   theme_sleek() +
   xlab("prey hake length (cm)") + ylab(" ")
 CSL_hake_prey_size
