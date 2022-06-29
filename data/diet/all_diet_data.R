@@ -9,7 +9,7 @@ library(sf)
 library(rnaturalearthdata)
 library(rgeos)
 
-path <- "data/diet/Full dataset/v4/"
+path <- "data/diet/CCTD/v4/"
 
 ### Combine diet data, subset for species of interest -------------------------
 combine_diet <- function(type, pred_species, prey_species, label_specific) {
@@ -304,8 +304,8 @@ CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
 
   
 ### Write predator & prey datasets to .csvs -----------------------------------
-write.csv(hake_hake[[1]], "data/diet/Full dataset/hake_pred.csv", row.names = FALSE)
-write.csv(hake_hake[[2]], "data/diet/Full dataset/hake_prey.csv", row.names = FALSE)
+write.csv(hake_hake[[1]], "data/diet/CCTD/hake_pred.csv", row.names = FALSE)
+write.csv(hake_hake[[2]], "data/diet/CCTD/hake_prey.csv", row.names = FALSE)
 
-write.csv(sealion_hake[[1]], "data/diet/Full dataset/CSL_pred.csv", row.names = FALSE)
-write.csv(sealion_hake[[2]], "data/diet/Full dataset/CSL_prey.csv", row.names = FALSE)
+write.csv(sealion_hake[[1]], "data/diet/CCTD/CSL_pred.csv", row.names = FALSE)
+write.csv(sealion_hake[[2]], "data/diet/CCTD/CSL_prey.csv", row.names = FALSE)

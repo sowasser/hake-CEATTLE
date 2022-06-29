@@ -9,7 +9,7 @@ library(reshape2)
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
 
 # Look at instances where prey hake age = NA - all are immature
-CCTD_prey <- read.csv("data/diet/Full dataset/hake_aged_prey.csv")
+CCTD_prey <- read.csv("data/diet/CCTD/hake_aged_prey.csv")
   
 CCTD_prey %>%
   filter(Prey_Com_Name == "Pacific Hake") %>%

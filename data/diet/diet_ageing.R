@@ -8,8 +8,8 @@ library(FSA)
 library(dplyr)
 library(tidyr)
 
-all_pred <- read.csv("data/diet/Full dataset/hake_pred.csv")
-all_prey <- read.csv("data/diet/Full dataset/hake_prey.csv")
+all_pred <- read.csv("data/diet/CCTD/hake_pred.csv")
+all_prey <- read.csv("data/diet/CCTD/hake_prey.csv")
 
 ### Parameterize length to age calculation  -----------------------------------
 hake_ages <- 0:15
@@ -63,8 +63,8 @@ new_hake_prey <- new_prey %>% filter(Prey_Com_Name == "Pacific Hake")
 
 
 # Read in FEAT data -----------------------------------------------------------
-FEAT_data <- read.csv("data/diet/all_FEAT_diet.csv")
-FEAT_prey_lengths <- read.csv("data/diet/Old/hake_prey_lengths_FEAT.csv")
+FEAT_data <- read.csv("data/diet/FEAT/all_FEAT_diet.csv")
+FEAT_prey_lengths <- read.csv("data/diet/FEAT/hake_prey_lengths_FEAT.csv")
 
 # Add prey lengths based on stomach ID
 FEAT_hake <- merge(FEAT_data, FEAT_prey_lengths, by = "stomach_uuid", all.x = TRUE) %>%
@@ -109,5 +109,5 @@ ggsave(filename = "plots/diet/growth_curve.png", growth_curve,
 
 
 # Write aged datasets to file -------------------------------------------------
-write.csv(new_pred, "data/diet/Full dataset/hake_aged_pred.csv", row.names = FALSE)
-write.csv(new_prey, "data/diet/Full dataset/hake_aged_prey.csv", row.names = FALSE)
+write.csv(new_pred, "data/diet/CCTD/hake_aged_pred.csv", row.names = FALSE)
+write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)

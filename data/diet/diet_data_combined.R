@@ -12,8 +12,8 @@ library(rgeos)
 library(purrr)
 
 ### Read in & update CCTD data from SWFSC -------------------------------------
-CCTD_pred <- read.csv("data/diet/Full dataset/hake_aged_pred.csv")
-CCTD_prey <- read.csv("data/diet/Full dataset/hake_aged_prey.csv")
+CCTD_pred <- read.csv("data/diet/CCTD/hake_aged_pred.csv")
+CCTD_prey <- read.csv("data/diet/CCTD/hake_aged_prey.csv")
 
 # Combine predators and prey together, generalize prey names to "other"
 CCTD_all <- merge(CCTD_pred, CCTD_prey, by = "Predator_ID") %>%
@@ -27,8 +27,8 @@ CCTD_all <- cbind(CCTD_all, source = rep("CCTD", length(CCTD_all[, 1])))
 
 
 ### Read in & update FEAT data from NWFSC -------------------------------------
-FEAT_data <- read.csv("data/diet/all_FEAT_diet.csv")
-FEAT_prey_lengths <- read.csv("data/diet/Old/hake_prey_lengths_FEAT.csv")
+FEAT_data <- read.csv("data/diet/FEAT/all_FEAT_diet.csv")
+FEAT_prey_lengths <- read.csv("data/diet/FEAT/hake_prey_lengths_FEAT.csv")
 
 # Add prey lengths based on stomach ID
 FEAT_all <- merge(FEAT_data, FEAT_prey_lengths, by = "stomach_uuid", all.x = TRUE)
