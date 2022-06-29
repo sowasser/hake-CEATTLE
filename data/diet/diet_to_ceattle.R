@@ -5,34 +5,37 @@ library(ggsidekick)
 library(viridis)
 library(reshape2)
 
-# Read in full aged datasets & remove index column
-new_pred <- read.csv("data/diet/Full dataset/hake_aged_pred.csv")
-new_prey <- read.csv("data/diet/Full dataset/hake_aged_prey.csv")
-
-### Combine into new dataset --------------------------------------------------
-aged_dataset <- merge(new_pred, new_prey, by = "Predator_ID")  # using all prey data here
+# Read in full aged dataset
+aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
 
 # Look at instances where prey hake age = NA - all are immature
-aged_dataset %>%
+CCTD_prey <- read.csv("data/diet/Full dataset/hake_aged_prey.csv")
+  
+CCTD_prey %>%
   filter(Prey_Com_Name == "Pacific Hake") %>%
   filter(is.na(prey_ages))
 
 # Replace those NAs with age 1
-aged_dataset$prey_ages[is.na(aged_dataset$prey_ages) & aged_dataset$Prey_Com_Name == "Pacific Hake"] <- 1
+aged_dataset$prey_age[is.na(aged_dataset$prey_age) & aged_dataset$prey_name == "Pacific Hake"] <- 1
 
 # Get total stomach weights for each predator and proportional weight for prey hake
-aged_wt <- aged_dataset[, c("Predator_ID", "Year", "pred_ages", "Prey_Com_Name", "prey_ages", "Prey_Weight_g")] %>%
+aged_wt <- aged_dataset[, c("Predator_ID", "year", "predator_age", "prey_name", "prey_age", "prey_wt")] %>%
   group_by(Predator_ID) %>%
-  mutate(stomach_wt = sum(Prey_Weight_g, na.rm = TRUE)) %>%
-  filter(Prey_Com_Name == "Pacific Hake") %>%
-  mutate(hake_prey_wt = Prey_Weight_g / stomach_wt) 
+  mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>%
+  filter(prey_name == "Pacific Hake") %>%
+  mutate(hake_prey_prop = prey_wt / stomach_wt) %>%
+  ungroup() %>%
+  distinct()  # Remove duplicate rows - same pred ID, multiple hake prey
+
+aged_wt$new_ID <- c(1:nrow(aged_wt))
 
 # Remove duplicate rows - same pred ID, multiple hake prey but same prey wts - generalized for that prey species
-hake_prop_wide <- as.data.frame(aged_wt[, c("Predator_ID", "pred_ages", "prey_ages", "hake_prey_wt")]) %>%
+hake_prop_wide <- aged_wt %>%
+  select(new_ID, predator_age, prey_age, hake_prey_prop) %>%
   distinct() %>%
-  pivot_wider(id_cols = c(Predator_ID, pred_ages),  # rows to stay the same
-              names_from = prey_ages,  # columns to convert to wide
-              values_from = hake_prey_wt,  # values to fill in
+  pivot_wider(id_cols = c(new_ID, predator_age),  # columns to stay the same
+              names_from = prey_age,  # columns to convert to wide
+              values_from = hake_prey_prop,  # values to fill in
               values_fill = 0)  # what to fill for missing values
 
 # Re-order and re-name columns
@@ -43,19 +46,19 @@ colnames(hake_prop_wide)[2:5] <- c("prey_a1", "prey_a2", "prey_a3", "prey_a5")
 # Create overall intraspecies predation dataset -------------------------------
 # Get number of stomachs per predator age
 stomachs_n <- aged_dataset %>%
-  group_by(pred_ages) %>%
+  group_by(predator_age) %>%
   summarize(sample_size = n())
   
 # Total stomach weight per predator age
 total_wt <- aged_dataset %>%
-  group_by(pred_ages) %>%
-  summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
+  group_by(predator_age) %>%
+  summarize(total_wt = sum(prey_wt, na.rm = TRUE))
 
 # Combine summarized datasets and calculate stomach weight proportions (overall)
 intrasp <- aged_dataset %>%
-  filter(Prey_Com_Name == "Pacific Hake" & !is.na(Predator_ID)) %>%
-  group_by(pred_ages, prey_ages) %>%
-  summarize(prey_wt = sum(Prey_Weight_g)) %>%
+  filter(prey_name == "Pacific Hake" & !is.na(Predator_ID)) %>%
+  group_by(predator_age, prey_age) %>%
+  summarize(prey_wt = sum(prey_wt)) %>%
   left_join(stomachs_n) %>%
   left_join(total_wt) %>%
   mutate(wt_prop = (prey_wt / total_wt))
@@ -64,19 +67,20 @@ intrasp <- aged_dataset %>%
 mean(intrasp$wt_prop)
 
 # Keep only the needed columns 
-intrasp <- intrasp[, c("pred_ages", "prey_ages", "sample_size", "wt_prop")]
+intrasp <- intrasp[, c("predator_age", "prey_age", "sample_size", "wt_prop")]
 
 # Fill dataframe with missing predator and prey ages
-all_ages <- data.frame(pred_ages = rep(1:15, each = 15), 
-                       prey_ages = rep(1:15, 15), 
+all_ages <- data.frame(predator_age = rep(1:15, each = 15), 
+                       prey_age = rep(1:15, 15), 
                        sample_size = rep(NA, 225), 
                        wt_prop = rep(NA, 225))
 
 # Merge dataframe of all values w/ data, remove replicated rows, fill values
+intrasp$predator_age <- as.integer(intrasp$predator_age)
 intrasp_full <- intrasp %>%
   full_join(all_ages) %>%
-  arrange(pred_ages, prey_ages) %>%
-  distinct(pred_ages, prey_ages, .keep_all = TRUE) %>% 
+  arrange(predator_age, prey_age) %>%
+  distinct(predator_age, prey_age, .keep_all = TRUE) %>% 
   fill(sample_size)  # had an issue with this line, restarted R & it works!
 
 # Replace remaining NAs with 0s
@@ -88,9 +92,9 @@ colnames(intrasp_full)[c(3, 4)] <- c("Sample_size", "Stomach_proportion_by_weigh
 write.csv(intrasp_full, "data/diet/full_hake_diet.csv", row.names = FALSE)
 
 # Plot hake diet
-df <- melt(intrasp[, -3], id.vars = c("pred_ages", "prey_ages"))
+df <- melt(intrasp[, -3], id.vars = c("predator_age", "prey_age"))
 
-diet_plot <- ggplot(df, aes(x=as.factor(pred_ages), y=value, fill=as.factor(prey_ages))) +
+diet_plot <- ggplot(df, aes(x=as.factor(predator_age), y=value, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
   theme_sleek() +
@@ -105,33 +109,36 @@ ggsave(filename = "plots/diet/cannibalism_overall.png",
 
 ### Reshape data for Dirichlet modeling ---------------------------------------
 hake_dirichlet <- aged_dataset %>%
-  select(Predator_ID, Year, pred_ages, Prey_Com_Name, prey_ages, Prey_Weight_g) %>%
+  select(Predator_ID, year, predator_age, prey_name, prey_age, prey_wt) %>%
   # Find total stomach weight for each predator
   group_by(Predator_ID) %>%
-  mutate(stomach_wt = sum(Prey_Weight_g, na.rm = TRUE)) %>% 
+  mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>% 
   # Select only prey hake and find weight proportion
-  filter(Prey_Com_Name == "Pacific Hake") %>%  
-  mutate(hake_prey_wt = Prey_Weight_g / stomach_wt) %>%
+  filter(prey_name == "Pacific Hake") %>%  
+  mutate(hake_prey_prop = prey_wt / stomach_wt) %>%
   ungroup() %>%
-  distinct() %>%  # Remove duplicates - keep only one record per predator
-  select(Predator_ID, pred_ages, prey_ages, hake_prey_wt) %>%
-  pivot_wider(id_cols = c(Predator_ID, pred_ages),  # rows to stay the same
-              names_from = prey_ages,  # columns to convert to wide
-              values_from = hake_prey_wt,  # values to fill in
+  distinct()  %>%  # Remove duplicates - keep only one record per predator
+  mutate(new_ID = c(1:nrow(hake_dirichlet))) %>%
+  select(new_ID, predator_age, prey_age, hake_prey_prop) %>%
+  pivot_wider(id_cols = c(new_ID, predator_age),  # rows to stay the same
+              names_from = prey_age,  # columns to convert to wide
+              values_from = hake_prey_prop,  # values to fill in
               values_fill = 0) %>%  # what to fill for missing values 
-  arrange(pred_ages)
+  mutate(predator_age = as.integer(predator_age)) %>%
+  arrange(predator_age)
 
 # Re-order and rename data for final dataset
 hake_dirichlet <- hake_dirichlet[, c(2, 4, 5, 6, 3)]
 colnames(hake_dirichlet)[2:5] <- c("prey_a1", "prey_a2", "prey_a3", "prey_a5")
-unique(as.character(hake_dirichlet$pred_ages))
-hake_dirichlet$pred_ages <- recode(as.character(hake_dirichlet$pred_ages), 
+unique(as.character(hake_dirichlet$predator_age))
+hake_dirichlet$predator_age <- recode(hake_dirichlet$predator_age, 
                                    "1" = "pred_a1", "2" = "pred_a2",
                                    "3" = "pred_a3", "4" = "pred_a4",
                                    "5" = "pred_a5", "6" = "pred_a6",
                                    "7" = "pred_a7", "8" = "pred_a8",
                                    "9" = "pred_a9", "10" = "pred_a10",
-                                   "11" = "pred_a11", "13" = "pred_a13",
+                                   "11" = "pred_a11", "12" = "pred_a12",
+                                   "13" = "pred_a13", "14" = "pred_a14",
                                    "15" = "pred_a15")
 
 # Add "wtg" column from Dirichlet example dataset
@@ -144,17 +151,17 @@ write.csv(hake_dirichlet, "data/diet/hake_for_dirichlet.csv", row.names = FALSE)
 
 ### See if it's worth doing time-varying (yearly) predation -------------------
 stomachs_yearly <- aged_dataset %>%
-  group_by(Year, pred_ages) %>%
+  group_by(year, predator_age) %>%
   summarize(sample_size = n())
 
 total_wt_yearly <- aged_dataset %>%
-  group_by(Year, pred_ages) %>%
-  summarize(total_wt = sum(Prey_Weight_g, na.rm = TRUE))
+  group_by(year, predator_age) %>%
+  summarize(total_wt = sum(prey_wt, na.rm = TRUE))
 
 intrasp_yearly <- aged_dataset %>%
-  filter(Prey_Com_Name == "Pacific Hake" & !is.na(Predator_ID)) %>%
-  group_by(Year, pred_ages, prey_ages) %>%
-  summarize(prey_wt = sum(Prey_Weight_g)) %>%
+  filter(prey_name == "Pacific Hake" & !is.na(Predator_ID)) %>%
+  group_by(year, predator_age, prey_age) %>%
+  summarize(prey_wt = sum(prey_wt)) %>%
   left_join(stomachs_yearly) %>%
   left_join(total_wt_yearly) %>%
   mutate(wt_prop = (prey_wt / total_wt))
@@ -162,17 +169,17 @@ intrasp_yearly <- aged_dataset %>%
 # Calculate overall percentage by wt to double check
 mean(intrasp_yearly$wt_prop)
 
-intrasp_yearly2 <- melt(intrasp_yearly[, c("Year", "pred_ages", "prey_ages", "wt_prop")],
-                        id.vars = c("Year", "pred_ages", "prey_ages"))
+intrasp_yearly2 <- melt(intrasp_yearly[, c("year", "predator_age", "prey_age", "wt_prop")],
+                        id.vars = c("year", "predator_age", "prey_age"))
 
-diet_plot_yearly <- ggplot(intrasp_yearly2, aes(x=as.factor(pred_ages), y=value, fill=as.factor(prey_ages))) +
+diet_plot_yearly <- ggplot(intrasp_yearly2, aes(x=as.factor(predator_age), y=value, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
   theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age") +
-  facet_wrap(~Year)
+  facet_wrap(~year)
 diet_plot_yearly
 
 ggsave(filename = "plots/diet/cannibalism_yearly.png", 
