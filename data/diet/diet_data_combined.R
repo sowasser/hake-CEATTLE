@@ -66,7 +66,7 @@ all_data$prey_age[all_data$prey_name == "other"] <- NA
 hake_data <- all_data %>%
   filter(prey_name == "Pacific Hake")
 
-write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv")
+write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv", row.names = FALSE)
 
 
 ### Plot data -----------------------------------------------------------------
