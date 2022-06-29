@@ -212,15 +212,32 @@ post_dirichlet <- post_dirichlet[-1, ]
 post_dirichlet <- post_dirichlet %>% filter(prey != "other")
 post_dirichlet[, 3:9] <- sapply(post_dirichlet[, 3:9], as.numeric)  # make numeric
 
+# Plot different statistics from the analysis
 post_dirichlet_long <- melt(post_dirichlet, id.vars = c("predator", "prey", "lower95", "upper95"))
 
 dirichlet_results <- ggplot(post_dirichlet_long, aes(x = prey)) +
   geom_errorbar(aes(ymin = lower95, ymax = upper95), 
-                width = .2, position = position_dodge(.9)) +
-  geom_point(aes(x = prey, y = value, color = variable), size = 5, alpha = 0.3) +
+                width = .3, position = position_dodge(.9)) +
+  geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   theme_sleek() +
   xlab("") + ylab("stomach proportion") +
   facet_wrap(~ predator)
 dirichlet_results
-  
+
+ggsave(filename = "plots/diet/Dirichlet_results.png", 
+       dirichlet_results, width=300, height=200, units="mm", dpi=300)
+
+# Re-organize dataframe for CEATTLE
+dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(post_dirichlet)),
+                                      Prey = rep(1, nrow(post_dirichlet)),
+                                      Pred_sex = rep(0, nrow(post_dirichlet)),
+                                      Prey_sex = rep(0, nrow(post_dirichlet)),
+                                      Pred_age = post_dirichlet$predator,
+                                      Prey_age = post_dirichlet$prey,
+                                      Year = rep(0, nrow(post_dirichlet)),
+                                      Sample_size = rep(10, nrow(post_dirichlet)),
+                                      Stomach_proportion_by_weight = post_dirichlet$boot_average))
+
+write.csv(dirichlet_ceattle, "data/diet/Dirichlet_for_CEATTLE.csv", row.names = FALSE)
+
