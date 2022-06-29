@@ -86,11 +86,6 @@ intrasp_full <- intrasp %>%
 # Replace remaining NAs with 0s
 intrasp_full[is.na(intrasp_full)] <- 0
 
-# Create new .csv with new values
-# Update column names to match CEATTLE data input
-colnames(intrasp_full)[c(3, 4)] <- c("Sample_size", "Stomach_proportion_by_weight")
-write.csv(intrasp_full, "data/diet/full_hake_diet.csv", row.names = FALSE)
-
 # Plot hake diet
 df <- melt(intrasp[, -3], id.vars = c("predator_age", "prey_age"))
 
@@ -185,3 +180,16 @@ diet_plot_yearly
 ggsave(filename = "plots/diet/cannibalism_yearly.png", 
        diet_plot_yearly, width=300, height=200, units="mm", dpi=300)
 
+
+### Get data ready to be added directly to CEATTLE ----------------------------
+intrasp_ceattle <- cbind(Pred = rep(1, nrow(intrasp_full)),
+                         Prey = rep(1, nrow(intrasp_full)),
+                         Pred_sex = rep(0, nrow(intrasp_full)),
+                         Prey_sex = rep(0, nrow(intrasp_full)),
+                         Pred_age = intrasp_full$predator_age,
+                         Prey_age = intrasp_full$prey_age,
+                         Year = rep(0, nrow(intrasp_full)),
+                         Sample_size = intrasp_full$sample_size,
+                         Stomach_proportion_by_weight = intrasp_full$wt_prop)
+
+write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE.csv", row.names = FALSE)
