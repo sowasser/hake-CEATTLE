@@ -44,6 +44,7 @@ vignettes/*.pdf
 *.Rproj
 
 # Ignore folders & files that don't need to be tracked on git
+*.csv
 Resources/
 plots/
 FB4/
@@ -51,13 +52,13 @@ From Grant/
 old/
 From Isaac/
 From PY/
-ROMS*.csv
 2020_Hake_Assessment/
 Arrowtooth_Flounder/
 Full dataset/
 DirichletDietTool2020/
 data/diet/CCTD/
 data/diet/FEAT/
+data/diet/Dirichlet/plots
 
 # Ignore specific file types
 *.docx
