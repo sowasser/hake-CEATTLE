@@ -298,6 +298,15 @@ ggsave(filename = "plots/diet/CSL_prey_species.png", sealion_hake[[5]],
 ggsave(filename = "plots/diet/CSL_locations_overall.png", sealion_hake[[7]], 
        width=100, height=100, units="mm", dpi=300)
 
+CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
+  geom_histogram() +
+  theme_sleek() +
+  xlab("prey hake length (cm)") + ylab(" ")
+CSL_hake_prey_size
+
+ggsave(filename = "plots/diet/CSL_hake_prey_size.png", CSL_hake_prey_size, 
+       width=120, height=80, units="mm", dpi=300)
+
 # Subset of diet for CA sea lion predator & ATF prey 
 sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")
 CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
