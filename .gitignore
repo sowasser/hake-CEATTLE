@@ -56,6 +56,8 @@ ROMS*.csv
 Arrowtooth_Flounder/
 Full dataset/
 DirichletDietTool2020/
+data/diet/CCTD/
+data/diet/FEAT/
 
 # Ignore specific file types
 *.docx
@@ -71,6 +73,3 @@ hake_document.log
 
 # Ignore specific data files
 data/BS2017SS.xlsx
-data/diet/*.csv
-data/diet/*.xlsx
-data/diet/*.jpg
