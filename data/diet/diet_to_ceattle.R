@@ -113,7 +113,7 @@ hake_dirichlet <- aged_dataset %>%
   mutate(hake_prey_prop = prey_wt / stomach_wt) %>%
   ungroup() %>%
   distinct()  %>%  # Remove duplicates - keep only one record per predator
-  mutate(new_ID = c(1:nrow(hake_dirichlet))) %>%
+  mutate(new_ID = c(1:length(Predator_ID))) %>%
   select(new_ID, predator_age, prey_age, hake_prey_prop) %>%
   pivot_wider(id_cols = c(new_ID, predator_age),  # rows to stay the same
               names_from = prey_age,  # columns to convert to wide
@@ -141,7 +141,11 @@ hake_dirichlet <- cbind(hake_dirichlet[, 1],
                         wtg = rep(1, length(hake_dirichlet[, 1])),
                         hake_dirichlet[, 2:5])
 
-write.csv(hake_dirichlet, "data/diet/hake_for_dirichlet.csv", row.names = FALSE)
+# Add column with remaining diet proportion - assigned to "other" prey
+hake_dirichlet$other <- 1 - rowSums(hake_dirichlet[, 3:6])
+
+colnames(hake_dirichlet)[1] <- "Predator"
+write.csv(hake_dirichlet, "data/diet/Dirichlet/hake_for_dirichlet.csv", row.names = FALSE)
   
 
 ### See if it's worth doing time-varying (yearly) predation -------------------
