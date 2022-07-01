@@ -102,58 +102,6 @@ ggsave(filename = "plots/diet/cannibalism_overall.png",
        diet_plot, width=200, height=120, units="mm", dpi=300)
 
 
-### Reshape data for Dirichlet modeling ---------------------------------------
-# Subset dataset for only those hake that had no prey hake and assign proportion of diet as entirely "other"
-no_hake_dirichlet <- aged_dataset %>%
-  select(Predator_ID, year, predator_age, prey_name, prey_age, prey_wt) %>%
-  group_by(Predator_ID) %>%
-  filter(prey_name != "Pacific Hake") %>%
-  ungroup() %>%
-  select(Predator_ID, predator_age) %>%  
-  mutate(predator_age = as.numeric(predator_age)) %>%
-  distinct()
-no_hake_dirichlet$prey_age <- rep("other", nrow(no_hake_dirichlet))
-no_hake_dirichlet$hake_prey_prop <- rep(1, nrow(no_hake_dirichlet))
-
-# Select columns fron hake cannibalism dataset
-hake_dirichlet <- aged_wt %>%
-  select(Predator_ID, predator_age, prey_age, hake_prey_prop)
-
-# Combine together and turn into wide format for Dirichlet script
-for_dirichlet <- rbind(hake_dirichlet, no_hake_dirichlet) %>%
-  mutate(new_ID = c(1:length(Predator_ID))) %>%
-  select(new_ID, predator_age, prey_age, hake_prey_prop) %>%
-  pivot_wider(id_cols = c(new_ID, predator_age),  # rows to stay the same
-              names_from = prey_age,  # columns to convert to wide
-              values_from = hake_prey_prop,  # values to fill in
-              values_fill = 0) %>%  # what to fill for missing values 
-  arrange(predator_age)
-
-# Re-order and rename data for final dataset
-for_dirichlet <- for_dirichlet[, c(2, 4, 5, 6, 3, 7)]
-colnames(for_dirichlet)[1:5] <- c("Predator", "hake_a1", "hake_a2", "hake_a3", "hake_a5")
-unique(as.character(for_dirichlet$Predator))
-for_dirichlet$Predator <- recode(for_dirichlet$Predator, 
-                                 "1" = "pred_a1", "2" = "pred_a2",
-                                 "3" = "pred_a3", "4" = "pred_a4",
-                                 "5" = "pred_a5", "6" = "pred_a6",
-                                 "7" = "pred_a7", "8" = "pred_a8",
-                                 "9" = "pred_a9", "10" = "pred_a10",
-                                 "11" = "pred_a11", "12" = "pred_a12",
-                                 "13" = "pred_a13", "14" = "pred_a14",
-                                 "15" = "pred_a15")
-
-# Add "wtg" column from Dirichlet example dataset
-for_dirichlet <- cbind(for_dirichlet[, 1], 
-                        wtg = rep(1, length(for_dirichlet[, 1])),
-                        for_dirichlet[, 2:6])
-
-# Update "other" column to include remainder from hake on hake stomachs
-for_dirichlet$other <- 1 - rowSums(for_dirichlet[, 3:6])
-
-write.csv(for_dirichlet, "data/diet/Dirichlet/hake_for_dirichlet.csv", row.names = FALSE)
-  
-
 ### See if it's worth doing time-varying (yearly) predation -------------------
 stomachs_yearly <- aged_dataset %>%
   group_by(year, predator_age) %>%
@@ -203,47 +151,3 @@ intrasp_ceattle <- cbind(Pred = rep(1, nrow(intrasp_full)),
                          Stomach_proportion_by_weight = intrasp_full$wt_prop)
 
 write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE.csv", row.names = FALSE)
-
-
-### Read in & update post-Dirichlet dataset -----------------------------------
-post_dirichlet <- read.csv("data/diet/Dirichlet/Dirichlet_Results.csv")
-
-# Fix issues from export from the Dirichlet script
-colnames(post_dirichlet) <- c("predator", "prey", "lower95", "upper95", "mode", 
-                              "simple_average", "boot_average", "boot_mode",
-                              "normalized_mode")
-post_dirichlet <- post_dirichlet[-1, ]
-
-post_dirichlet[, 3:9] <- sapply(post_dirichlet[, 3:9], as.numeric)  # make numeric
-
-# Plot different statistics from the analysis
-post_dirichlet_long <- melt(post_dirichlet, id.vars = c("predator", "prey", "lower95", "upper95"))
-
-dirichlet_results <- ggplot(post_dirichlet_long, aes(x = prey)) +
-  geom_errorbar(aes(ymin = lower95, ymax = upper95), 
-                width = .3, position = position_dodge(.9)) +
-  geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
-  xlab("") + ylab("stomach proportion") +
-  facet_wrap(~ predator)
-dirichlet_results
-
-ggsave(filename = "plots/diet/Dirichlet_results.png", 
-       dirichlet_results, width=300, height=200, units="mm", dpi=300)
-
-# Re-organize dataframe for CEATTLE
-dirichlet_ceattle <- post_dirichlet %>% filter(prey != "other")
-  
-dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(post_dirichlet)),
-                                      Prey = rep(1, nrow(post_dirichlet)),
-                                      Pred_sex = rep(0, nrow(post_dirichlet)),
-                                      Prey_sex = rep(0, nrow(post_dirichlet)),
-                                      Pred_age = post_dirichlet$predator,
-                                      Prey_age = post_dirichlet$prey,
-                                      Year = rep(0, nrow(post_dirichlet)),
-                                      Sample_size = rep(10, nrow(post_dirichlet)),
-                                      Stomach_proportion_by_weight = post_dirichlet$boot_average))
-
-write.csv(dirichlet_ceattle, "data/diet/Dirichlet_for_CEATTLE.csv", row.names = FALSE)
-
