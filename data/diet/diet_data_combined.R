@@ -43,6 +43,12 @@ FEAT_all <- FEAT_all %>%
   mutate(prey_name = ifelse(prey_category_long == "Gadiformes", "Pacific Hake", "other")) %>%
   select(stomach_uuid, month, year, tow_latitude, tow_longitude, predator_age, 
          prey_name, content_wt_g, measure_value)
+
+# Switch to age 15 accummulator age
+FEAT_all <- FEAT_all %>% 
+  filter(predator_age != "(blank)") %>%
+  mutate(predator_age = as.numeric(predator_age)) %>%
+  mutate(predator_age = ifelse(predator_age > 15, 15, predator_age))
   
 
 ### Combine datasets ----------------------------------------------------------
