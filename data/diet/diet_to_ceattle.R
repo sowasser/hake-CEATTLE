@@ -103,48 +103,54 @@ ggsave(filename = "plots/diet/cannibalism_overall.png",
 
 
 ### Reshape data for Dirichlet modeling ---------------------------------------
-for_dirichlet <- aged_dataset %>%
+# Subset dataset for only those hake that had no prey hake and assign proportion of diet as entirely "other"
+no_hake_dirichlet <- aged_dataset %>%
   select(Predator_ID, year, predator_age, prey_name, prey_age, prey_wt) %>%
-  # Find total stomach weight for each predator
   group_by(Predator_ID) %>%
-  mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>% 
-  # Select only prey hake and find weight proportion
-  filter(prey_name == "Pacific Hake") %>%  
-  mutate(hake_prey_prop = prey_wt / stomach_wt) %>%
+  filter(prey_name != "Pacific Hake") %>%
   ungroup() %>%
-  distinct()  %>%  # Remove duplicates - keep only one record per predator
+  select(Predator_ID, predator_age) %>%  
+  mutate(predator_age = as.numeric(predator_age)) %>%
+  distinct()
+no_hake_dirichlet$prey_age <- rep("other", nrow(no_hake_dirichlet))
+no_hake_dirichlet$hake_prey_prop <- rep(1, nrow(no_hake_dirichlet))
+
+# Select columns fron hake cannibalism dataset
+hake_dirichlet <- aged_wt %>%
+  select(Predator_ID, predator_age, prey_age, hake_prey_prop)
+
+# Combine together and turn into wide format for Dirichlet script
+for_dirichlet <- rbind(hake_dirichlet, no_hake_dirichlet) %>%
   mutate(new_ID = c(1:length(Predator_ID))) %>%
   select(new_ID, predator_age, prey_age, hake_prey_prop) %>%
   pivot_wider(id_cols = c(new_ID, predator_age),  # rows to stay the same
               names_from = prey_age,  # columns to convert to wide
               values_from = hake_prey_prop,  # values to fill in
               values_fill = 0) %>%  # what to fill for missing values 
-  mutate(predator_age = as.integer(predator_age)) %>%
   arrange(predator_age)
 
 # Re-order and rename data for final dataset
-for_dirichlet <- for_dirichlet[, c(2, 4, 5, 6, 3)]
-colnames(for_dirichlet)[2:5] <- c("prey_a1", "prey_a2", "prey_a3", "prey_a5")
-unique(as.character(for_dirichlet$predator_age))
-for_dirichlet$predator_age <- recode(for_dirichlet$predator_age, 
-                                   "1" = "pred_a1", "2" = "pred_a2",
-                                   "3" = "pred_a3", "4" = "pred_a4",
-                                   "5" = "pred_a5", "6" = "pred_a6",
-                                   "7" = "pred_a7", "8" = "pred_a8",
-                                   "9" = "pred_a9", "10" = "pred_a10",
-                                   "11" = "pred_a11", "12" = "pred_a12",
-                                   "13" = "pred_a13", "14" = "pred_a14",
-                                   "15" = "pred_a15")
+for_dirichlet <- for_dirichlet[, c(2, 4, 5, 6, 3, 7)]
+colnames(for_dirichlet)[1:5] <- c("Predator", "hake_a1", "hake_a2", "hake_a3", "hake_a5")
+unique(as.character(for_dirichlet$Predator))
+for_dirichlet$Predator <- recode(for_dirichlet$Predator, 
+                                 "1" = "pred_a1", "2" = "pred_a2",
+                                 "3" = "pred_a3", "4" = "pred_a4",
+                                 "5" = "pred_a5", "6" = "pred_a6",
+                                 "7" = "pred_a7", "8" = "pred_a8",
+                                 "9" = "pred_a9", "10" = "pred_a10",
+                                 "11" = "pred_a11", "12" = "pred_a12",
+                                 "13" = "pred_a13", "14" = "pred_a14",
+                                 "15" = "pred_a15")
 
 # Add "wtg" column from Dirichlet example dataset
 for_dirichlet <- cbind(for_dirichlet[, 1], 
                         wtg = rep(1, length(for_dirichlet[, 1])),
-                        for_dirichlet[, 2:5])
+                        for_dirichlet[, 2:6])
 
-# Add column with remaining diet proportion - assigned to "other" prey
+# Update "other" column to include remainder from hake on hake stomachs
 for_dirichlet$other <- 1 - rowSums(for_dirichlet[, 3:6])
 
-colnames(for_dirichlet)[1] <- "Predator"
 write.csv(for_dirichlet, "data/diet/Dirichlet/hake_for_dirichlet.csv", row.names = FALSE)
   
 
@@ -208,8 +214,6 @@ colnames(post_dirichlet) <- c("predator", "prey", "lower95", "upper95", "mode",
                               "normalized_mode")
 post_dirichlet <- post_dirichlet[-1, ]
 
-# Remove "other" data column from analysis
-post_dirichlet <- post_dirichlet %>% filter(prey != "other")
 post_dirichlet[, 3:9] <- sapply(post_dirichlet[, 3:9], as.numeric)  # make numeric
 
 # Plot different statistics from the analysis
@@ -229,6 +233,8 @@ ggsave(filename = "plots/diet/Dirichlet_results.png",
        dirichlet_results, width=300, height=200, units="mm", dpi=300)
 
 # Re-organize dataframe for CEATTLE
+dirichlet_ceattle <- post_dirichlet %>% filter(prey != "other")
+  
 dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(post_dirichlet)),
                                       Prey = rep(1, nrow(post_dirichlet)),
                                       Pred_sex = rep(0, nrow(post_dirichlet)),
