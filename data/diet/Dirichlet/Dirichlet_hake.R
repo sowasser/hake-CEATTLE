@@ -5,12 +5,6 @@ library(ggplot2)
 library(ggsidekick)
 library(viridis)
 
-# Read in full aged dataset
-aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
-# Replace NAs with age 1
-aged_dataset$prey_age[is.na(aged_dataset$prey_age) & aged_dataset$prey_name == "Pacific Hake"] <- 1
-
-
 ### Update data, run Dirichlet ------------------------------------------------
 run_Dirichlet <- function(data, name) {
   # Get total stomach weights for each predator and proportional weight for prey hake
@@ -25,7 +19,7 @@ run_Dirichlet <- function(data, name) {
   aged_wt$new_ID <- c(1:nrow(aged_wt))
   
   # Subset dataset for only those hake that had no prey hake and assign proportion of diet as entirely "other"
-  no_hake_dirichlet <- aged_dataset %>%
+  no_hake_dirichlet <- data %>%
     select(Predator_ID, year, predator_age, prey_name, prey_age, prey_wt) %>%
     group_by(Predator_ID) %>%
     filter(prey_name != "Pacific Hake") %>%
@@ -51,8 +45,8 @@ run_Dirichlet <- function(data, name) {
     arrange(predator_age)
   
   # Re-order and rename data for final dataset
-  for_dirichlet <- for_dirichlet[, c(2, 4, 5, 6, 3, 7)]
-  colnames(for_dirichlet)[1:5] <- c("Predator", "hake_a1", "hake_a2", "hake_a3", "hake_a5")
+  for_dirichlet <- for_dirichlet[, -1]
+  colnames(for_dirichlet)[1] <- c("Predator")
   unique(as.character(for_dirichlet$Predator))
   for_dirichlet$Predator <- recode(for_dirichlet$Predator, 
                                    "1" = "pred_a1", "2" = "pred_a2",
@@ -67,12 +61,12 @@ run_Dirichlet <- function(data, name) {
   # Add "wtg" column from Dirichlet example dataset
   for_dirichlet <- cbind(for_dirichlet[, 1], 
                          wtg = rep(1, length(for_dirichlet[, 1])),
-                         for_dirichlet[, 2:6])
+                         for_dirichlet[, 2:(ncol(for_dirichlet) - 1)])
   
   # Update "other" column to include remainder from hake on hake stomachs
-  for_dirichlet$other <- 1 - rowSums(for_dirichlet[, 3:6])
+  for_dirichlet$other <- (1 - rowSums(for_dirichlet[, -c(1, 2), drop = FALSE]))
   
-  
+ 
   ### Run Dirichlet script ------------------------------------------------------
   path <- "data/diet/Dirichlet/plots/"  # path for all plots
   x <- for_dirichlet
@@ -484,14 +478,33 @@ run_Dirichlet <- function(data, name) {
 }
 
 ### Results -------------------------------------------------------------------
+# Run for all years
+# Read in full aged dataset
+aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
+# Replace NAs with age 1
+aged_dataset$prey_age[is.na(aged_dataset$prey_age) & aged_dataset$prey_name == "Pacific Hake"] <- 1
+
 all_years <- run_Dirichlet(aged_dataset, "All years")
 
-all_years_df <- output[[1]]
+all_years_df <- all_years[[1]]
 
-all_years_plot <- output[[2]]
+all_years_plot <- all_years[[2]]
 all_years_plot
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", 
        all_years_plot, width=300, height=200, units="mm", dpi=300)
+
+# Run for only 1998
+y90s <- c(1991, 1995, 1997, 1998, 1999)
+df_90s <- aged_dataset %>% filter(year %in% y90s)
+dirichlet_90s <- run_Dirichlet(df_90s, "1991-1999")
+dirichlet_90s[[2]]
+
+# Run with recent data
+recent <- c(2005, 2007, 2011, 2015, 2019)
+df_recent <- aged_dataset %>% filter(year %in% recent)
+dirichlet_recent <- run_Dirichlet(df_recent, "2005-2019")
+dirichlet_recent[[2]]
+
 
 ### Re-organize dataframe for CEATTLE -----------------------------------------
 dirichlet_ceattle <- all_years_df %>% filter(prey != "other")
