@@ -427,9 +427,7 @@ run_Dirichlet <- function(data, name) {
   
   npredlist  <- unique(x$Predator)
   
-  
   #open file
-  
   #write column names
   columnnames<-c("PredatorName","PreyName","lower95","upper95", "mode", "simpleaverages", "bootaverage", "bootmode","normalizedmode")
   #write to file here
@@ -462,6 +460,13 @@ run_Dirichlet <- function(data, name) {
   
   post_dirichlet[, 3:9] <- sapply(post_dirichlet[, 3:9], as.numeric)  # make numeric
   
+  post_dirichlet$predator <- factor(post_dirichlet$predator, 
+                                    levels = c("pred_a1", "pred_a2", "pred_a3", 
+                                               "pred_a4", "pred_a5", "pred_a6",
+                                               "pred_a7", "pred_a8", "pred_a9", 
+                                               "pred_a10", "pred_a11", "pred_a12",
+                                               "pred_a13", "pred_a14", "pred_a15"))
+  
   # Plot different statistics from the analysis
   post_dirichlet_long <- melt(post_dirichlet, id.vars = c("predator", "prey", "lower95", "upper95"))
   
@@ -479,27 +484,26 @@ run_Dirichlet <- function(data, name) {
 }
 
 ### Results -------------------------------------------------------------------
-output <- run_Dirichlet(aged_dataset, "All years")
+all_years <- run_Dirichlet(aged_dataset, "All years")
 
-post_dirichlet <- output[[1]]
-dirichlet_results <- output[[2]]
-dirichlet_results
+all_years_df <- output[[1]]
 
-
-ggsave(filename = "plots/diet/Dirichlet_results.png", 
-       dirichlet_results, width=300, height=200, units="mm", dpi=300)
+all_years_plot <- output[[2]]
+all_years_plot
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", 
+       all_years_plot, width=300, height=200, units="mm", dpi=300)
 
 ### Re-organize dataframe for CEATTLE -----------------------------------------
-dirichlet_ceattle <- post_dirichlet %>% filter(prey != "other")
+dirichlet_ceattle <- all_years_df %>% filter(prey != "other")
 
-dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(post_dirichlet)),
-                                      Prey = rep(1, nrow(post_dirichlet)),
-                                      Pred_sex = rep(0, nrow(post_dirichlet)),
-                                      Prey_sex = rep(0, nrow(post_dirichlet)),
-                                      Pred_age = post_dirichlet$predator,
-                                      Prey_age = post_dirichlet$prey,
-                                      Year = rep(0, nrow(post_dirichlet)),
-                                      Sample_size = rep(10, nrow(post_dirichlet)),
-                                      Stomach_proportion_by_weight = post_dirichlet$boot_average))
+dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(dirichlet_ceattle)),
+                                      Prey = rep(1, nrow(dirichlet_ceattle)),
+                                      Pred_sex = rep(0, nrow(dirichlet_ceattle)),
+                                      Prey_sex = rep(0, nrow(dirichlet_ceattle)),
+                                      Pred_age = dirichlet_ceattle$predator,
+                                      Prey_age = dirichlet_ceattle$prey,
+                                      Year = rep(0, nrow(dirichlet_ceattle)),
+                                      Sample_size = rep(10, nrow(dirichlet_ceattle)),
+                                      Stomach_proportion_by_weight = dirichlet_ceattle$boot_average))
 
 write.csv(dirichlet_ceattle, "data/diet/Dirichlet_for_CEATTLE.csv", row.names = FALSE)

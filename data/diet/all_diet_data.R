@@ -147,9 +147,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     xlab("sampling month") + ylab(" ") +
     facet_wrap(~ Year)
   
-  ggsave(filename = "plots/diet/timing_yearly.png", timing_yearly, 
-         width=200, height=150, units="mm", dpi=300)
-  
   timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, color = type, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_x_discrete(limits=factor(1:12)) +
@@ -157,9 +154,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     theme_sleek() +
     xlab("sampling month") + ylab(" ") 
-  
-  ggsave(filename = "plots/diet/timing_overall.png", timing_overall, 
-         width=170, height=100, units="mm", dpi=300)
   
   ### Plot location of sample collection --------------------------------------
   location_all <- pred_type %>%
@@ -275,9 +269,9 @@ arrowtooth_hake[[5]]  # top prey species
 arrowtooth_hake[[6]]  # yearly predation by type
 arrowtooth_hake[[7]]  # overall locations of predation by type
 
-ggsave(filename = "plots/diet/ATF_prey_species.png", arrowtooth_hake[[5]], 
+ggsave(filename = "plots/diet/Non-hake/ATF_prey_species.png", arrowtooth_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
-ggsave(filename = "plots/diet/ATF_locations_overall.png", arrowtooth_hake[[7]], 
+ggsave(filename = "plots/diet/Non-hake/ATF_locations_overall.png", arrowtooth_hake[[7]], 
        width=100, height=100, units="mm", dpi=300)
 
 
@@ -293,9 +287,9 @@ sealion_hake[[5]]  # top prey species
 sealion_hake[[6]]  # yearly predation by type
 sealion_hake[[7]]  # overall locations of predation by type
 
-ggsave(filename = "plots/diet/CSL_prey_species.png", sealion_hake[[5]], 
+ggsave(filename = "plots/diet/Non-hake/CSL_prey_species.png", sealion_hake[[5]], 
        width=200, height=80, units="mm", dpi=300)
-ggsave(filename = "plots/diet/CSL_locations_overall.png", sealion_hake[[7]], 
+ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[7]], 
        width=100, height=100, units="mm", dpi=300)
 
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
@@ -303,9 +297,8 @@ CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
   ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
   theme_sleek() +
   xlab("prey hake length (cm)") + ylab(" ")
-CSL_hake_prey_size
 
-ggsave(filename = "plots/diet/CSL_hake_prey_size.png", CSL_hake_prey_size, 
+ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
        width=120, height=80, units="mm", dpi=300)
 
 # Subset of diet for CA sea lion predator & ATF prey 
