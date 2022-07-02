@@ -507,16 +507,25 @@ dirichlet_recent[[2]]
 
 
 ### Re-organize dataframe for CEATTLE -----------------------------------------
-dirichlet_ceattle <- all_years_df %>% filter(prey != "other")
+to_ceattle <- function(df) {
+  dirichlet_ceattle <- df %>% filter(prey != "other")
+  
+  dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(dirichlet_ceattle)),
+                                        Prey = rep(1, nrow(dirichlet_ceattle)),
+                                        Pred_sex = rep(0, nrow(dirichlet_ceattle)),
+                                        Prey_sex = rep(0, nrow(dirichlet_ceattle)),
+                                        Pred_age = dirichlet_ceattle$predator,
+                                        Prey_age = dirichlet_ceattle$prey,
+                                        Year = rep(0, nrow(dirichlet_ceattle)),
+                                        Sample_size = rep(10, nrow(dirichlet_ceattle)),
+                                        Stomach_proportion_by_weight = dirichlet_ceattle$boot_average))
+}
 
-dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(dirichlet_ceattle)),
-                                      Prey = rep(1, nrow(dirichlet_ceattle)),
-                                      Pred_sex = rep(0, nrow(dirichlet_ceattle)),
-                                      Prey_sex = rep(0, nrow(dirichlet_ceattle)),
-                                      Pred_age = dirichlet_ceattle$predator,
-                                      Prey_age = dirichlet_ceattle$prey,
-                                      Year = rep(0, nrow(dirichlet_ceattle)),
-                                      Sample_size = rep(10, nrow(dirichlet_ceattle)),
-                                      Stomach_proportion_by_weight = dirichlet_ceattle$boot_average))
+ceattle_all <- to_ceattle(all_years_df)
+write.csv(ceattle_all, "data/diet/Dirichlet/Dirichlet_all_years.csv", row.names = FALSE)
 
-write.csv(dirichlet_ceattle, "data/diet/Dirichlet_for_CEATTLE.csv", row.names = FALSE)
+ceattle_90s <- to_ceattle(dirichlet_90s[[1]])
+write.csv(ceattle_90s, "data/diet/Dirichlet/Dirichlet_90s.csv", row.names = FALSE)
+
+ceattle_recent <- to_ceattle(dirichlet_recent[[1]])
+write.csv(ceattle_recent, "data/diet/Dirichlet/Dirichlet_recent.csv", row.names = FALSE)
