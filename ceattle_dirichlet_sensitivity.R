@@ -233,7 +233,7 @@ nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
 nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
 
 survey <- read.csv("data/assessment/survey_data.csv")
-survey <- cbind(survey, model = rep("assessment", length(survey$year)))
+survey <- cbind(survey, model = rep("SS3", length(survey$year)))
 
 extract_srv <- function(run, name){
   df <- data.frame(year = 1995:2019,

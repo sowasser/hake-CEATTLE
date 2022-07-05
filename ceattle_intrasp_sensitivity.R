@@ -155,7 +155,7 @@ colnames(R_test_wide) <- c("year",
 R_test <- melt(R_test_wide, id.vars = "year")
 
 # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
-ss3_1 <- cbind(1981:2022, rep("SS + 1", (length(years)-1)), ss3_R[1:42, 2])
+ss3_1 <- cbind(1981:2022, rep("SS3 + 1", (length(years)-1)), ss3_R[1:42, 2])
 colnames(ss3_1) <- c("year", "variable", "value")
 
 plot_R <- function(df) {
@@ -240,7 +240,7 @@ test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=mode
   xlab("age") + ylab("numbers") 
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_nbyage_intrasp.png", 
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", 
        test_nbyage_plot, width=200, height=120, units="mm", dpi=300)
 
 
@@ -249,7 +249,7 @@ nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
 nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
 
 survey <- read.csv("data/assessment/survey_data.csv")
-survey <- cbind(survey, model = rep("assessment", length(survey$year)))
+survey <- cbind(survey, model = rep("SS3", length(survey$year)))
 
 extract_srv <- function(run, name){
   df <- data.frame(year = 1995:2019,
@@ -276,5 +276,5 @@ test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
   xlab("year") + ylab("survey biomass") 
 test_survey_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_survey_biomass.png", 
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_survey.png", 
        test_survey_plot, width=200, height=120, units="mm", dpi=300)
