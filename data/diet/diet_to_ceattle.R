@@ -1,9 +1,11 @@
 # Script for updating the hake intraspecies predation data for use in CEATTLE
 
 library(tidyverse)
-library(ggsidekick)
 library(viridis)
 library(reshape2)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 # Read in full aged dataset
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
@@ -92,14 +94,13 @@ df <- melt(intrasp[, -3], id.vars = c("predator_age", "prey_age"))
 diet_plot <- ggplot(df, aes(x=as.factor(predator_age), y=value, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
-  theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age")
 diet_plot
 
-ggsave(filename = "plots/diet/cannibalism_overall.png", 
-       diet_plot, width=200, height=120, units="mm", dpi=300)
+ggsave(filename = "plots/diet/cannibalism_overall.png", diet_plot, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)
 
 
 ### See if it's worth doing time-varying (yearly) predation -------------------
@@ -128,15 +129,14 @@ intrasp_yearly <- melt(intrasp_yearly[, c("year", "predator_age", "prey_age", "w
 diet_plot_yearly <- ggplot(intrasp_yearly, aes(x=as.factor(predator_age), y=value, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
-  theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age") +
   facet_wrap(~year)
 diet_plot_yearly
 
-ggsave(filename = "plots/diet/cannibalism_yearly.png", 
-       diet_plot_yearly, width=300, height=200, units="mm", dpi=300)
+ggsave(filename = "plots/diet/cannibalism_yearly.png", diet_plot_yearly, 
+       bg = "transparent", width=300, height=200, units="mm", dpi=300)
 
 
 ### Get data ready to be added directly to CEATTLE ----------------------------

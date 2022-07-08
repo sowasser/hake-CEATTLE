@@ -4,8 +4,10 @@
 
 library(reshape2)
 library(ggplot2)
-library(ggsidekick)
 library(viridis)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 proxy_params <- read.csv("data/bioenergetics/proxy_bioen_params.csv")
 
@@ -60,12 +62,11 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
-  theme_sleek() +
   ylab("specific rate") +
   labs(color = "species")
 
 ggsave(filename="plots/bioenergetics/temp_consumption.png", temp_rate,
-       width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 # Allometric mass function ----------------------------------------------------
@@ -107,12 +108,11 @@ mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) + 
-  theme_sleek() +
   ylab("specific rate") +
   labs(color = "species")
 
 ggsave(filename="plots/bioenergetics/allometric_mass.png", mass_rate,
-       width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 # Sensitivity of bioenergetics to temp anomaly --------------------------------
@@ -154,13 +154,12 @@ temp_sensitivity <- ggplot(temp_sen, aes(x=anomaly, y=value)) +
   geom_point(aes(color=variable), size=2) +
   geom_line(aes(color=variable), size=1) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) + 
-  theme_sleek() +
   ylab("specific rate") +
   xlab("temperature anomaly") +
   labs(color = "species")
 
 ggsave(filename="plots/bioenergetics/temp_sensitivity.png", temp_sensitivity,
-       width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 # Plot difference between the 2 hake estimates for each anomaly
@@ -169,9 +168,8 @@ temp_diff <- data.frame(cbind(anomalies, diff))
 
 rate_difference <- ggplot(temp_diff, aes(x=anomalies, y=diff)) +
   geom_point() +
-  theme_sleek() +
   ylab("difference in specific rate") +
   xlab("temperature anomaly") 
 
 ggsave(filename="plots/bioenergetics/rate_difference.png", rate_difference,
-       width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)

@@ -2,12 +2,15 @@
 
 library(dplyr)
 library(ggplot2)
-library(ggsidekick)
 library(viridis)
 library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
 library(rgeos)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
+
 
 path <- "data/diet/CCTD/v4/"
 
@@ -113,7 +116,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
     coord_flip() +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
-    theme_sleek() +
     xlab(" ") + ylab(" ") +
     facet_wrap(~ variable, scales = "free")
   
@@ -130,7 +132,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   predation_yearly <- ggplot(predation_all, aes(x = Year, y = n, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     ylab(" ")
   
   ### Plot timing of sample collection ----------------------------------------
@@ -143,7 +144,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     geom_bar(position = "stack", stat = "identity") +
     scale_x_discrete(limits=factor(1:12)) +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     xlab("sampling month") + ylab(" ") +
     facet_wrap(~ Year)
   
@@ -152,7 +152,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     scale_x_discrete(limits=factor(1:12)) +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     xlab("sampling month") + ylab(" ") 
   
   ### Plot location of sample collection --------------------------------------
@@ -173,7 +172,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
     scale_y_continuous(breaks = seq(35, 55, by = 10)) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     xlab(" ") + ylab(" ") +
     facet_wrap(~Year, ncol = 8)
   
@@ -184,7 +182,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
     scale_y_continuous(breaks = seq(35, 55, by = 5)) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     xlab(" ") + ylab(" ") 
   
   ### Inset timing plots in yearly location plots -----------------------------
@@ -195,7 +192,6 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
       geom_bar(position = "stack", stat = "identity") +
       scale_x_discrete(limits = factor(1:12), breaks = c(1, 6, 12)) +
       scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-      theme_sleek() +
       theme(axis.title.y = element_blank(),
             axis.title.x = element_blank(),
             axis.text.y = element_blank(),
@@ -248,13 +244,13 @@ hake_hake[[6]]  # yearly predation by type
 hake_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
-       width=200, height=80, units="mm", dpi=300)
+       bg = "transparent", width=200, height=80, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
-       width=170, height=100, units="mm", dpi=300)
+       bg = "transparent", width=170, height=100, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[7]], 
-       width=100, height=100, units="mm", dpi=300)
+       bg = "transparent", width=100, height=100, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]], 
-       width=400, height=210, units="mm", dpi=300)
+       bg = "transparent", width=400, height=210, units="mm", dpi=300)
 
 
 ### Subset diet for arrowtooth flounder predator & hake prey ------------------
@@ -270,9 +266,9 @@ arrowtooth_hake[[6]]  # yearly predation by type
 arrowtooth_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/Non-hake/ATF_prey_species.png", arrowtooth_hake[[5]], 
-       width=200, height=80, units="mm", dpi=300)
+       bg = "transparent", width=200, height=80, units="mm", dpi=300)
 ggsave(filename = "plots/diet/Non-hake/ATF_locations_overall.png", arrowtooth_hake[[7]], 
-       width=100, height=100, units="mm", dpi=300)
+       bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
 
 ### Subset of diet for CA sea lion predator & hake prey -----------------------
@@ -288,18 +284,17 @@ sealion_hake[[6]]  # yearly predation by type
 sealion_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/Non-hake/CSL_prey_species.png", sealion_hake[[5]], 
-       width=200, height=80, units="mm", dpi=300)
+       bg = "transparent", width=200, height=80, units="mm", dpi=300)
 ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[7]], 
-       width=100, height=100, units="mm", dpi=300)
+       bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
   ggdist::stat_slab(aes(thickness = stat(pdf*n)), scale = 0.7) +
   ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
-  theme_sleek() +
   xlab("prey hake length (cm)") + ylab(" ")
 
 ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
-       width=120, height=80, units="mm", dpi=300)
+       bg = "transparent", width=120, height=80, units="mm", dpi=300)
 
 # Subset of diet for CA sea lion predator & ATF prey 
 sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")

@@ -2,9 +2,11 @@
 
 library(dplyr)
 library(ggplot2)
-library(ggsidekick)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
-path <- "data/diet/Full dataset/v4/"
+path <- "data/diet/CCTD/v4/"
 
 # Read in all predator and prey data
 predator <- read.csv(paste0(path, "predator_information_v4.csv"))
@@ -24,10 +26,8 @@ high_n <- pred_prey %>%
 hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = freq)) +
   geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
   coord_flip() +
-  theme_sleek() +
   xlab(" ") + ylab("Relative frequency of hake predation") 
 hake_pred_plot
 
 ggsave(filename = "plots/diet/hake_predators.png", hake_pred_plot, 
-       width=180, height=100, units="mm", dpi=300)
-
+       bg = "transparent", width=180, height=100, units="mm", dpi=300)

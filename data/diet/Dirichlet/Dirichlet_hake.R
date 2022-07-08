@@ -2,8 +2,10 @@ library(VGAM)   #fits Dirichlet Dist.
 library(crayon) #color output to console
 library(dplyr)
 library(ggplot2)
-library(ggsidekick)
 library(viridis)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 ### Update data, run Dirichlet ------------------------------------------------
 run_Dirichlet <- function(data, name) {
@@ -469,7 +471,6 @@ run_Dirichlet <- function(data, name) {
                   width = .3, position = position_dodge(.9)) +
     geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     xlab("prey item") + ylab("stomach proportion") +
     ggtitle(name) +
     facet_wrap(~ predator)
@@ -490,8 +491,8 @@ all_years_df <- all_years[[1]]
 
 all_years_plot <- all_years[[2]]
 all_years_plot
-ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", 
-       all_years_plot, width=300, height=200, units="mm", dpi=300)
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years_plot, 
+       bg = "transparent", width=300, height=200, units="mm", dpi=300)
 
 # Run for only 1998
 y90s <- c(1991, 1995, 1997, 1998, 1999)

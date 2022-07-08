@@ -6,8 +6,10 @@ library(Rceattle)
 library(reshape2)
 library(dplyr)
 library(ggplot2)
-library(ggsidekick)
 library(viridis)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
 
@@ -109,7 +111,6 @@ plot_biom <- function(df) {
   plot <- ggplot(biom, aes(x=year, y=value)) +
     geom_line(aes(color=variable)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    theme_sleek() +
     ylab("Biomass (mt)") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1)
@@ -121,8 +122,8 @@ plot_biom <- function(df) {
 test_biom_plot <- plot_biom(test_biom)
 test_biom_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_biomass.png", 
-       test_biom_plot, width=200, height=150, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_biomass.png", test_biom_plot, 
+       bg = "transparent", width=200, height=150, units="mm", dpi=300)
 
 
 # Plot recruitment ------------------------------------------------------------
@@ -151,7 +152,6 @@ plot_R <- function(df) {
   plot <- ggplot(df, aes(x=year, y=value)) +
     geom_line(aes(color=variable)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    theme_sleek() +
     ylab("Recruitment") +
     labs(color = "model")
   
@@ -161,8 +161,8 @@ plot_R <- function(df) {
 test_R_plot <- plot_R(R_test)
 test_R_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_R.png", 
-       test_R_plot, width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_R.png", test_R_plot, 
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 # # Calculate and plot difference btw no diet & each cannibalism run ------------
@@ -218,14 +218,13 @@ nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
 
 test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
-  theme_sleek() +
   scale_x_discrete(labels = c(1:14, "15+")) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   xlab("age") + ylab("numbers") 
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_nbyage.png", 
-       test_nbyage_plot, width=200, height=120, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_nbyage.png", test_nbyage_plot, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
@@ -253,11 +252,10 @@ test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
   geom_line(linetype = "dotted") +
   geom_point() +
   # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-  theme_sleek() +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   xlab("year") + ylab("survey biomass") 
 test_survey_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_survey.png", 
-       test_survey_plot, width=200, height=120, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_survey.png", test_survey_plot, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)

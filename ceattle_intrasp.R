@@ -6,8 +6,10 @@ library(Rceattle)
 library(reshape2)
 library(dplyr)
 library(ggplot2)
-library(ggsidekick)
 library(viridis)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
 
@@ -79,7 +81,6 @@ plot_biomass <- function() {
     geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    theme_sleek() +
     ylab("Biomass (mt)") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1)
@@ -91,8 +92,8 @@ biom_plot <- plot_biomass()
 
 biom_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_biomass.png", 
-       biom_plot, width=200, height=150, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_biomass.png", biom_plot, 
+       bg = "transparent", width=200, height=150, units="mm", dpi=300)
 
 
 ### Plot recruitment ----------------------------------------------------------
@@ -124,7 +125,6 @@ plot_R <- function() {
     geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    theme_sleek() +
     ylab("Recruitment") +
     labs(color = "model") +labs(fill = "model")
   return(R_plot)
@@ -133,8 +133,8 @@ plot_R <- function() {
 R_plot <- plot_R()
 R_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_R.png", 
-       R_plot, width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_R.png", R_plot, 
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 ### Numbers-at-age for each model run -----------------------------------------
@@ -188,7 +188,6 @@ plot_nbyage <- function(output) {
   nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean, fill=model, color=model)) +
     geom_bar(stat = "identity", position = "dodge") +
     geom_errorbar(aes(ymin=mean, ymax=mean+sd), width=.2, position=position_dodge(.9)) +  # only upper error bars
-    theme_sleek() +
     scale_x_discrete(labels = c(1:14, "15+")) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
@@ -197,7 +196,6 @@ plot_nbyage <- function(output) {
   # Plot yearly nbyage
   nbyage_plot_yearly <- ggplot(nbyage_all, aes(x=age, y=numbers, fill=model)) +
     geom_bar(stat = "identity", position = "dodge") +
-    theme_sleek() +
     scale_x_discrete(labels = c(1:14, "15+")) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     xlab("age") + ylab("numbers") +
@@ -214,8 +212,8 @@ nbyage_plot_mean
 # nbyage_plot_yearly <- plot_nbyage(output = "yearly")
 # nbyage_plot_yearly
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", 
-       nbyage_plot_mean, width=200, height=120, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nbyage_plot_mean, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
@@ -237,7 +235,6 @@ plot_survey <- function() {
     geom_line(linetype = "dotted") +
     geom_point() +
     # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-    theme_sleek() +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     xlab("year") + ylab("survey biomass") 
@@ -248,5 +245,5 @@ plot_survey <- function() {
 survey_plot <- plot_survey()
 survey_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", 
-       survey_plot, width=200, height=120, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", survey_plot, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)

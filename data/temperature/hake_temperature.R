@@ -5,8 +5,10 @@
 
 library(dplyr)
 library(ggplot2)
-library(ggsidekick)
 library(viridis)
+# Set transparent ggplot theme
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
 summer_ROMS <- read.csv("data/temperature/ROMS_summer_mean.csv")
@@ -23,7 +25,7 @@ survey_mean <- survey_temp %>% group_by(year) %>%
   summarise(mean_temp = mean(temp_100))
 
 survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
-colnames(survey) <- c("year", "temp", "source")
+colnames(survey) <- c("year", "mean_temp", "source")
 
 ROMS <- cbind(summer_ROMS, rep("ROMS", length(summer_ROMS$mean_temp)))
 colnames(ROMS) <- c("year", "mean_temp", "source")
@@ -37,23 +39,21 @@ mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
   geom_line(linetype="dotted") +
   geom_point() +
   scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
-  theme_sleek() +
   ylab("temperature")
 mean_temp_plot
 
 ggsave(filename="plots/temperature/mean_temp.png", mean_temp_plot,
-       width=150, height=100, units="mm", dpi=300)
+       bg = "transparent", width=150, height=100, units="mm", dpi=300)
 
 # Temperature distribution per year -------------------------------------------
 temp_dist_years <- ggplot(survey_temp, aes(x=temp_100)) +
   geom_histogram() +
-  theme_sleek() +
   xlab("temperature") + ylab(" ") +
   facet_wrap(~year)
 # temp_dist_years
 
 ggsave(filename="plots/temperature/temp_dist_years.png", temp_dist_years,
-       width=250, height=200, units="mm", dpi=300)
+       bg = "transparent", width=250, height=200, units="mm", dpi=300)
 
 
 # Temperature where hake were found -------------------------------------------
@@ -85,13 +85,12 @@ temp_comp$temp <- as.numeric(temp_comp$temp)
   
 temp_hake_hist <- ggplot(temp_comp, aes(x=temp, fill=source)) +
   geom_histogram() +
-  theme_sleek() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("temperature (°C)") + ylab(" ") 
 temp_hake_hist
 
 ggsave(filename="plots/temperature/temp_hake_hist.png", temp_hake_hist,
-       width=160, height=100, units="mm", dpi=300)
+       bg = "transparent", width=160, height=100, units="mm", dpi=300)
 
 
 # Compare mean survey temp, mean kriged temp, kriged + hake biomass > 0 -------
@@ -116,9 +115,8 @@ mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
   geom_line(aes(color=dataset), size=1, linetype="dotted") +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
-  theme_sleek() +
   ylab("mean temperature")
 mean_temp_compared
 
 ggsave(filename="plots/temperature/mean_temp_compared.png", mean_temp_compared,
-       width=160, height=100, units="mm", dpi=300)
+       bg = "transparent", width=160, height=100, units="mm", dpi=300)
