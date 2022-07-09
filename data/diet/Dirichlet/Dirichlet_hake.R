@@ -32,7 +32,7 @@ run_Dirichlet <- function(data, name) {
   no_hake_dirichlet$prey_age <- rep("other", nrow(no_hake_dirichlet))
   no_hake_dirichlet$hake_prey_prop <- rep(1, nrow(no_hake_dirichlet))
   
-  # Select columns fron hake cannibalism dataset
+  # Select columns from hake cannibalism dataset
   hake_dirichlet <- aged_wt %>%
     select(Predator_ID, predator_age, prey_age, hake_prey_prop)
   
@@ -530,3 +530,40 @@ write.csv(ceattle_90s, "data/diet/Dirichlet/Dirichlet_90s.csv", row.names = FALS
 
 ceattle_recent <- to_ceattle(dirichlet_recent[[1]])
 write.csv(ceattle_recent, "data/diet/Dirichlet/Dirichlet_recent.csv", row.names = FALSE)
+
+# Compare original proportions to weighted proportions
+original <- read.csv("data/diet/diet_for_CEATTLE_original.csv")
+
+new_df <- function(df, name) {
+  new <- cbind(pred_age = df$Pred_age, 
+               prey_age = df$Prey_age, 
+               prop = df$Stomach_proportion_by_weight, 
+               data = rep(name))
+  return(new)
+} 
+
+comparison <- rbind(new_df(original, "unweighted"),
+                    new_df(ceattle_all, "Dirichlet - all years"),
+                    new_df(ceattle_90s, "Dirichlet - 1991-1999"),
+                    new_df(ceattle_recent, "Dirichlet - 2005-2019"))
+
+comparison <- as.data.frame(comparison) 
+comparison$pred_age <- as.factor(comparison$pred_age)
+comparison$prey_age <- as.numeric(comparison$prey_age)
+comparison$prop <- as.numeric(comparison$prop)
+comparison$data <- factor(comparison$data, 
+                          levels = c("Dirichlet - all years", "Dirichlet - 1991-1999",
+                                     "Dirichlet - 2005-2019", "unweighted"))
+comparison <- comparison %>% filter(prey_age <= 5)
+
+comparison_plot <- ggplot(comparison, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  xlab("predator hake age") + ylab("diet proportion by weight") +
+  labs(fill = "prey hake age") +
+  facet_wrap(~ data)
+comparison_plot
+
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comparison.png", comparison_plot, 
+       bg = "transparent", width=180, height=120, units="mm", dpi=300)
