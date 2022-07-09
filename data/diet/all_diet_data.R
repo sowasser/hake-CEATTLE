@@ -11,7 +11,6 @@ library(rgeos)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-
 path <- "data/diet/CCTD/v4/"
 
 ### Combine diet data, subset for species of interest -------------------------

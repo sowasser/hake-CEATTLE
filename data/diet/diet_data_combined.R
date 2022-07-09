@@ -4,12 +4,13 @@
 library(dplyr)
 library(ggplot2)
 library(viridis)
-library(ggsidekick)
 library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
 library(rgeos)
 library(purrr)
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+theme_set(theme_sleek_transparent())
 
 ### Read in & update CCTD data from SWFSC -------------------------------------
 CCTD_pred <- read.csv("data/diet/CCTD/hake_aged_pred.csv")
@@ -85,24 +86,30 @@ predation_all <- all_data %>%
 predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
   labs(fill = "prey species (n)") + ylab(" ")
 predation_yearly
+
+ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly, 
+       bg = "transparent", width=170, height=100, units="mm", dpi=300)
 
 ### Plot timing of sample collection ----------------------------------------
 timing_all <- all_data %>%
   group_by(year, month, prey_name) %>%
   summarize(n = n()) %>%
   filter(!is.na(year))
+timing_all$month <- factor(timing_all$month)
 
 timing_yearly <- ggplot(timing_all, aes(x = as.factor(month), y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_x_discrete(limits=factor(1:12)) +
+  scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
   xlab("sampling month") + ylab(" ") +
-  facet_wrap(~ year)
+  facet_wrap(~ year, ncol = 7)
 timing_yearly
+
+ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly, 
+       bg = "transparent", width=300, height=120, units="mm", dpi=300)
+
 
 timing_overall <- ggplot(timing_all, aes(x = as.factor(month), y = n, color = prey_name, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
@@ -133,7 +140,6 @@ location_yearly <- ggplot(data = world) +
   scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   scale_y_continuous(breaks = seq(35, 55, by = 10)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
   xlab(" ") + ylab(" ") +
   facet_wrap(~year, ncol = 7)
 
@@ -144,9 +150,11 @@ location_overall <- ggplot(data = world) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
   xlab(" ") + ylab(" ") + labs(color = "prey species")
 location_overall
+
+ggsave(filename = "plots/diet/locations_overall.png", location_overall, 
+       bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
 ### Inset timing plots in yearly location plots -----------------------------
 # Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
@@ -154,14 +162,13 @@ get_inset <- function(df) {
   # Create plot for the inset 
   plot <- ggplot(df, aes(x = as.factor(month), y = n, fill = prey_name)) +
     geom_bar(position = "stack", stat = "identity") +
-    scale_x_discrete(limits = factor(1:12), breaks = c(1, 6, 12)) +
+    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12)) +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    theme_sleek() +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          axis.text.x = element_text(size=rel(0.8)),  # inset axis tick font size
+          axis.text.x = element_text(size=rel(0.9)),  # inset axis tick font size
           plot.background = element_rect(fill='transparent', color=NA)) + # transparent so no overlap w/map
     theme(legend.position="none") 
   return(plot)
@@ -192,5 +199,7 @@ location_timing <- location_yearly +
   coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
   scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   insets
-
 location_timing
+
+ggsave(filename = "plots/diet/locations_timing.png", location_timing, 
+       bg = "transparent", width=300, height=200, units="mm", dpi=300)

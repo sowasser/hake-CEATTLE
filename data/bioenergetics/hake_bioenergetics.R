@@ -38,18 +38,14 @@ temp_dependent <- function(Qc, Tco, Tcm) {
 # Run equation with cod, adult, juvenile pollock parameters & hake estimates
 spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
-                       temp_dependent(eq_2[3, 5], eq_2[3, 6], eq_2[3, 7]),
-                       temp_dependent(2.6, 10, 15),  # Grant's pollock CEATTLE ex.
                        temp_dependent(2.5, 8, 14.5),  # Hake estimates w/ temp from acoustic series
                        temp_dependent(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
 colnames(spp_temp_wide) <- c("Atlantic cod - fb4", 
-                             "pollock (adult) - fb4", 
-                             "pollock (juvenile) - fb4",
-                             "pollock - CEATTLE",
-                             "hake estimate - survey temp",
-                             "hake estimate - kriged temp")
+                             "Pollock - fb4", 
+                             "hake - survey temp",
+                             "hake - kriged temp")
 spp_temp <- melt(as.data.frame(spp_temp_wide))
-spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=6))
+spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4))
 
 # # Distinguish between literature values & estimated value for Hake (when that's ready)
 # spp_temp <- cbind(spp_temp, ref = c(rep("a", times = (length(temp_range) * 3)), 
@@ -64,9 +60,10 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
   ylab("specific rate") +
   labs(color = "species")
+temp_rate
 
 ggsave(filename="plots/bioenergetics/temp_consumption.png", temp_rate,
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
 # Allometric mass function ----------------------------------------------------
@@ -84,18 +81,14 @@ allometric_mass <- function(CA, CB) {
 # Run equation with cod, adult, juvenile pollock parameters & hake estimates
 spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4]), 
                        allometric_mass(eq_2[2, 3], eq_2[2, 4]), 
-                       allometric_mass(eq_2[3, 3], eq_2[3, 4]), 
-                       allometric_mass(0.119009, -0.46024),  # values from Grant's pollock CEATTLE ex.
                        allometric_mass(0.167, -0.460),  # hake estimate from Francis (1983)
                        allometric_mass(0.0835, -0.460))  # Francis (1983) estimate w/ CA/2  
 colnames(spp_mass_wide) <- c("Atlantic cod - fb4", 
-                             "pollock (adult) - fb4", 
-                             "pollock (juvenile) - fb4",
-                             "pollock - CEATTLE",
+                             "Pollock (adult) - fb4", 
                              "hake - Francis",
                              "hake - Francis, CA/2")
 spp_mass <- melt(as.data.frame(spp_mass_wide))
-spp_mass <- cbind(spp_mass, weight = rep(weights, times=6))
+spp_mass <- cbind(spp_mass, weight = rep(weights, times=4))
 
 # # Distinguish between literature values & estimated value for Hake (when that's ready)
 # spp_mass <- cbind(spp_mass, ref = c(rep("a", times = (length(weights) * 5)), 
@@ -110,9 +103,10 @@ mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) + 
   ylab("specific rate") +
   labs(color = "species")
+mass_rate
 
 ggsave(filename="plots/bioenergetics/allometric_mass.png", mass_rate,
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
 # Sensitivity of bioenergetics to temp anomaly --------------------------------

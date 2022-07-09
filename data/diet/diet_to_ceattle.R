@@ -128,15 +128,15 @@ intrasp_yearly <- melt(intrasp_yearly[, c("year", "predator_age", "prey_age", "w
 
 diet_plot_yearly <- ggplot(intrasp_yearly, aes(x=as.factor(predator_age), y=value, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  scale_x_discrete(limits = factor(1:15), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age") +
-  facet_wrap(~year)
+  facet_wrap(~year, ncol = 5)
 diet_plot_yearly
 
 ggsave(filename = "plots/diet/cannibalism_yearly.png", diet_plot_yearly, 
-       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+       bg = "transparent", width=260, height=120, units="mm", dpi=300)
 
 
 ### Get data ready to be added directly to CEATTLE ----------------------------
@@ -150,4 +150,4 @@ intrasp_ceattle <- cbind(Pred = rep(1, nrow(intrasp_full)),
                          Sample_size = intrasp_full$sample_size,
                          Stomach_proportion_by_weight = intrasp_full$wt_prop)
 
-write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE.csv", row.names = FALSE)
+write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names = FALSE)
