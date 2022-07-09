@@ -55,6 +55,7 @@ ceattle_biomass <- function(run, name) {
 }
 
 biomass <- ceattle_biomass(intrasp_run, "CEATTLE - cannibalism")
+write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
 
 # Read in other model runs for comparison and plot
 plot_biomass <- function() {
@@ -98,6 +99,7 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_biomass.png", biom
 
 ### Plot recruitment ----------------------------------------------------------
 recruitment <- c(intrasp_run$quantities$R)
+write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
 
 plot_R <- function() {
   nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
@@ -154,6 +156,7 @@ extract_nbyage <- function(run, name) {
 }
 
 nbyage <- extract_nbyage(intrasp_run, "CEATTLE - cannibalism")
+write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 
 plot_nbyage <- function(output) {
   # Read in data from no diet CEATTLE run

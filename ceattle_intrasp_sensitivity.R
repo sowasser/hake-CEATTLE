@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220524.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -77,9 +77,6 @@ run_wt30 <- run_ceattle(wt30, hake_intrasp)
 run_wt50 <- run_ceattle(wt50, hake_intrasp)
 run_wt80 <- run_ceattle(wt80, hake_intrasp)
 
-# Check what all comes out of CEATTLE
-ceattle_stuff <- run_wt05$quantities
-
 
 # Plot biomass in comparison to no diet & asssessment -------------------------
 years <- 1980:2022
@@ -102,24 +99,13 @@ test_biom <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
                    ceattle_biomass(run_wt80, "CEATTLE - 80% cannibalism"))
 test_biom <- test_biom[, c(1:3, 6, 9, 12)]
 
-# Read in no diet data
-nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
-colnames(nodiet_biom)[3] <- "CEATTLE - no diet"
-
-# Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
-ss3_ssb_werror <- read.table("data/assessment/ssb.txt")
-ss3_ssb <- ss3_ssb_werror[15:57, 2]
-
-ss3_biomass <- read.table("data/assessment/biomass.txt")
-ss3_biom <- ss3_biomass[15:57, 2]
-
-ss3_biom_wide <- as.data.frame(cbind(years, ss3_ssb, ss3_biom))
-colnames(ss3_biom_wide) <- c("year", "SSB", "total biomass")
-ss3_biom_all <- melt(ss3_biom_wide, id.vars = "year")
+# Read in intra-species predation run data
+intrasp_biom <- read.csv("data/ceattle_intrasp_biomass.csv")
+colnames(intrasp_biom)[3] <- "CEATTLE - hake data"
 
 plot_biom <- function(df) {
-  wide <- cbind(df, nodiet_biom[, 3], ss3_biom_all[, 3])
-  colnames(wide)[(ncol(wide)-1):ncol(wide)] <- c("CEATTLE - no diet", "Stock Synthesis")
+  wide <- cbind(df, intrasp_biom[, 3])
+  colnames(wide)[ncol(wide)] <- c("CEATTLE - hake data")
   biom <- melt(wide, id.vars = c("year", "type"))
   
   plot <- ggplot(biom, aes(x=year, y=value)) +
@@ -137,30 +123,24 @@ test_biom_plot <- plot_biom(test_biom)
 test_biom_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_biomass.png", test_biom_plot, 
-       bg = "transparent", width=200, height=150, units="mm", dpi=300)
+       bg = "transparent", width=170, height=120, units="mm", dpi=300)
 
 
 # Plot recruitment ------------------------------------------------------------
-nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
-ss3_R <- read.table("data/assessment/recruitment.txt")[15:57,]
+intrasp_R <- read.csv("data/ceattle_intrasp_R.csv")
 
 R_test_all <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),  
                     c(run_wt50$quantities$R), c(run_wt80$quantities$R))
-R_test_wide <- as.data.frame(cbind(years, R_test_all, nodiet_R))
+R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
 colnames(R_test_wide) <- c("year",
                            "CEATTLE - 0.5% cannibalism",
                            "CEATTLE - 10% cannibalism",
                            "CEATTLE - 50% cannibalism",
                            "CEATTLE - 80% cannibalism",
-                           "CEATTLE - no diet")
+                           "CEATTLE - hake data")
 R_test <- melt(R_test_wide, id.vars = "year")
 
-# Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS is 0)
-ss3_1 <- cbind(1981:2022, rep("SS3 + 1", (length(years)-1)), ss3_R[1:42, 2])
-colnames(ss3_1) <- c("year", "variable", "value")
-
 plot_R <- function(df) {
-  df <- rbind(df, ss3_1)
   df$value <- as.numeric(df$value)
   df$year <- as.numeric(df$year)
   
@@ -180,30 +160,11 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_R.png
        bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
-# # Calculate and plot difference btw no diet & each cannibalism run ------------
-# nodiet_biom4 <- cbind(nodiet_biom[, 3], nodiet_biom[, 3],
-#                       nodiet_biom[, 3], nodiet_biom[, 3])
-# delta_biom_wide <- low_biom[44:86, c(3:6)] - nodiet_biom4
-# delta_biom_wide <- cbind(years, delta_biom_wide)
-# delta_biom <- melt(delta_biom_wide, id.vars = "years")
-# 
-# biom_difference <- ggplot(delta_biom2, aes(x=years, y=value)) +
-#   geom_line(aes(color=variable)) +
-#   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.336) +  # colors to match biomass plot  
-#   theme_sleek() +
-#   ylab("Biomass (mt)") + xlab("year")
-#   labs(color = "model") 
-# biom_difference
-# 
-# ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/low_intrasp_biom_difference.png", 
-#        biom_difference, width=200, height=100, units="mm", dpi=300)
-
-
 # Numbers-at-age for each model run -------------------------------------------
 # Read in data from no diet CEATTLE run
-nbyage_nodiet <- read.csv("data/ceattle_nodiet_nbyage.csv")
-nbyage_nodiet <- cbind(nbyage_nodiet, rep("CEATTLE - no diet", nrow(nbyage_nodiet)))
-colnames(nbyage_nodiet)[4] <- "model"
+intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
+intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("CEATTLE - hake data", nrow(intrasp_nbyage)))
+colnames(intrasp_nbyage)[4] <- "model"
 
 extract_nbyage <- function(run, name) {
   df <- as.data.frame(as.table(run$quantities$NByage))
@@ -223,7 +184,7 @@ nbyage_test_all <- rbind(extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
                          extract_nbyage(run_wt10, "CEATTLE - 10% cannibalism"),
                          extract_nbyage(run_wt50, "CEATTLE - 50% cannibalism"),
                          extract_nbyage(run_wt80, "CEATTLE - 80% cannibalism"),
-                         nbyage_nodiet)
+                         intrasp_nbyage)
 
 # Set 15 as accumulation age
 nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
@@ -235,12 +196,12 @@ nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
 test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_x_discrete(labels = c(1:14, "15+")) +
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.166) +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
   xlab("age") + ylab("numbers") 
 test_nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", test_nbyage_plot, 
-       bg = "transparent", width=200, height=120, units="mm", dpi=300)
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
