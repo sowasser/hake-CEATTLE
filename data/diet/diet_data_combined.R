@@ -50,7 +50,19 @@ FEAT_all <- FEAT_all %>%
   filter(predator_age != "(blank)") %>%
   mutate(predator_age = as.numeric(predator_age)) %>%
   mutate(predator_age = ifelse(predator_age > 15, 15, predator_age))
-  
+
+FEAT_sampling <- FEAT_all %>%
+  group_by(year, prey_name) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(x = year, y = n, fill = prey_name)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  labs(fill = "prey species (n)") + ylab(" ")
+FEAT_sampling
+
+ggsave(filename = "plots/diet/FEAT_sampling.png", FEAT_sampling, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)
+
 
 ### Combine datasets ----------------------------------------------------------
 # Add column for prey ages. All are age 1 according to calculations in the 
