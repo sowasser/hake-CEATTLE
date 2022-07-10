@@ -25,29 +25,26 @@ hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
 
 # Run CEATTLE with differing diet weight proportions --------------------------
 # Set different diet weight proportion distributions
-wt01 <- c(0.0, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.0008, 0.0009, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001)
 wt05 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
-wt1 <- c(0.0, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01)
-wt5 <- c(0.0, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
 wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-wt30 <- c(0.0, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
 wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
-# # Plot stomach contents curves
-# # Pull out data from base intrasp run
-# wts <- hake_intrasp$UobsWtAge$Stomach_proportion_by_weight
-# wts_short <- wts[wts != 0]
-# prop <- as.data.frame(cbind(1:15, wt001, wt005, wt01, wt05, wts_short))
-# colnames(prop)[c(1, 6)] <- c("age", "Grant's")
-# prop_all <- melt(prop, id.vars = "age")
-# 
-# stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
-#   geom_bar(stat = "identity", position = "dodge") +
-#   theme_sleek() +
-#   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-#   ylab("stomach proportion")
-# stomach_props
+# Plot stomach contents curves
+# Pull out data from base intrasp run
+wts <- hake_intrasp$UobsWtAge %>% 
+  group_by(Pred_age) %>%
+  summarize(wt_prop = mean(Stomach_proportion_by_weight))
+
+prop <- as.data.frame(cbind(1:15, wt05, wt10, wt50, wt80, wts$wt_prop))
+colnames(prop)[c(1, 6)] <- c("age", "real data")
+prop_all <- melt(prop, id.vars = "age")
+
+stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("stomach proportion")
+stomach_props
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE

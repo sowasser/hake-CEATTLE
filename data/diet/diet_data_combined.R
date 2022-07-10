@@ -116,7 +116,6 @@ timing_overall <- ggplot(timing_all, aes(x = as.factor(month), y = n, color = pr
   scale_x_discrete(limits=factor(1:12)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  theme_sleek() +
   xlab("sampling month") + ylab(" ") + 
   labs(fill = "prey species (n)", color = "prey species (n)")
 timing_overall

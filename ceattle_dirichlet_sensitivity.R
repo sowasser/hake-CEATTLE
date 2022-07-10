@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220628.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -83,13 +83,18 @@ test_biom <- cbind(ceattle_biomass(run_all, "CEATTLE - all years"),
                    ceattle_biomass(run_recent, "CEATTLE - 2005-2019"))
 test_biom <- test_biom[, c(1:3, 6, 9)]
 
+# Combine with run of CEATTLE using original data and plot
+intrasp_biom <- read.csv("data/ceattle_intrasp_biomass.csv")
+colnames(intrasp_biom)[3] <- "CEATTLE - unweighted"
 
 plot_biom <- function(df) {
-  biom <- melt(df, id.vars = c("year", "type"))
+  wide <- cbind(df, intrasp_biom[, 3])
+  colnames(wide)[(ncol(wide))] <- c("CEATTLE - unweighted")
+  biom <- melt(wide, id.vars = c("year", "type"))
   
   plot <- ggplot(biom, aes(x=year, y=value)) +
     geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE, end = 0.9) +  
+    scale_color_viridis(discrete = TRUE, direction = -1) +  
     ylab("Biomass (mt)") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1)
@@ -108,11 +113,14 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_bio
 # Plot recruitment ------------------------------------------------------------
 R_test_all <- cbind(c(run_all$quantities$R), c(run_90s$quantities$R), 
                     c(run_recent$quantities$R))
-R_test_wide <- as.data.frame(cbind(years, R_test_all))
+
+intrasp_R <- read.csv("data/ceattle_intrasp_R.csv")
+R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
 colnames(R_test_wide) <- c("year",
                            "CEATTLE - all years",
                            "CEATTLE - 1991-1999",
-                           "CEATTLE - 2005-2019")
+                           "CEATTLE - 2005-2019",
+                           "CEATTLE - unweighted")
 R_test <- melt(R_test_wide, id.vars = "year")
 
 plot_R <- function(df) {
@@ -121,7 +129,7 @@ plot_R <- function(df) {
   
   plot <- ggplot(df, aes(x=year, y=value)) +
     geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE, end = 0.9) + 
+    scale_color_viridis(discrete = TRUE, direction = -1) + 
     ylab("Recruitment") +
     labs(color = "model")
   
@@ -170,9 +178,14 @@ extract_nbyage <- function(run, name) {
   return(df)
 }
 
+intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")[, -4]
+intrasp_nbyage <- cbind(intrasp_nbyage, rep("CEATTLE - unweighted"))
+colnames(intrasp_nbyage)[4] <- "model"
+
 nbyage_test_all <- rbind(extract_nbyage(run_all, "CEATTLE - all years"),
                          extract_nbyage(run_90s, "CEATTLE - 1991-1999"),
-                         extract_nbyage(run_recent, "CEATTLE - 2005-2019"))
+                         extract_nbyage(run_recent, "CEATTLE - 2005-2019"),
+                         intrasp_nbyage)
 
 # Set 15 as accumulation age
 nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
@@ -185,12 +198,13 @@ nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
 nbyage_test_mean$model <- factor(nbyage_test_mean$model, 
                                  levels = c("CEATTLE - all years", 
                                             "CEATTLE - 1991-1999",
-                                            "CEATTLE - 2005-2019"))
+                                            "CEATTLE - 2005-2019",
+                                            "CEATTLE - unweighted"))
 
 test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_x_discrete(labels = c(1:14, "15+")) +
-  scale_fill_viridis(discrete = TRUE, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
   xlab("age") + ylab("numbers") 
 test_nbyage_plot
 
@@ -198,35 +212,35 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_n
        bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
-### Compare survey biomass estimate from CEATTLE to true values ---------------
-nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
-nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
-
-survey <- read.csv("data/assessment/survey_data.csv")
-survey <- cbind(survey, model = rep("SS3", length(survey$year)))
-
-extract_srv <- function(run, name){
-  df <- data.frame(year = 1995:2019,
-                   biomass = run$quantities$srv_bio_hat,
-                   log_sd = run$quantities$srv_log_sd_hat,
-                   model = rep(name, length(1995:2019)))
-  return(df)
-}
-
-srv_test <- rbind(extract_srv(run_all, "CEATTLE - all years"),
-                  extract_srv(run_90s, "CEATTLE - 1991-1999"),
-                  extract_srv(run_recent, "CEATTLE - 2005-2019"),
-                  nodiet_srv,
-                  survey)
-
-test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
-  geom_line(linetype = "dotted") +
-  geom_point() +
-  # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  xlab("year") + ylab("survey biomass") 
-test_survey_plot
-
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_survey.png", test_survey_plot, 
-       bg = "transparent", width=200, height=120, units="mm", dpi=300)
+# ### Compare survey biomass estimate from CEATTLE to true values ---------------
+# nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
+# nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
+# 
+# survey <- read.csv("data/assessment/survey_data.csv")
+# survey <- cbind(survey, model = rep("SS3", length(survey$year)))
+# 
+# extract_srv <- function(run, name){
+#   df <- data.frame(year = 1995:2019,
+#                    biomass = run$quantities$srv_bio_hat,
+#                    log_sd = run$quantities$srv_log_sd_hat,
+#                    model = rep(name, length(1995:2019)))
+#   return(df)
+# }
+# 
+# srv_test <- rbind(extract_srv(run_all, "CEATTLE - all years"),
+#                   extract_srv(run_90s, "CEATTLE - 1991-1999"),
+#                   extract_srv(run_recent, "CEATTLE - 2005-2019"),
+#                   nodiet_srv,
+#                   survey)
+# 
+# test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
+#   geom_line(linetype = "dotted") +
+#   geom_point() +
+#   # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
+#   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#   xlab("year") + ylab("survey biomass") 
+# test_survey_plot
+# 
+# ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_survey.png", test_survey_plot, 
+#        bg = "transparent", width=200, height=120, units="mm", dpi=300)
