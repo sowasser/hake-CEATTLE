@@ -123,10 +123,10 @@ intrasp_yearly <- aged_dataset %>%
 # Calculate overall percentage by wt to double check
 mean(intrasp_yearly$wt_prop)
 
-intrasp_yearly <- melt(intrasp_yearly[, c("year", "predator_age", "prey_age", "wt_prop")],
+intrasp_yearly2 <- melt(intrasp_yearly[, c("year", "predator_age", "prey_age", "wt_prop")],
                        id.vars = c("year", "predator_age", "prey_age"))
 
-diet_plot_yearly <- ggplot(intrasp_yearly, aes(x=as.factor(predator_age), y=value, fill=as.factor(prey_age))) +
+diet_plot_yearly <- ggplot(intrasp_yearly2, aes(x=factor(predator_age), y=value, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
@@ -151,3 +151,17 @@ intrasp_ceattle <- cbind(Pred = rep(1, nrow(intrasp_full)),
                          Stomach_proportion_by_weight = intrasp_full$wt_prop)
 
 write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names = FALSE)
+
+
+# Get time-varying data ready for CEATTLE -------------------------------------
+yearly_ceattle <- cbind(Pred = rep(1, nrow(intrasp_yearly)),
+                        Prey = rep(1, nrow(intrasp_yearly)),
+                        Pred_sex = rep(0, nrow(intrasp_yearly)),
+                        Prey_sex = rep(0, nrow(intrasp_yearly)),
+                        Pred_age = intrasp_yearly$predator_age,
+                        Prey_age = intrasp_yearly$prey_age,
+                        Year = intrasp_yearly$year,
+                        Sample_size = intrasp_yearly$sample_size,
+                        Stomach_proportion_by_weight = intrasp_yearly$wt_prop)
+
+write.csv(yearly_ceattle, "data/diet/diet_for_CEATTLE_yearly.csv", row.names = FALSE)

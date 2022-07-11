@@ -63,7 +63,7 @@ run_all <- run_ceattle(dirichlet_all)
 run_90s <- run_ceattle(dirichlet_90s)
 run_recent <- run_ceattle(dirichlet_recent)
 
-# Plot biomass in comparison to no diet & asssessment -------------------------
+# Plot biomass in comparison to unweighted diet run ---------------------------
 years <- 1980:2022
 
 # Pull out SSB & overall biomass from CEATTLE runs
