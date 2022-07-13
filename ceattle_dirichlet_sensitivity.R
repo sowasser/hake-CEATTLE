@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220628.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220713.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -213,6 +213,10 @@ ggsave(filename = "plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_nb
 
 
 ### Plot mortality ------------------------------------------------------------
-plot_mortality(Rceattle = run_all, type = 0) # Mortality-at-age time series
-plot_mortality(Rceattle = run_90s, type = 0) # Mortality-at-age time series
-plot_mortality(Rceattle = run_recent, type = 0) # Mortality-at-age time series
+m_all <- plot_mortality(Rceattle = run_all, type = 0, zlim = c(0, 3.2), title = "all years", maxage = 15) # Mortality-at-age time series
+m_90s <- plot_mortality(Rceattle = run_90s, type = 0, zlim = c(0, 3.2), title = "1991-1999", maxage = 15) # Mortality-at-age time series
+m_recent <- plot_mortality(Rceattle = run_recent, type = 0, zlim = c(0, 3.2), title = "2005-2019", maxage = 15) # Mortality-at-age time series
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_dirichlet_all.png", m_all, dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_dirichlet_90s.png", m_90s, dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_dirichlet_recent.png", m_recent, dpi=300)

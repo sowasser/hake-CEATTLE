@@ -256,5 +256,6 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", sur
 # M2 <- intrasp_run$quantities$M2
 # M2_prop <- as.data.frame(intrasp_run$quantities$M2_prop)
 # M <- as.data.frame(intrasp_run$quantities$M)
-plot_mortality(Rceattle = intrasp_run, type = 0) # Mortality-at-age time series
+m_plot <- plot_mortality(Rceattle = intrasp_run, type = 0, title = "empirical data", maxage = 15) 
 
+ggsave(filename = "plots/CEATTLE/intraspecies predation/M_intrasp.png", m_plot, dpi=300)

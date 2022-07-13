@@ -229,7 +229,12 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_sur
 
 
 ### Look at mortality -------------------------------------------------
-plot_mortality(Rceattle = run_wt05, type = 0) # Mortality-at-age time series
-plot_mortality(Rceattle = run_wt10, type = 0) # Mortality-at-age time series
-plot_mortality(Rceattle = run_wt50, type = 0) # Mortality-at-age time series
-plot_mortality(Rceattle = run_wt80, type = 0) # Mortality-at-age time series
+m05 <- plot_mortality(Rceattle = run_wt05, type = 0, title = "0.5% cannibalism", maxage = 15) # Mortality-at-age time series
+m10 <- plot_mortality(Rceattle = run_wt10, type = 0, title = "10% cannibalism", maxage = 15) # Mortality-at-age time series
+m50 <- plot_mortality(Rceattle = run_wt50, type = 0, title = "50% cannibalism", maxage = 15) # Mortality-at-age time series
+m80 <- plot_mortality(Rceattle = run_wt80, type = 0, title = "80% cannibalism", maxage = 15) # Mortality-at-age time series
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_intrasp_05.png", m05, dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_intrasp_10.png", m10, dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_intrasp_50.png", m50, dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_intrasp_80.png", m80, dpi=300)
