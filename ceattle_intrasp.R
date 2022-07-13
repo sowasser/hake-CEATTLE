@@ -11,14 +11,14 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220713.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
                                  file = NULL, # Don't save
                                  # debug = 1, # 1 = estimate, 0 = don't estimate
                                  random_rec = FALSE, # No random recruitment
-                                 msmMode = 0, # Single species mode
+                                 msmMode = 1, # Single species mode
                                  phase = "default")
 
 # Check what all comes out of CEATTLE
@@ -235,7 +235,7 @@ plot_survey <- function() {
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
   
   survey_plot <- ggplot(survey_all, aes(x=year, y=biomass, color=model)) +
-    geom_line(linetype = "dotted") +
+    geom_line(alpha = 0.3) +
     geom_point() +
     # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
@@ -250,3 +250,9 @@ survey_plot
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", survey_plot, 
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
+
+
+### Compare predation mortality (M2) ------------------------------------------
+M2 <- intrasp_run$quantities$M2
+M2_prop <- as.data.frame(intrasp_run$quantities$M2_prop)
+M <- as.data.frame(intrasp_run$quantities$M)

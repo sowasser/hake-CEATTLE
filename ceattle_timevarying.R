@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220628.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220713.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -141,7 +141,7 @@ nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
 
 # Change order of models to match other outputs
 nbyage_test_mean$model <- factor(nbyage_test_mean$model, 
-                                 levels = c("time-varying", "static")
+                                 levels = c("time-varying", "static"))
 
 test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +

@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220628.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220713.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -65,12 +65,8 @@ run_ceattle <- function(wt, df) {
 }
 
 # Run low-cannibalism models
-run_wt01 <- run_ceattle(wt01, hake_intrasp)
 run_wt05 <- run_ceattle(wt05, hake_intrasp)
-run_wt1 <- run_ceattle(wt1, hake_intrasp)
-run_wt5 <- run_ceattle(wt5, hake_intrasp)
 run_wt10 <- run_ceattle(wt10, hake_intrasp)
-run_wt30 <- run_ceattle(wt30, hake_intrasp)
 run_wt50 <- run_ceattle(wt50, hake_intrasp)
 run_wt80 <- run_ceattle(wt80, hake_intrasp)
 
@@ -202,9 +198,6 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nby
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
-nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
-nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
-
 survey <- read.csv("data/assessment/survey_data.csv")
 survey <- cbind(survey, model = rep("SS3", length(survey$year)))
 
@@ -220,17 +213,23 @@ srv_test <- rbind(extract_srv(run_wt05, "CEATTLE - 0.5% cannibalism"),
                   extract_srv(run_wt10, "CEATTLE - 10% cannibalism"),
                   extract_srv(run_wt50, "CEATTLE - 50% cannibalism"),
                   extract_srv(run_wt80, "CEATTLE - 80% cannibalism"),
-                  nodiet_srv,
                   survey)
 
 test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
-  geom_line(linetype = "dotted") +
+  geom_line(alpha = 0.3) +
   geom_point() +
   # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
   xlab("year") + ylab("survey biomass") 
 test_survey_plot
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_survey.png", test_survey_plot, 
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
+
+
+### Look at mortality -------------------------------------------------
+M_05 <- run_wt05$quantities$M
+M_10 <- run_wt10$quantities$M
+M_50 <- run_wt50$quantities$M
+M_80 <- run_wt80$quantities$M
