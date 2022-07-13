@@ -256,23 +256,5 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", sur
 # M2 <- intrasp_run$quantities$M2
 # M2_prop <- as.data.frame(intrasp_run$quantities$M2_prop)
 # M <- as.data.frame(intrasp_run$quantities$M)
-# 
-# # We can plot all runs
-# mod_list <- list(intrasp_run)
-# mod_names <- c("Intraspecies")
-# 
-# # Plot biomass trajectory
-# plot_biomass(Rceattle = mod_list, model_names = mod_names)
-# plot_depletionSSB(Rceattle = mod_list, model_names = mod_names)
-# plot_recruitment(Rceattle = mod_list, model_names = mod_names, add_ci = TRUE)
-# 
-# # Plot mortality and predation
-# plot_b_eaten(Rceattle = mod_list, model_names = mod_names) # Biomass eaten as prey
-# plot_b_eaten_prop(Rceattle = mod_list, model_names = mod_names) # Biomass eaten as prey by each predator
-plot_mortality(Rceattle = intrasp_run, type = 1) # Mortality-at-age time series
-# 
-# # Run diagnostics
-# plot_selectivity(Rceattle = intrasp_run)
-# plot_comp(intrasp_run) # Fitted survey composition data
-# plot_index(intrasp_run) # Fitted indices of abundance
-# plot_catch(intrasp_run) # Fitted catch series
+plot_mortality(Rceattle = intrasp_run, type = 0) # Mortality-at-age time series
+

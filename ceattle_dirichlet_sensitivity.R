@@ -212,35 +212,7 @@ ggsave(filename = "plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_nb
        bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
-# ### Compare survey biomass estimate from CEATTLE to true values ---------------
-# nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
-# nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
-# 
-# survey <- read.csv("data/assessment/survey_data.csv")
-# survey <- cbind(survey, model = rep("SS3", length(survey$year)))
-# 
-# extract_srv <- function(run, name){
-#   df <- data.frame(year = 1995:2019,
-#                    biomass = run$quantities$srv_bio_hat,
-#                    log_sd = run$quantities$srv_log_sd_hat,
-#                    model = rep(name, length(1995:2019)))
-#   return(df)
-# }
-# 
-# srv_test <- rbind(extract_srv(run_all, "CEATTLE - all years"),
-#                   extract_srv(run_90s, "CEATTLE - 1991-1999"),
-#                   extract_srv(run_recent, "CEATTLE - 2005-2019"),
-#                   nodiet_srv,
-#                   survey)
-# 
-# test_survey_plot <- ggplot(srv_test, aes(x=year, y=biomass, color=model)) +
-#   geom_line(linetype = "dotted") +
-#   geom_point() +
-#   # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-#   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-#   xlab("year") + ylab("survey biomass") 
-# test_survey_plot
-# 
-# ggsave(filename = "plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_survey.png", test_survey_plot, 
-#        bg = "transparent", width=200, height=120, units="mm", dpi=300)
+### Plot mortality ------------------------------------------------------------
+plot_mortality(Rceattle = run_all, type = 0) # Mortality-at-age time series
+plot_mortality(Rceattle = run_90s, type = 0) # Mortality-at-age time series
+plot_mortality(Rceattle = run_recent, type = 0) # Mortality-at-age time series
