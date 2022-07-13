@@ -229,7 +229,7 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_sur
 
 
 ### Look at mortality -------------------------------------------------
-M_05 <- run_wt05$quantities$M
-M_10 <- run_wt10$quantities$M
-M_50 <- run_wt50$quantities$M
-M_80 <- run_wt80$quantities$M
+plot_mortality(Rceattle = run_wt05, type = 1) # Mortality-at-age time series
+plot_mortality(Rceattle = run_wt10, type = 1) # Mortality-at-age time series
+plot_mortality(Rceattle = run_wt50, type = 1) # Mortality-at-age time series
+plot_mortality(Rceattle = run_wt80, type = 1) # Mortality-at-age time series
