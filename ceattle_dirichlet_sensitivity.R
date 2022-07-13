@@ -63,7 +63,7 @@ run_all <- run_ceattle(dirichlet_all)
 run_90s <- run_ceattle(dirichlet_90s)
 run_recent <- run_ceattle(dirichlet_recent)
 
-# Plot biomass in comparison to unweighted diet run ---------------------------
+# Plot biomass in comparison to no diet diet run ---------------------------
 years <- 1980:2022
 
 # Pull out SSB & overall biomass from CEATTLE runs
@@ -84,12 +84,12 @@ test_biom <- cbind(ceattle_biomass(run_all, "CEATTLE - all years"),
 test_biom <- test_biom[, c(1:3, 6, 9)]
 
 # Combine with run of CEATTLE using original data and plot
-intrasp_biom <- read.csv("data/ceattle_intrasp_biomass.csv")
-colnames(intrasp_biom)[3] <- "CEATTLE - unweighted"
+nodiet_biom <- read.csv("data/ceattle_nodiet_biomass.csv")
+colnames(nodiet_biom)[3] <- "CEATTLE - no diet"
 
 plot_biom <- function(df) {
-  wide <- cbind(df, intrasp_biom[, 3])
-  colnames(wide)[(ncol(wide))] <- c("CEATTLE - unweighted")
+  wide <- cbind(df, nodiet_biom[, 3])
+  colnames(wide)[(ncol(wide))] <- c("CEATTLE - no diet")
   biom <- melt(wide, id.vars = c("year", "type"))
   
   plot <- ggplot(biom, aes(x=year, y=value)) +
@@ -106,7 +106,7 @@ plot_biom <- function(df) {
 test_biom_plot <- plot_biom(test_biom)
 test_biom_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_biomass.png", test_biom_plot, 
+ggsave(filename="plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_biomass.png", test_biom_plot, 
        bg = "transparent", width=170, height=120, units="mm", dpi=300)
 
 
@@ -114,13 +114,13 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_bio
 R_test_all <- cbind(c(run_all$quantities$R), c(run_90s$quantities$R), 
                     c(run_recent$quantities$R))
 
-intrasp_R <- read.csv("data/ceattle_intrasp_R.csv")
-R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
+nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
+R_test_wide <- as.data.frame(cbind(years, R_test_all, nodiet_R))
 colnames(R_test_wide) <- c("year",
                            "CEATTLE - all years",
                            "CEATTLE - 1991-1999",
                            "CEATTLE - 2005-2019",
-                           "CEATTLE - unweighted")
+                           "CEATTLE - no diet")
 R_test <- melt(R_test_wide, id.vars = "year")
 
 plot_R <- function(df) {
@@ -139,7 +139,7 @@ plot_R <- function(df) {
 test_R_plot <- plot_R(R_test)
 test_R_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_R.png", test_R_plot, 
+ggsave(filename="plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_R.png", test_R_plot, 
        bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
@@ -158,7 +158,7 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_R.p
 #   labs(color = "model") 
 # biom_difference
 # 
-# ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/low_intrasp_biom_difference.png", 
+# ggsave(filename="plots/CEATTLE/nodietecies predation/Testing/low_nodiet_biom_difference.png", 
 #        biom_difference, width=200, height=100, units="mm", dpi=300)
 
 
@@ -178,14 +178,14 @@ extract_nbyage <- function(run, name) {
   return(df)
 }
 
-intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")[, -4]
-intrasp_nbyage <- cbind(intrasp_nbyage, rep("CEATTLE - unweighted"))
-colnames(intrasp_nbyage)[4] <- "model"
+nodiet_nbyage <- read.csv("data/ceattle_nodiet_nbyage.csv")[, -4]
+nodiet_nbyage <- cbind(nodiet_nbyage, rep("CEATTLE - no diet"))
+colnames(nodiet_nbyage)[4] <- "model"
 
 nbyage_test_all <- rbind(extract_nbyage(run_all, "CEATTLE - all years"),
                          extract_nbyage(run_90s, "CEATTLE - 1991-1999"),
                          extract_nbyage(run_recent, "CEATTLE - 2005-2019"),
-                         intrasp_nbyage)
+                         nodiet_nbyage)
 
 # Set 15 as accumulation age
 nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
@@ -199,7 +199,7 @@ nbyage_test_mean$model <- factor(nbyage_test_mean$model,
                                  levels = c("CEATTLE - all years", 
                                             "CEATTLE - 1991-1999",
                                             "CEATTLE - 2005-2019",
-                                            "CEATTLE - unweighted"))
+                                            "CEATTLE - no diet"))
 
 test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -208,7 +208,7 @@ test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=mode
   xlab("age") + ylab("numbers") 
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_nbyage.png", test_nbyage_plot, 
+ggsave(filename = "plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_nbyage.png", test_nbyage_plot, 
        bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
@@ -242,5 +242,5 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_n
 #   xlab("year") + ylab("survey biomass") 
 # test_survey_plot
 # 
-# ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_dirichlet_survey.png", test_survey_plot, 
+# ggsave(filename = "plots/CEATTLE/nodietecies predation/Testing/test_dirichlet_survey.png", test_survey_plot, 
 #        bg = "transparent", width=200, height=120, units="mm", dpi=300)
