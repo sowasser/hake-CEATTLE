@@ -103,6 +103,20 @@ ggsave(filename = "plots/diet/cannibalism_overall.png", diet_plot,
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
 
 
+### Get data ready to be added directly to CEATTLE ----------------------------
+intrasp_ceattle <- cbind(Pred = rep(1, nrow(intrasp_full)),
+                         Prey = rep(1, nrow(intrasp_full)),
+                         Pred_sex = rep(0, nrow(intrasp_full)),
+                         Prey_sex = rep(0, nrow(intrasp_full)),
+                         Pred_age = intrasp_full$predator_age,
+                         Prey_age = intrasp_full$prey_age,
+                         Year = rep(0, nrow(intrasp_full)),
+                         Sample_size = intrasp_full$sample_size,
+                         Stomach_proportion_by_weight = intrasp_full$wt_prop)
+
+write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names = FALSE)
+
+
 ### See if it's worth doing time-varying (yearly) predation -------------------
 stomachs_yearly <- aged_dataset %>%
   group_by(year, predator_age) %>%
@@ -139,18 +153,21 @@ ggsave(filename = "plots/diet/cannibalism_yearly.png", diet_plot_yearly,
        bg = "transparent", width=260, height=120, units="mm", dpi=300)
 
 
-### Get data ready to be added directly to CEATTLE ----------------------------
-intrasp_ceattle <- cbind(Pred = rep(1, nrow(intrasp_full)),
-                         Prey = rep(1, nrow(intrasp_full)),
-                         Pred_sex = rep(0, nrow(intrasp_full)),
-                         Prey_sex = rep(0, nrow(intrasp_full)),
-                         Pred_age = intrasp_full$predator_age,
-                         Prey_age = intrasp_full$prey_age,
-                         Year = rep(0, nrow(intrasp_full)),
-                         Sample_size = intrasp_full$sample_size,
-                         Stomach_proportion_by_weight = intrasp_full$wt_prop)
+# Plot simplified diet data to look at trends
+all_years <- as.data.frame(cbind(year = 1980:2019, prop_overall = rep(0)))
+all_years$year <- as.integer(all_years$year)
+yearly_simple <- intrasp_yearly %>% group_by(year) %>%
+  summarize(prop_overall = sum(wt_prop)) %>%
+  full_join(all_years) %>%
+  group_by(year) %>%
+  summarize(prop_overall = sum(prop_overall))
+  
+time_varying_plot <- ggplot(yearly_simple, aes(x = year, y = prop_overall)) +
+  geom_point() 
 
-write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names = FALSE)
+ggsave(filename = "plots/diet/time_varying_diet.png", time_varying_plot, 
+       bg = "transparent", width=260, height=120, units="mm", dpi=300)
+  
 
 
 # Get time-varying data ready for CEATTLE -------------------------------------

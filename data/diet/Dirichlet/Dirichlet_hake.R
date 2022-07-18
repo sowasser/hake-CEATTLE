@@ -1,6 +1,8 @@
 library(VGAM)   #fits Dirichlet Dist.
 library(crayon) #color output to console
 library(dplyr)
+library(tidyr)
+library(reshape2)
 library(ggplot2)
 library(viridis)
 # Set transparent ggplot theme
@@ -466,16 +468,28 @@ run_Dirichlet <- function(data, name) {
   # Plot different statistics from the analysis
   post_dirichlet_long <- melt(post_dirichlet, id.vars = c("predator", "prey", "lower95", "upper95"))
   
-  dirichlet_results <- ggplot(post_dirichlet_long, aes(x = prey)) +
+  # Restrict plots to only the hake prey items
+  post_dirichlet_hake <- post_dirichlet_long %>% filter(prey != "other")
+  dirichlet_results <- ggplot(post_dirichlet_hake, aes(x = prey)) +
     geom_errorbar(aes(ymin = lower95, ymax = upper95), 
                   width = .3, position = position_dodge(.9)) +
     geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     xlab("prey item") + ylab("stomach proportion") +
     ggtitle(name) +
+    scale_y_continuous(labels = scales::label_number(accuracy = NULL)) +  # THIS ISN'T WORKING FOR ALL YEARS
     facet_wrap(~ predator)
   
-  return(list(post_dirichlet, dirichlet_results))
+  # Compare simple and bootstrapped average
+  post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple_average", "boot_average"))
+  comparison_plot <- ggplot(post_dirichlet_hake2, aes(x=predator, y=value, fill=factor(prey))) +
+    geom_bar(stat = "identity", position = "stack") +
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_y_continuous(labels = scales::label_number(accuracy = NULL)) +  # THIS ISN'T WORKING FOR ALL YEARS
+    facet_wrap(~ variable)
+  comparison_plot
+  
+  return(list(post_dirichlet, dirichlet_results, comparison_plot))
 }
 
 ### Results -------------------------------------------------------------------
@@ -489,22 +503,30 @@ all_years <- run_Dirichlet(aged_dataset, "All years")
 
 all_years_df <- all_years[[1]]
 
-all_years_plot <- all_years[[2]]
-all_years_plot
-ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years_plot, 
+
+all_years[[2]]
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years[[2]], 
        bg = "transparent", width=300, height=200, units="mm", dpi=300)
+
+all_years[[3]]
 
 # Run for only 1998
 y90s <- c(1991, 1995, 1997, 1998, 1999)
 df_90s <- aged_dataset %>% filter(year %in% y90s)
 dirichlet_90s <- run_Dirichlet(df_90s, "1991-1999")
 dirichlet_90s[[2]]
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_90s.png", dirichlet_90s[[2]], 
+       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+dirichlet_90s[[3]]
 
 # Run with recent data
 recent <- c(2005, 2007, 2011, 2015, 2019)
 df_recent <- aged_dataset %>% filter(year %in% recent)
 dirichlet_recent <- run_Dirichlet(df_recent, "2005-2019")
 dirichlet_recent[[2]]
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_recent.png", dirichlet_recent[[2]], 
+       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+dirichlet_recent[[3]]
 
 
 ### Re-organize dataframe for CEATTLE -----------------------------------------
