@@ -85,10 +85,13 @@ all_data$prey_age[all_data$prey_name == "other"] <- NA
 hake_data <- all_data %>%
   filter(prey_name == "Pacific Hake")
 
-# Look at instances of no age - all lengths within year 1 range
-hake_data %>% filter(is.na(prey_age))
+# Look at instances of no age - all weights within year 1 range except for 1
+no_age <- hake_data %>% filter(is.na(prey_length))
 # Replace NAs with age 1
 all_data$prey_age[is.na(all_data$prey_age) & all_data$prey_name == "Pacific Hake"] <- 1 
+
+# Add estimate of correct age for very big hake prey
+all_data$prey_age[all_data$prey_wt > 300 & all_data$prey_name == "Pacific Hake"] <- 5
 
 # Write combined dataset
 write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv", row.names = FALSE)

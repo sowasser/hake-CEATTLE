@@ -103,7 +103,7 @@ hake_wt_yearly <- aged_dataset %>%
 hake_prop_yearly <- hake_wt_yearly %>%
   left_join(stomachs_yearly) %>%
   left_join(total_wt_yearly) %>%
-  mutate(wt_prop = (prey_wt / total_wt))
+  mutate(wt_prop = (hake_wt / total_wt))
 mean(hake_prop_yearly$wt_prop)
 
 intrasp_yearly <- melt(hake_prop_yearly[, c("year", "predator_age", "prey_age", "wt_prop")],
