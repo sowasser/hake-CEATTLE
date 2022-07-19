@@ -24,8 +24,8 @@ total_wt <- aged_dataset %>%
   summarize(total_wt = sum(prey_wt, na.rm = TRUE))
 
 # Check to see if total weights match
-test1 <- sum(aged_dataset$prey_wt, na.rm = TRUE)
-test2 <- sum(total_wt$total_wt, na.rm = TRUE)
+sum(aged_dataset$prey_wt, na.rm = TRUE)
+sum(total_wt$total_wt, na.rm = TRUE)
 
 # Total weight of hake for each predator age
 hake_wt <- aged_dataset %>%
@@ -50,6 +50,9 @@ diet_plot
 
 ggsave(filename = "plots/diet/cannibalism_overall.png", diet_plot, 
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
+
+test <- aged_dataset %>%
+  filter(predator_age == 14)
 
 
 ### Get data ready to be added directly to CEATTLE ----------------------------
