@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220713.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220718.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0

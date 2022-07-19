@@ -45,7 +45,7 @@ FEAT_all <- FEAT_all %>%
   select(stomach_uuid, month, year, tow_latitude, tow_longitude, predator_age, 
          prey_name, content_wt_g, measure_value)
 
-# Switch to age 15 accummulator age
+# Switch to age 15 accumulator age
 FEAT_all <- FEAT_all %>% 
   filter(predator_age != "(blank)") %>%
   mutate(predator_age = as.numeric(predator_age)) %>%
@@ -85,6 +85,12 @@ all_data$prey_age[all_data$prey_name == "other"] <- NA
 hake_data <- all_data %>%
   filter(prey_name == "Pacific Hake")
 
+# Look at instances of no age - all lengths within year 1 range
+hake_data %>% filter(is.na(prey_age))
+# Replace NAs with age 1
+all_data$prey_age[is.na(all_data$prey_age) & all_data$prey_name == "Pacific Hake"] <- 1 
+
+# Write combined dataset
 write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv", row.names = FALSE)
 
 

@@ -52,15 +52,6 @@ run_Dirichlet <- function(data, name) {
   for_dirichlet <- for_dirichlet[, -1]
   colnames(for_dirichlet)[1] <- c("Predator")
   unique(as.character(for_dirichlet$Predator))
-  for_dirichlet$Predator <- recode(for_dirichlet$Predator, 
-                                   "1" = "pred_a1", "2" = "pred_a2",
-                                   "3" = "pred_a3", "4" = "pred_a4",
-                                   "5" = "pred_a5", "6" = "pred_a6",
-                                   "7" = "pred_a7", "8" = "pred_a8",
-                                   "9" = "pred_a9", "10" = "pred_a10",
-                                   "11" = "pred_a11", "12" = "pred_a12",
-                                   "13" = "pred_a13", "14" = "pred_a14",
-                                   "15" = "pred_a15")
   
   # Add "wtg" column from Dirichlet example dataset
   for_dirichlet <- cbind(for_dirichlet[, 1], 
@@ -459,11 +450,7 @@ run_Dirichlet <- function(data, name) {
   post_dirichlet[, 3:9] <- sapply(post_dirichlet[, 3:9], as.numeric)  # make numeric
   
   post_dirichlet$predator <- factor(post_dirichlet$predator, 
-                                    levels = c("pred_a1", "pred_a2", "pred_a3", 
-                                               "pred_a4", "pred_a5", "pred_a6",
-                                               "pred_a7", "pred_a8", "pred_a9", 
-                                               "pred_a10", "pred_a11", "pred_a12",
-                                               "pred_a13", "pred_a14", "pred_a15"))
+                                    levels = c(as.character(1:15)))
   
   # Plot different statistics from the analysis
   post_dirichlet_long <- melt(post_dirichlet, id.vars = c("predator", "prey", "lower95", "upper95"))
@@ -496,8 +483,6 @@ run_Dirichlet <- function(data, name) {
 # Run for all years
 # Read in full aged dataset
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
-# Replace NAs with age 1
-aged_dataset$prey_age[is.na(aged_dataset$prey_age) & aged_dataset$prey_name == "Pacific Hake"] <- 1
 
 all_years <- run_Dirichlet(aged_dataset, "All years")
 
