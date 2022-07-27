@@ -72,29 +72,17 @@ write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names 
 
 
 ### See if it's worth doing time-varying (yearly) predation -------------------
-stomachs_yearly <- aged_dataset %>%
-  select(Predator_ID, year, predator_age) %>%
-  distinct() %>%
+stomach_n_yearly <- aged_wt %>%
   group_by(year, predator_age) %>%
   summarize(sample_size = n())
 
-total_wt_yearly <- aged_dataset %>%
-  group_by(year, predator_age) %>%
-  summarize(total_wt = sum(prey_wt, na.rm = TRUE))
-
-hake_wt_yearly <- aged_dataset %>%
-  filter(prey_name == "Pacific Hake") %>%
+hake_prop_yearly <- aged_wt %>%
   group_by(year, predator_age, prey_age) %>%
-  summarize(hake_wt = sum(prey_wt, na.rm = TRUE))
+  summarize(sum_prop = sum(hake_prey_prop)) %>%
+  filter(!is.na(prey_age)) %>%
+  left_join(stomach_n_yearly) %>%
+  mutate(wt_prop = sum_prop / sample_size)
 
-hake_prop_yearly <- hake_wt_yearly %>%
-  left_join(stomachs_yearly) %>%
-  left_join(total_wt_yearly) %>%
-  mutate(wt_prop = (hake_wt / total_wt))
-mean(hake_prop_yearly$wt_prop)
-
-intrasp_yearly <- melt(hake_prop_yearly[, c("year", "predator_age", "prey_age", "wt_prop")],
-                       id.vars = c("year", "predator_age", "prey_age"))
 
 diet_plot_yearly <- ggplot(intrasp_yearly, aes(x=factor(predator_age), y=value, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
@@ -113,12 +101,13 @@ ggsave(filename = "plots/diet/cannibalism_yearly.png", diet_plot_yearly,
 all_years <- as.data.frame(cbind(year = 1980:2019, prop_overall = rep(0)))
 all_years$year <- as.integer(all_years$year)
 yearly_simple <- hake_prop_yearly %>% group_by(year) %>%
-  summarize(prop_overall = sum(wt_prop)) %>%
+  summarize(prop_overall = mean(wt_prop)) %>%
   full_join(all_years) %>%
   group_by(year) %>%
   summarize(prop_overall = sum(prop_overall))
   
 time_varying_plot <- ggplot(yearly_simple, aes(x = year, y = prop_overall)) +
+  geom_line(alpha = 0.3) +
   geom_point() 
 time_varying_plot
 
@@ -128,14 +117,14 @@ ggsave(filename = "plots/diet/time_varying_diet.png", time_varying_plot,
 
 
 # Get time-varying data ready for CEATTLE -------------------------------------
-yearly_ceattle <- cbind(Pred = rep(1, nrow(intrasp_yearly)),
-                        Prey = rep(1, nrow(intrasp_yearly)),
-                        Pred_sex = rep(0, nrow(intrasp_yearly)),
-                        Prey_sex = rep(0, nrow(intrasp_yearly)),
-                        Pred_age = intrasp_yearly$predator_age,
-                        Prey_age = intrasp_yearly$prey_age,
-                        Year = intrasp_yearly$year,
-                        Sample_size = intrasp_yearly$sample_size,
-                        Stomach_proportion_by_weight = intrasp_yearly$wt_prop)
+yearly_ceattle <- as.data.frame(cbind(Pred = rep(1, nrow(hake_prop_yearly)),
+                                      Prey = rep(1, nrow(hake_prop_yearly)),
+                                      Pred_sex = rep(0, nrow(hake_prop_yearly)),
+                                      Prey_sex = rep(0, nrow(hake_prop_yearly)),
+                                      Pred_age = hake_prop_yearly$predator_age,
+                                      Prey_age = hake_prop_yearly$prey_age,
+                                      Year = hake_prop_yearly$year,
+                                      Sample_size = hake_prop_yearly$sample_size,
+                                      Stomach_proportion_by_weight = hake_prop_yearly$wt_prop))
 
 write.csv(yearly_ceattle, "data/diet/diet_for_CEATTLE_yearly.csv", row.names = FALSE)
