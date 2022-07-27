@@ -83,8 +83,7 @@ hake_prop_yearly <- aged_wt %>%
   left_join(stomach_n_yearly) %>%
   mutate(wt_prop = sum_prop / sample_size)
 
-
-diet_plot_yearly <- ggplot(intrasp_yearly, aes(x=factor(predator_age), y=value, fill=factor(prey_age))) +
+diet_plot_yearly <- ggplot(hake_prop_yearly, aes(x=predator_age, y=wt_prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
@@ -114,7 +113,6 @@ time_varying_plot
 ggsave(filename = "plots/diet/time_varying_diet.png", time_varying_plot, 
        bg = "transparent", width=260, height=120, units="mm", dpi=300)
   
-
 
 # Get time-varying data ready for CEATTLE -------------------------------------
 yearly_ceattle <- as.data.frame(cbind(Pred = rep(1, nrow(hake_prop_yearly)),
