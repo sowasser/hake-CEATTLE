@@ -11,6 +11,7 @@ theme_set(theme_sleek_transparent())
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
 
 # Create overall intraspecies predation dataset -------------------------------
+# Find the hake proportion for each predator
 aged_wt <- aged_dataset %>%
   group_by(Predator_ID) %>%
   mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>%
@@ -18,10 +19,12 @@ aged_wt <- aged_dataset %>%
   select(Predator_ID, year, predator_age, prey_name, prey_age, hake_prey_prop) %>%
   distinct() # Remove duplicate rows - same pred ID, multiple hake prey 
 
+# Total number of stomachs
 stomach_n <- aged_wt %>%
   group_by(predator_age) %>%
   summarize(sample_size = n())
 
+# Calculate average as sum of proportions per pred/prey age combo / number of stomachs per predator age
 hake_prop <- aged_wt %>%
   group_by(predator_age, prey_age) %>%
   summarize(sum_prop = sum(hake_prey_prop)) %>%
@@ -72,6 +75,7 @@ write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names 
 
 
 ### See if it's worth doing time-varying (yearly) predation -------------------
+# same process for calculating the average as above, just disaggregated by year
 stomach_n_yearly <- aged_wt %>%
   group_by(year, predator_age) %>%
   summarize(sample_size = n())
