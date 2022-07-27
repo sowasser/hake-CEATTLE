@@ -11,33 +11,23 @@ theme_set(theme_sleek_transparent())
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
 
 # Create overall intraspecies predation dataset -------------------------------
-# Get number of stomachs per predator age
-stomachs_n <- aged_dataset %>%
-  select(Predator_ID, predator_age) %>%
-  distinct() %>%
+aged_wt <- aged_dataset %>%
+  group_by(Predator_ID) %>%
+  mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>%
+  mutate(hake_prey_prop = if_else(prey_name == "Pacific Hake", prey_wt / stomach_wt, 0)) %>%
+  select(Predator_ID, year, predator_age, prey_name, prey_age, hake_prey_prop) %>%
+  distinct() # Remove duplicate rows - same pred ID, multiple hake prey 
+
+stomach_n <- aged_wt %>%
   group_by(predator_age) %>%
   summarize(sample_size = n())
-  
-# Total stomach weight per predator age
-total_wt <- aged_dataset %>%
-  group_by(predator_age) %>%
-  summarize(total_wt = sum(prey_wt, na.rm = TRUE))
 
-# Check to see if total weights match
-sum(aged_dataset$prey_wt, na.rm = TRUE)
-sum(total_wt$total_wt, na.rm = TRUE)
-
-# Total weight of hake for each predator age
-hake_wt <- aged_dataset %>%
-  filter(prey_name == "Pacific Hake") %>%
+hake_prop <- aged_wt %>%
   group_by(predator_age, prey_age) %>%
-  summarize(hake_wt = sum(prey_wt, na.rm = TRUE))
-
-# Merge datasets together and calculate proportion of weight for each hake age
-hake_prop <- merge(total_wt, hake_wt, by = "predator_age") %>%
-  mutate(wt_prop = hake_wt / total_wt) %>%
-  select(predator_age, prey_age, wt_prop)
-mean(hake_prop$wt_prop)  # 27.8% cannibalism on average
+  summarize(sum_prop = sum(hake_prey_prop)) %>%
+  filter(!is.na(prey_age)) %>%
+  left_join(stomach_n) %>%
+  mutate(wt_prop = sum_prop / sample_size)
 
 # Plot diet data
 diet_plot <- ggplot(hake_prop, aes(x=as.factor(predator_age), y=wt_prop, fill=as.factor(prey_age))) +
@@ -51,9 +41,6 @@ diet_plot
 ggsave(filename = "plots/diet/cannibalism_overall.png", diet_plot, 
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
 
-test <- aged_dataset %>%
-  filter(predator_age == 14)
-
 
 ### Get data ready to be added directly to CEATTLE ----------------------------
 # Create empty dataframe in shape for CEATTLE
@@ -63,7 +50,7 @@ all_ages <- data.frame(predator_age = rep(1:15, each = 15),
                        wt_prop = rep(NA, 225))
 
 # Merge with data
-to_ceattle <- merge(hake_prop, stomachs_n, by = "predator_age") %>%
+to_ceattle <- hake_prop %>%
   select(predator_age, prey_age, sample_size, wt_prop) %>%
   full_join(all_ages) %>%
   arrange(predator_age, prey_age) %>%
