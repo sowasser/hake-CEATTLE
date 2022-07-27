@@ -11,7 +11,8 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220718.xlsx")
+# Read in CEATTLE data from the excel file
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220726.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
@@ -230,7 +231,7 @@ plot_survey <- function() {
   nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
   
   survey <- read.csv("data/assessment/survey_data.csv")
-  survey <- cbind(survey, model = rep("assessment", length(survey$year)))
+  survey <- cbind(survey, model = rep("Stock Synthesis", length(survey$year)))
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
   
