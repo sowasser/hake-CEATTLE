@@ -107,11 +107,15 @@ yearly_simple <- hake_prop_yearly %>% group_by(year) %>%
   summarize(prop_overall = mean(wt_prop)) %>%
   full_join(all_years) %>%
   group_by(year) %>%
-  summarize(prop_overall = sum(prop_overall))
-  
-time_varying_plot <- ggplot(yearly_simple, aes(x = year, y = prop_overall)) +
-  geom_line(alpha = 0.3) +
-  geom_point() 
+  summarize(prop_overall = sum(prop_overall)) %>%
+  mutate(data = ifelse(prop_overall > 0, "surveyed", "no data")) 
+
+
+time_varying_plot <- ggplot(yearly_simple, aes(x = year, y = prop_overall, color = data)) +
+  geom_point(size = 2) +
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
+  ylab("mean diet proportion")
 time_varying_plot
 
 ggsave(filename = "plots/diet/time_varying_diet.png", time_varying_plot, 
