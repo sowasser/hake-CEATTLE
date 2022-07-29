@@ -19,11 +19,16 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  file = NULL, # Don't save
                                  # debug = 1, # 1 = estimate, 0 = don't estimate
                                  random_rec = FALSE, # No random recruitment
-                                 msmMode = 1, # Single species mode
+                                 msmMode = 1, # Single-species mode
                                  phase = "default")
 
-# Check what all comes out of CEATTLE
-ceattle_stuff <- intrasp_run$quantities
+nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
+                                inits = NULL, # Initial parameters = 0
+                                file = NULL, # Don't save
+                                # debug = 1, # 1 = estimate, 0 = don't estimate
+                                random_rec = FALSE, # No random recruitment
+                                msmMode = 0, # Multi-species mode
+                                phase = "default")
 
 # # Rceattle diagmostics
 # plot_index(intrasp_run)
@@ -58,13 +63,10 @@ ceattle_biomass <- function(run, name) {
 biomass <- ceattle_biomass(intrasp_run, "CEATTLE - cannibalism")
 write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
 
+
 # Read in other model runs for comparison and plot
 plot_biomass <- function() {
-  nodiet_biom <- read.csv("data/ceattle_nodiet_biom.csv")
-  colnames(nodiet_biom)[3] <- "value"
-  nodiet_biom <- cbind(nodiet_biom, 
-                       error = rep(0, length(nodiet_biom$year)),  # add error, 0 for now
-                       model = rep("CEATTLE - no diet", length(nodiet_biom$year)))  
+  nodiet_biom <- ceattle_biomass(nodiet_run, "CEATTLE - no diet")
   
   # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
   ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[15:57, 2:3], type = rep("SSB", length(15:57)))
@@ -103,7 +105,7 @@ recruitment <- c(intrasp_run$quantities$R)
 write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
 
 plot_R <- function() {
-  nodiet_R <- read.csv("data/ceattle_nodiet_R.csv")
+  nodiet_R <- c(nodiet_run$quantities$R)
   ss3_R <- read.table("data/assessment/recruitment.txt")[15:57,]
   
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
@@ -161,10 +163,8 @@ write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 
 plot_nbyage <- function(output) {
   # Read in data from no diet CEATTLE run
-  nbyage_nodiet <- read.csv("data/ceattle_nodiet_nbyage.csv")
-  nbyage_nodiet <- cbind(nbyage_nodiet, rep("CEATTLE - no diet", nrow(nbyage_nodiet)))
-  colnames(nbyage_nodiet)[4] <- "model"
-  
+  nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - no diet")
+
   # Read in data from SS3 & average beginning & middle of the year
   nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")
   colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
@@ -221,14 +221,18 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nby
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
-intrasp_srv <- data.frame(year = 1995:2019,
-                          biomass = intrasp_run$quantities$srv_bio_hat,
-                          log_sd = intrasp_run$quantities$srv_log_sd_hat,
-                          model = rep("CEATTLE - cannibalism", length(1995:2019)))
+survey_biom <- function(run, name) {
+  srv <- data.frame(year = 1995:2019,
+                    biomass = run$quantities$srv_bio_hat,
+                    log_sd = run$quantities$srv_log_sd_hat,
+                    model = rep(name, length(1995:2019)))
+  return(srv)
+}
 
 plot_survey <- function() {
-  nodiet_srv <- read.csv("data/ceattle_nodiet_survey.csv")
-  nodiet_srv <- cbind(nodiet_srv, model = rep("CEATTLE - no diet", length(nodiet_srv$year)))
+  intrasp_srv <- survey_biom(intrasp_run, "CEATTLE - cannibalism")
+
+  nodiet_srv <- survey_biom(nodiet_run, "CEATTLE - no diet")
   
   survey <- read.csv("data/assessment/survey_data.csv")
   survey <- cbind(survey, model = rep("Stock Synthesis", length(survey$year)))
