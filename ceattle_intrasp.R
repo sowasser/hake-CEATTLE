@@ -42,7 +42,7 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 # plot_srv_comp(intrasp_run)
 
 
-### Plot biomass in comparison to no diet & assessment ------------------------
+### Plot biomass & recruitment in comparison to no diet & assessment ----------
 years <- 1980:2022
 test <- intrasp_run$quantities$biomass
 # Pull out SSB & overall biomass from CEATTLE runs
@@ -63,83 +63,71 @@ ceattle_biomass <- function(run, name) {
 biomass <- ceattle_biomass(intrasp_run, "CEATTLE - cannibalism")
 write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
 
+recruitment <- c(intrasp_run$quantities$R)
+write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
+
 
 # Read in other model runs for comparison and plot
-plot_biomass <- function() {
-  nodiet_biom <- ceattle_biomass(nodiet_run, "CEATTLE - no diet")
-  
+plot_popdy <- function() {
+  # Put biomass together
+  nodiet_biom <- ceattle_biomass(nodiet_run, "CEATTLE - single-species")
   # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
   ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[15:57, 2:3], type = rep("SSB", length(15:57)))
   ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[15:57, 2:3], type = rep("Total Biomass", length(15:57)))
-  
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
                                   model = rep("Stock Synthesis", length(ss3_ssb$V2) * 2)))
   colnames(ss3_biom)[2:3] <- c("value", "error")
   ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
-  
   biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
   
-  biom_plot <- ggplot(biom_all, aes(x=year, y=value, color = model, fill = model)) +
-    geom_line() +
-    geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    ylab("Biomass (mt)") +
-    labs(color = "model") +
-    facet_wrap(~type, ncol = 1)
-  
-  return(biom_plot)
-}
-
-biom_plot <- plot_biomass()
-
-biom_plot
-
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_biomass.png", biom_plot, 
-       bg = "transparent", width=200, height=150, units="mm", dpi=300)
-
-
-### Plot recruitment ----------------------------------------------------------
-recruitment <- c(intrasp_run$quantities$R)
-write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
-
-plot_R <- function() {
+  # Put recruitment together
   nodiet_R <- c(nodiet_run$quantities$R)
   ss3_R <- read.table("data/assessment/recruitment.txt")[15:57,]
-  
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
-  colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - nodiet")
-  
+  colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
   R <- melt(R_wide, id.vars = "year")
-  
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
   ss3_1 <- as.data.frame(cbind(year = 1981:2022, 
-                               variable = rep("SS3 + 1", (length(1981:2022))), 
+                               variable = rep("Stock Synthesis", (length(1981:2022))), 
                                value = ss3_R[1:42, 2],
                                error = ss3_R[1:42, 3]))
-  
   R_all <- rbind(cbind(R, error = rep(0, length(2 * R$value))), 
                  ss3_1)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
   R_all$error <- as.numeric(R_all$error)
+  # Reshape to match biomass
+  R_new <- cbind(year = R_all$year, 
+                 type = rep("Recruitment"), 
+                 value = R_all$value,
+                 error = R_all$error,
+                 model = as.character(R_all$variable))
   
-  R_plot <- ggplot(R_all, aes(x=year, y=value, color=variable, fill=variable)) +
-    geom_line(aes(color=variable)) +
+  # Combine biomass & recruitment and plot
+  all_popdy <- rbind(biom_all, R_new)
+  all_popdy$year <- as.numeric(all_popdy$year)
+  all_popdy$value <- as.numeric(all_popdy$value)
+  all_popdy$error <- as.numeric(all_popdy$error)
+  
+  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
+    geom_line() +
     geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    ylab("Recruitment") +
-    labs(color = "model") +labs(fill = "model")
-  return(R_plot)
+    ylab(" ") +
+    labs(color = "model") +
+    facet_wrap(~type, ncol = 1, scales = "free_y")
+  popdy_plot
+  
+  return(popdy_plot)
 }
 
-R_plot <- plot_R()
-R_plot
+popdy_plot <- plot_popdy()
+popdy_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_R.png", R_plot, 
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy_plot, 
+       bg = "transparent", width=200, height=170, units="mm", dpi=300)
 
 
 ### Numbers-at-age for each model run -----------------------------------------
