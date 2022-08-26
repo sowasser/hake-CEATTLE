@@ -566,6 +566,7 @@ comparison <- comparison %>% filter(prey_age <= 5)
 comparison_plot <- ggplot(comparison, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age") +
@@ -574,3 +575,29 @@ comparison_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comparison.png", comparison_plot, 
        bg = "transparent", width=180, height=120, units="mm", dpi=300)
+
+# Neater comparison graph for write-up
+comp2 <- rbind(new_df(ceattle_all, "all years"),
+                    new_df(ceattle_90s, "1991-1999"),
+                    new_df(ceattle_recent, "2005-2019"))
+
+comp2 <- as.data.frame(comp2) 
+comp2$pred_age <- as.factor(comp2$pred_age)
+comp2$prey_age <- as.numeric(comp2$prey_age)
+comp2$prop <- as.numeric(comp2$prop)
+comp2$data <- factor(comp2$data, 
+                          levels = c("all years", "1991-1999", "2005-2019"))
+comp2 <- comp2 %>% filter(prey_age <= 5)
+
+comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_x_discrete(limits = factor(1:15), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
+  scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  xlab("predator hake age") + ylab("Dirichlet-weighted diet proportion") +
+  labs(fill = "prey hake age") +
+  facet_wrap(~ data)
+comp2_plot
+
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
+       bg = "transparent", width=200, height=60, units="mm", dpi=300)
