@@ -118,7 +118,6 @@ plot_popdy <- function() {
     ylab(" ") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1, scales = "free_y")
-  popdy_plot
   
   return(popdy_plot)
 }

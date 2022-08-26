@@ -41,3 +41,11 @@ While the different sampling protocols and varying temporal and geographic cover
 Without diet data (operating as a single-species model), the CEATTLE model matches well with the Stock Synthesis 3.0 (SS3) estimates for spawning stock biomass (SSB), total biomass, and recruitment for the timeseries (Fig. 5). When the mean rates of intraspecific predation (i.e. the rates for all years as in Fig. 2) are included, there is not an appreciable change in SSB, with a slight overall decrease in the estimate. For total biomass, the model run with cannibalism deviates more widely from both the single-species CEATTLE model and the SS3 runs. For recruitment, the number of individuals is much higher for the CEATTLE run with cannibalism as the model "creates" recruits to satisfy the higher rates of predation on year 1 hake (Fig 5.)
 
 ![*Figure 5: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.*](./plots/CEATTLE/intraspecies predation/intrasp_popdy.png)
+
+### Sensitivity testing
+
+The overall mean proportion of intraspecific predation in the Pacific hake diet potentially belies the impact of cannibalism on hake population dynamics. To explore the effects of differing levels of cannibalism in CEATTLE on population dynamics, the model was fit with varying levels of intraspecific predation between 0.5 and 80% of predator hake diets by weight consisting of year 1 prey hake. Generally, with increasing intraspecific predation, the amount of individuals "created" by the model increases, with the estimates for biomass and recruitment for the stomach contents data relatively similar to an overall rate of 10% intraspecific predation by weight (Fig. 6).
+
+![*Figure 6: Runs of CEATTLE with varying levels of intraspecies predation (0.5% to 80%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.*](./plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png)
+
+To look at the amount of variability within the stomach contents datasets, CEATTLE was also run with the Dirichlet-reweighted estimates of mean intraspecific predation for the period of high cannibalism in the 1990s and the lower levels from the acoustic trawl survey. 

@@ -94,69 +94,61 @@ test_biom <- test_biom[, c(1:3, 6, 9, 12)]
 
 # Read in intra-species predation run data
 intrasp_biom <- read.csv("data/ceattle_intrasp_biomass.csv")
-colnames(intrasp_biom)[3] <- "CEATTLE - hake data"
+colnames(intrasp_biom)[3] <- "CEATTLE - diet data"
 
-plot_biom <- function(df) {
-  wide <- cbind(df, intrasp_biom[, 3])
-  colnames(wide)[ncol(wide)] <- c("CEATTLE - hake data")
-  biom <- melt(wide, id.vars = c("year", "type"))
-  
-  plot <- ggplot(biom, aes(x=year, y=value)) +
-    geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE, direction = -1) +  
-    ylab("Biomass (mt)") +
-    labs(color = "model") +
-    facet_wrap(~type, ncol = 1)
-  
-  return(plot)
-}
-
-# Low-cannibalism plot
-test_biom_plot <- plot_biom(test_biom)
-test_biom_plot
-
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_biomass.png", test_biom_plot, 
-       bg = "transparent", width=170, height=120, units="mm", dpi=300)
-
-
-# Plot recruitment ------------------------------------------------------------
 intrasp_R <- read.csv("data/ceattle_intrasp_R.csv")
 
-R_test_all <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),  
-                    c(run_wt50$quantities$R), c(run_wt80$quantities$R))
-R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
-colnames(R_test_wide) <- c("year",
-                           "CEATTLE - 0.5% cannibalism",
-                           "CEATTLE - 10% cannibalism",
-                           "CEATTLE - 50% cannibalism",
-                           "CEATTLE - 80% cannibalism",
-                           "CEATTLE - hake data")
-R_test <- melt(R_test_wide, id.vars = "year")
+test_plot_popdy <- function() {
+  # Reshape biomass data
+  wide <- cbind(test_biom, intrasp_biom[, 3])
+  colnames(wide)[ncol(wide)] <- c("CEATTLE - diet data")
+  biom <- melt(wide, id.vars = c("year", "type"))
+  
+  # Put recruitment together
+  R_test_all <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),  
+                      c(run_wt50$quantities$R), c(run_wt80$quantities$R))
+  R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
+  colnames(R_test_wide) <- c("year",
+                             "CEATTLE - 0.5% cannibalism",
+                             "CEATTLE - 10% cannibalism",
+                             "CEATTLE - 50% cannibalism",
+                             "CEATTLE - 80% cannibalism",
+                             "CEATTLE - diet data")
+  R_test <- melt(R_test_wide, id.vars = "year")
+  
+  R_new <- cbind(year = R_test$year,
+                 type = rep("Recruitment"),
+                 variable = as.character(R_test$variable),
+                 value = R_test$value)
+  
+  # Combine biomass & recruitment and plot
+  all_popdy <- rbind(biom, R_new)
+  all_popdy$year <- as.numeric(all_popdy$year)
+  all_popdy$value <- as.numeric(all_popdy$value)
 
-plot_R <- function(df) {
-  df$value <- as.numeric(df$value)
-  df$year <- as.numeric(df$year)
+  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = variable, fill = variable)) +
+    geom_line(aes(linetype = variable)) +
+    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
+    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    ylab(" ") +
+    labs(color = "model") +
+    facet_wrap(~type, ncol = 1, scales = "free_y")
   
-  plot <- ggplot(df, aes(x=year, y=value)) +
-    geom_line(aes(color=variable)) +
-    scale_color_viridis(discrete = TRUE, direction = -1) + 
-    ylab("Recruitment") +
-    labs(color = "model")
-  
-  return(plot)
+  return(popdy_plot)
 }
 
-test_R_plot <- plot_R(R_test)
-test_R_plot
+test_popdy_plot <- test_plot_popdy()
+test_popdy_plot
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_R.png", test_R_plot, 
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy_plot, 
+       bg = "transparent", width=200, height=170, units="mm", dpi=300)
 
 
 # Numbers-at-age for each model run -------------------------------------------
 # Read in data from no diet CEATTLE run
 intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
-intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("CEATTLE - hake data", nrow(intrasp_nbyage)))
+intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("CEATTLE - diet data", nrow(intrasp_nbyage)))
 colnames(intrasp_nbyage)[4] <- "model"
 
 extract_nbyage <- function(run, name) {
