@@ -150,7 +150,7 @@ write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 
 plot_nbyage <- function(output) {
   # Read in data from no diet CEATTLE run
-  nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - no diet")
+  nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
 
   # Read in data from SS3 & average beginning & middle of the year
   nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")
@@ -200,8 +200,8 @@ plot_nbyage <- function(output) {
 nbyage_plot_mean <- plot_nbyage(output = "mean")
 nbyage_plot_mean
 
-# nbyage_plot_yearly <- plot_nbyage(output = "yearly")
-# nbyage_plot_yearly
+nbyage_plot_yearly <- plot_nbyage(output = "yearly")
+nbyage_plot_yearly
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nbyage_plot_mean, 
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
