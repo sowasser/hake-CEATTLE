@@ -3,11 +3,11 @@ title: "Hake data sources for CEATTLE"
 author: "Sophia Wassermann"
 date: "4 May 2022"
 output:
+  word_document: default
+  pdf_document: default
   html_document:
-    
     df_print: paged
     fig_captions: yes
-  pdf_document: default
 header-includes:
 - \usepackage[labelfont=bf]{caption}
 - \captionsetup{font=footnotesize}
