@@ -67,4 +67,10 @@ The overall mean proportion of intraspecific predation in the Pacific hake diet 
 
 ![*Figure 8: Runs of CEATTLE with varying levels of intraspecies predation (0.5% to 80%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.*](./plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png)
 
+The amount of predation mortality also follows the expected trend, with increasing amounts of excess mortality produced with the proportion of predation (Fig. 9). This effect is especially evident in the 1980s, corresponding with the highest peaks in biomass and recruitment for the higher rates of predation as well (Fig. 8 & 9). It is important to note that for both the model runs with the empirical data and for the sensitivity testing, the diet proportion remained constant across years.
+
+![*Figure 9: Residual (M1) and predation (M2) mortality by age an year for CEATTLE run with varying levels of inrraspecies predation (0.5% to 80%).*](./plots/CEATTLE/intraspecies predation/Testing/test_instrasp_M.png)
+
+### Temporal variability in intraspecies predation
+
 To look at the amount of variability within the stomach contents datasets, CEATTLE was also run with the Dirichlet-reweighted estimates of mean intraspecific predation for the period of high cannibalism in the 1990s and the lower levels from the acoustic trawl survey. 
