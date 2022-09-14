@@ -1,13 +1,11 @@
 ---
-title: "CEATTLE with Pacific hake intraspecific predation"
-author: "Sophia Wassermann"
-date: "25 August 2022"
 output:
+  word_document: 
+    reference_docx: custom_template.docx
+  pdf_document: default
   html_document:
     df_print: paged
     fig_captions: yes
-  pdf_document: default
-  word_document: default
 header-includes:
 - \usepackage[labelfont=bf]{caption}
 - \captionsetup{font=footnotesize}
@@ -17,56 +15,46 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Pacific Hake diet
+# 3. Results
 
-The occurence of intraspecific predation in Pacific hake diet appears to be highly variable, in contrast to previous estimates that cannibalism forms a significant portion of the Pacific hake diet - up to 30% (CITE). Stomachs gathered from the hake acoustic trawl survey, however, do not show a high rate of intraspecific predation, with only 16 instances of cannibalism out of 3995 stomachs collected from 2005-2019: a rate of 0.4%. In earlier studies of hake stomach contents (CITE), there is a higher occurrence of cannibalism (Figure 1). 
+## 3.1 Pacific Hake diet
 
-![*Figure 1: Contents of hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple).*](./plots/diet/hake_cannibalism.png)
+The occurrence of intraspecific predation in Pacific hake diet appears to be highly variable, in contrast to previous estimates that cannibalism forms a significant portion of the Pacific hake diet - up to 30% (CITE). Stomachs gathered from the hake acoustic trawl survey, however, do not show a high rate of intraspecific predation, with only 16 instances of cannibalism out of 3995 stomachs collected from 2005-2019: a rate of 0.4%. In earlier studies of hake stomach contents (CITE), there is a higher occurrence of cannibalism (Figure 1).
+
+![**Figure 1**: Contents of hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple).](./plots/diet/hake_cannibalism.png)
 
 Overall, intraspecific predation makes up less than 30% of the Pacific hake diet by weight, but this percentage is highly variable both by year and by age. During the 1990s, the proportion of prey hake in predator hake stomachs by weight was over 75%, while for the recent data from 2005-2019, the percentage by weight was less than 10% (Fig. 2). Intraspecific predation also makes up a larger proportion of the diet of older hake and the majority of prey hake are age 1 or younger, with some records of hake depredation up to age 5 (Fig. 2).
 
-![*Figure 2: Dirichlet-weighted diet proportion by weight of Pacific hake intraspecific predation by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019.*](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
+![**Figure 2**: Dirichlet-weighted diet proportion by weight of Pacific hake intraspecific predation by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019.](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
 
-The timing and location of cannibalism is also variable, with potential evidence in some years of a higher occurrence of cannibalism at the southern end of the sampling area (below approximately 42°N) and later in the year. This trend is visible in 1998 and 1999 and without the geographic bias in 1995 and 1997 (Fig. 3). It is important to note, however, that there is the potential for significant sampling bias. 
+The timing and location of cannibalism is also variable, with potential evidence in some years of a higher occurrence of cannibalism at the southern end of the sampling area (below approximately 42°N) and later in the year. This trend is visible in 1998 and 1999 and without the geographic bias in 1995 and 1997 (Fig. 3). It is important to note, however, that there is the potential for significant sampling bias.
 
-![*Figure 3: Hake stomachs containing Pacific hake (in green) or only other food items (in purple) by location per year and by sampling month per year.*](./plots/diet/locations_timing.png)
+![**Figure 3**: Hake stomachs containing Pacific hake (in green) or only other food items (in purple) by location per year and by sampling month per year.](./plots/diet/locations_timing.png)
 
 While the different sampling protocols and varying temporal and geographic coverage make it difficult to compare the rates of intraspecific predation across the timeseries, it does appear that more cannibalism was detected in the 1990s. Whether this trend is due to sampling or to an actual change in hake diet is still unclear. Incidentally, there is evidence of a similar trend in the proportion of hake present in the diets of California sea lions, with higher rates of hake depredation detected in the 1980s and 1990s than in the 2000s onwards (Fig. 4). The sea lion diet dataset consists of scat records from San Clemente and San Nicholas Islands in Southern California and has much more even coverage for the timeseries. The sea lion data were also collected quarterly, with some evidence that more hake were recorded in their diet in the Spring and Fall, especially in the earlier years (Fig. 4). These data can maybe serve as corroboration of some change in Pacific hake population dynamics manifesting in their depredation by both sea lion and their conspecifics.
 
-![*Figure 4: Island-wide hake anomaly in California sea lion scat collected on San Clemente Island and San Nichols Island in the Spring, Summer, Fall, and Winter from 1980-2021. Provided by Dr. Alexandra Curtis.*](./Resources/Sea lions/image.png)
+![**Figure 4**: Island-wide hake anomaly in California sea lion scat collected on San Clemente Island and San Nichols Island in the Spring, Summer, Fall, and Winter from 1980-2021. Provided by Dr. Alexandra Curtis.](./Resources/Sea%20lions/image.png)
 
-
-## Applying intraspecific predation to CEATTLE
+## 3.2 Applying intraspecific predation to CEATTLE
 
 Without diet data (operating as a single-species model), the CEATTLE model matches well with the Stock Synthesis 3.0 (SS3) estimates for spawning stock biomass (SSB), total biomass, and recruitment for the timeseries (Fig. 5). When the mean rates of intraspecific predation (i.e. the rates for all years as in Fig. 2) are included, there is not an appreciable change in SSB, with a slight overall decrease in the estimate. For total biomass, the model run with cannibalism deviates more widely from both the single-species CEATTLE model and the SS3 runs. For recruitment, the number of individuals is much higher for the CEATTLE run with cannibalism as the model "creates" recruits to satisfy the higher rates of predation on year 1 hake (Fig 5.)
 
-![*Figure 5: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.*](./plots/CEATTLE/intraspecies predation/intrasp_popdy.png)
+![*Figure 5: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.*](./plots/CEATTLE/intraspecies%20predation/intrasp_popdy.png)
 
-The predation pressure on the youngest hake in the model is incorporated through predation mortality (M2), which is added to the residual mortality (M1) and fishing mortality (F) to determine the total mortality coefficient used to calculate numbers at age per year. M1 is estimated as age- and sex-invariant. When the model is run with intraspecific predation, the predation mortality on the age 1 hake increases dramatically, but there is little effect on the mortality of any other age group (Fig. 6).
+The predation pressure on the youngest hake in the model is incorporated through predation mortality (M2), which is added to the residual mortality (M1) and fishing mortality to determine the total mortality coefficient used to calculate numbers at age per year. M1 is estimated as age- and sex-invariant. When the model is run with intraspecific predation, the predation mortality on the age 1 hake increases dramatically, but there is little effect on the mortality of any other age group (Fig. 6).
 
-$N_{sp,a+1,y+1} = N_{sp,a,y} e^{-Zsp,a,y}$
-
-$Z_{sp,a,y} = M1_{sp,a} + M2_{sp,a,y} + F_{sp,a,y}$
-
-$sp = species$
-
-$a = age$
-
-$y = year$
-
-![*Figure 6: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism.*](./plots/CEATTLE/intraspecies predation/M_intrasp.png)
+![**Figure 6**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism.](./plots/CEATTLE/intraspecies%20predation/M_intrasp.png)
 
 The result of this excess mortality of the youngest hake is also apparent in the numbers-at-age, with a large increase in the number of age-1 hake estimated for the CEATTLE run with cannibalism, compared to the single-species model and the SS3 estimates (Fig. 6). The numbers-at-age are also highly variable across the timeseries (Fig. 6), with the largest increases in age-1 hake in the CEATTLE model with cannibalism occurring in 1981 and 1985, corresponding to the peaks visible in the estimates for total biomass, number of recruits, and mortality (Fig. 5 & 6).
 
-![*Figure 7: Mean and standard deviation of numbers-at-age from CEATTLE run in single-secies mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.*](./plots/CEATTLE/intraspecies predation/nbyage_intrasp.png)
+![**Figure 7**: Mean and standard deviation of numbers-at-age from CEATTLE run in single-secies mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/intraspecies%20predation/nbyage_intrasp.png)
 
+### 3.2.1 Sensitivity testing
 
-### Sensitivity testing
+The overall mean proportion of intraspecific predation in the Pacific hake diet potentially belies the impact of cannibalism on hake population dynamics. To explore the effects of differing levels of cannibalism in CEATTLE on population dynamics, the model was fit with a diet proportion of between 0.5 and 80% prey hake by weight (representing the extreme end of the potential cannibalism as seen in the 1990s), with all prey consisting of year 1 hake. Generally, with increasing intraspecific predation, the amount of individuals "created" by the model increases, with the estimates for biomass and recruitment for the stomach contents data relatively similar to an overall rate of 10% intraspecific predation by weight (Fig. 7).
 
-The overall mean proportion of intraspecific predation in the Pacific hake diet potentially belies the impact of cannibalism on hake population dynamics. To explore the effects of differing levels of cannibalism in CEATTLE on population dynamics, the model was fit with a diet proportion of between 0.5 and 80% prey hake by weight (representing the extreme end of the potential cannibalism as seen in the 1990s), with all prey consisting of year 1 hake. Generally, with increasing intraspecific predation, the amount of individuals "created" by the model increases, with the estimates for biomass and recruitment for the stomach contents data relatively similar to an overall rate of 10% intraspecific predation by weight (Fig. 7). 
-
-![*Figure 8: Runs of CEATTLE with varying levels of intraspecies predation (0.5% to 80%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.*](./plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png)
+![**Figure 8**: Runs of CEATTLE with varying levels of intraspecies predation (0.5% to 80%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.](./plots/CEATTLE/intraspecies%20predation/Testing/test_intrasp_popdy.png)
 
 The amount of predation mortality also follows the expected trend, with increasing amounts of excess mortality produced with the proportion of hake predation (Fig. 9). This effect is especially evident in the 1980s, corresponding with the highest peaks in biomass and recruitment for the higher rates of cannibalism as well (Fig. 8 & 9). It is important to note that for both the model runs with the empirical data and for the sensitivity testing, the diet proportion remained constant across years.
 
-![*Figure 9: Residual (M1) and predation (M2) mortality by age an year for CEATTLE run with varying levels of inrraspecies predation (0.5% to 80%).*](./plots/CEATTLE/intraspecies predation/Testing/test_instrasp_M.png)
+![**Figure 9:** Residual (M1) and predation (M2) mortality by age an year for CEATTLE run with varying levels of inrraspecies predation (0.5% to 80%).](./plots/CEATTLE/intraspecies%20predation/Testing/test_instrasp_M.png)
