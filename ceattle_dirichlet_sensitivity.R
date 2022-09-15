@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220726.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220914.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -46,7 +46,7 @@ run_ceattle <- function(df, start, end, proj) {
 }
 
 # Run low-cannibalism models
-run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1980, 2019, 2022)
+run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2022)
 run_90s <- run_ceattle(dirichlet_90s, 1991, 1999, 1999)
 run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019)
 
@@ -80,10 +80,10 @@ ceattle_popdy <- function(run, name, years) {
   return(popdy)
 }
 
-popdy <- rbind(ceattle_popdy(run_all, "all years", 1980:2022), 
+popdy <- rbind(ceattle_popdy(run_all, "all years", 1988:2022), 
                ceattle_popdy(run_90s, "1991-1999", 1991:1999), 
                ceattle_popdy(run_recent, "2005-2019", 2005:2019),
-               ceattle_popdy(nodiet_run, "single-species", 1980:2022))
+               ceattle_popdy(nodiet_run, "single-species", 1988:2022))
 
 popdy$year <- as.numeric(popdy$year)
 popdy$value <- as.numeric(popdy$value)
@@ -98,6 +98,9 @@ popdy_plot <- ggplot(popdy, aes(x=year, y=value, color = model, fill = model)) +
   labs(color = "model") +
   facet_wrap(~type, ncol = 1, scales = "free_y")
 popdy_plot
+
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/dirichlet_popdy.png", popdy_plot, 
+       bg = "transparent", width=200, height=170, units="mm", dpi=300)
 
 
 ### Plot mortality ------------------------------------------------------------

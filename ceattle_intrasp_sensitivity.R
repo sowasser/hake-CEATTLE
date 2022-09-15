@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220726.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_220914.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -72,7 +72,7 @@ run_wt80 <- run_ceattle(wt80, hake_intrasp)
 
 
 # Plot biomass in comparison to no diet & asssessment -------------------------
-years <- 1980:2022
+years <- 1988:2022
 
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
@@ -156,7 +156,7 @@ extract_nbyage <- function(run, name) {
   
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
-  levels(df$Var4) <- c(1980:2022)
+  levels(df$Var4) <- c(1988:2022)
   colnames(df) <- c("age", "year", "numbers")
   
   df <- cbind(df, rep(name, nrow(df)))
