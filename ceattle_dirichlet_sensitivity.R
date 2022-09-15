@@ -47,7 +47,7 @@ run_ceattle <- function(df, start, end, proj) {
 
 # Run low-cannibalism models
 run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2022)
-run_90s <- run_ceattle(dirichlet_90s, 1991, 1999, 1999)
+run_90s <- run_ceattle(dirichlet_90s, 1988, 1999, 1999)
 run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019)
 
 # Run CEATTLE with no diet
@@ -81,14 +81,14 @@ ceattle_popdy <- function(run, name, years) {
 }
 
 popdy <- rbind(ceattle_popdy(run_all, "all years", 1988:2022), 
-               ceattle_popdy(run_90s, "1991-1999", 1991:1999), 
+               ceattle_popdy(run_90s, "1988-1999", 1988:1999), 
                ceattle_popdy(run_recent, "2005-2019", 2005:2019),
                ceattle_popdy(nodiet_run, "single-species", 1988:2022))
 
 popdy$year <- as.numeric(popdy$year)
 popdy$value <- as.numeric(popdy$value)
 popdy$model <- factor(popdy$model,
-                      levels = c("all years", "single-species", "1991-1999", "2005-2019"))
+                      levels = c("all years", "single-species", "1988-1999", "2005-2019"))
 
 popdy_plot <- ggplot(popdy, aes(x=year, y=value, color = model, fill = model)) +
   geom_line() +
@@ -230,7 +230,7 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
             p = ggplot2::ggplot(data, aes(y = Age, x = Year, zmin = zlim[1], zmax = zlim[2])) + 
               geom_tile(aes(fill = M))  + 
               scale_y_continuous(expand = c(0, 0), breaks=seq(0,max(ages),round(nages[sp]/5))) + 
-              coord_equal() +  scale_x_continuous(expand = c(0, 0),  breaks = scales::pretty_breaks())+ 
+              coord_equal() +  scale_x_continuous(expand = c(0, 0))+ 
               theme( panel.border = element_rect(colour = "black", fill=NA, size=1))
             if(!is.null(title)){
               p = p + ggtitle(paste0(title,": ",spnames[j] )) + 
@@ -283,12 +283,13 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
 
 # Combine mortality plots together & save
 m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all, type = 0, title = "all years", maxage = 15),
-                                       plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1991-1999", maxage = 15),
+                                       plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1988-1999", maxage = 15) +
+                                         scale_x_continuous(expand = c(0, 0), breaks = c(1988, 1992, 1996)),
                                        plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15),
                                        ncol = 2, nrow = 2, 
                                        layout_matrix = rbind(c(1,1), c(2,3)))
 m_dirichlet
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_dirichlet.png", 
-       m_dirichlet, width=200, height = 200, units = "mm", dpi=300)
+       m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
 

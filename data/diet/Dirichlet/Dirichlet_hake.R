@@ -496,7 +496,7 @@ ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years[[2]]
 all_years[[3]]
 
 # Run for only 1991-1999
-y90s <- c(1991, 1995, 1997, 1998, 1999)
+y90s <- c(1988, 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999)
 df_90s <- aged_dataset %>% filter(year %in% y90s)
 dirichlet_90s <- run_Dirichlet(df_90s, "1991-1999")
 dirichlet_90s[[2]]
