@@ -247,6 +247,7 @@ ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", sur
 # M2 <- intrasp_run$quantities$M2
 # M2_prop <- as.data.frame(intrasp_run$quantities$M2_prop)
 # M <- as.data.frame(intrasp_run$quantities$M)
-m_plot <- plot_mortality(Rceattle = intrasp_run, type = 0, title = "empirical data", maxage = 15) 
+m_plot <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15) 
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/M_intrasp.png", m_plot, dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/M_intrasp.png", m_plot, 
+       width = 140, height = 60, units = "mm", dpi=300)

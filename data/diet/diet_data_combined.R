@@ -79,11 +79,11 @@ colnames(FEAT_all) <- labels
 
 all_data <- rbind(CCTD_all, FEAT_all)
 
-# Remove all prey ages for prey that isn't hake
+# Remove all prey ages for prey that isn't hake & remove 1980 (year w/ no ages)
 all_data$prey_age[all_data$prey_name == "other"] <- NA
 
 hake_data <- all_data %>%
-  filter(prey_name == "Pacific Hake")
+  filter(prey_name == "Pacific Hake") 
 
 # Look at instances of no age - all weights within year 1 range except for 1
 no_age <- hake_data %>% filter(is.na(prey_length))
@@ -92,6 +92,9 @@ all_data$prey_age[is.na(all_data$prey_age) & all_data$prey_name == "Pacific Hake
 
 # Add estimate of correct age for very big hake prey
 all_data$prey_age[all_data$prey_wt > 300 & all_data$prey_name == "Pacific Hake"] <- 5
+
+# Rewmove 1980 w/ no ages
+all_data <- all_data %>% filter(year != 1980)
 
 # Write combined dataset
 write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv", row.names = FALSE)
@@ -125,11 +128,11 @@ timing_yearly <- ggplot(timing_all, aes(x = as.factor(month), y = n, fill = prey
   scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("sampling month") + ylab(" ") +
-  facet_wrap(~ year, ncol = 7)
+  facet_wrap(~ year, ncol = 5)
 timing_yearly
 
 ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly, 
-       bg = "transparent", width=300, height=120, units="mm", dpi=300)
+       bg = "transparent", width=200, height=140, units="mm", dpi=300)
 
 
 timing_overall <- ggplot(timing_all, aes(x = as.factor(month), y = n, color = prey_name, fill = prey_name)) +
@@ -161,7 +164,7 @@ location_yearly <- ggplot(data = world) +
   scale_y_continuous(breaks = seq(35, 55, by = 10)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab(" ") + ylab(" ") +
-  facet_wrap(~year, ncol = 7)
+  facet_wrap(~year, ncol = 5)
 
 location_overall <- ggplot(data = world) +
   geom_sf() +
@@ -222,4 +225,4 @@ location_timing <- location_yearly +
 location_timing
 
 ggsave(filename = "plots/diet/locations_timing.png", location_timing, 
-       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+       bg = "transparent", width=200, height=200, units="mm", dpi=300)
