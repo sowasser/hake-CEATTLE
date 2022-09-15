@@ -37,7 +37,7 @@ wts <- hake_intrasp$UobsWtAge %>%
   summarize(wt_prop = mean(Stomach_proportion_by_weight))
 
 prop <- as.data.frame(cbind(1:15, wt05, wt10, wt50, wt80, wts$wt_prop))
-colnames(prop)[c(1, 6)] <- c("age", "real data")
+colnames(prop)[c(1, 6)] <- c("age", "empirical data")
 prop_all <- melt(prop, id.vars = "age")
 
 stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
@@ -45,6 +45,9 @@ stomach_props <- ggplot(prop_all, aes(x=age, y=value, fill=variable)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   ylab("stomach proportion")
 stomach_props
+
+# ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png", stomach_props,
+#        bg = "transparent", width=150, height=80, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE

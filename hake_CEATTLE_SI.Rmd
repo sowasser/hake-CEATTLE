@@ -1,0 +1,26 @@
+---
+title: "Supplemental Information"
+output:
+  word_document:
+    reference_docx: custom_template.docx
+  html_document:
+    df_print: paged
+---
+
+![**SI Figure 1**: Allometric mass function using values for Atlantic cod and juvenile and adult pollock from Fish Bioenergetics 4 and the values for hake from Francis (1983) where CA = 0.167 and CA/2 = 0.0835.](./plots/bioenergetics/allometric_mass.png)
+
+![**SI Figure 2**: Temperature-dependent consumption rate function using values for Atlantic cod and pollock from Fish Bioenergetics 4 and the estimates for hake. Optimal and maximum temperatures for hake are modelled for the entire acoustic survey area and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
+
+![**SI Figure 3**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimate for that grid, mean survey temperatures, and mean ROMS output for the summer months (June to September).](./plots/temperature/mean_temp_compared.png)
+
+![**SI Figure 4**: Age vs. length from the lake assessment, the values assigned to CCTD predators and prey (with bounds of 1 and 15 for CEATTLE), and ages from FEAT acoustic-trawl survey data](./plots/diet/growth_curve.png)
+
+![**SI Figure 5**: Dirichlet reweighting output for calculation of mean diet proportion from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence interval. ](./plots/diet/Dirichlet/Dirichlet_all_years.png)
+
+![**SI Figure 6**: Simplified diet proportion for sensitivity testing with rations of maximum 0.5%, 10%, 50%, and 80% cannibalism, compared to the mean cannibalism derived from the empirical data](./plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png)
+
+![**SI Figure 7**: Dirichlet reweighting output for calculation of mean diet proportion from records of hake depredation in years 1988-1999 by predator age (box) and prey age (column). Black bars represent 95% confidence interval. ](./plots/diet/Dirichlet/Dirichlet_90s.png)
+
+![**SI Figure 8**: Dirichlet reweighting output for calculation of mean diet proportion from records of hake depredation in years 2005-2019 by predator age (box) and prey age (column). Black bars represent 95% confidence interval. ](./plots/diet/Dirichlet/Dirichlet_recent.png)
+
+![**SI Figure 9**: Top hake prey by occurrence and weight in hake stomachs within the CCTD.](./plots/diet/hake_prey_species.png)
