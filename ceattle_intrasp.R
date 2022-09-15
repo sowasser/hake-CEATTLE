@@ -44,7 +44,6 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
 years <- 1980:2022
-test <- intrasp_run$quantities$biomass
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
   ssb <- (c(run$quantities$biomassSSB) * 2)
