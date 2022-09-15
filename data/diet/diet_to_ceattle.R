@@ -96,6 +96,12 @@ diet_plot_yearly <- ggplot(hake_prop_yearly, aes(x=predator_age, y=wt_prop, fill
   facet_wrap(~year, ncol = 5)
 diet_plot_yearly
 
+yearly_simple <- hake_prop_yearly 
+yearly_simple$prey_age <- 1
+yearly_simple <- yearly_simple %>%
+  group_by(year) %>%
+  summarize(sample_size = sum(sample_size), max_prop = max(wt_prop))
+
 ggsave(filename = "plots/diet/cannibalism_yearly.png", diet_plot_yearly, 
        bg = "transparent", width=260, height=120, units="mm", dpi=300)
 
