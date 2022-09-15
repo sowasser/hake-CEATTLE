@@ -106,7 +106,7 @@ growth_curve <- ggplot(all_ages, aes(x = age, y = length, color = data, shape = 
 growth_curve
 
 ggsave(filename = "plots/diet/growth_curve.png", growth_curve, 
-       bg = "transparent", width=200, height=120, units="mm", dpi=300)
+       bg = "transparent", width=160, height=80, units="mm", dpi=300)
 
 
 # Write aged datasets to file -------------------------------------------------

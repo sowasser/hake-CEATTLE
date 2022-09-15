@@ -455,6 +455,8 @@ run_Dirichlet <- function(data, name) {
   # Plot different statistics from the analysis
   post_dirichlet_long <- melt(post_dirichlet, id.vars = c("predator", "prey", "lower95", "upper95"))
   
+  scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for y-axis
+  
   # Restrict plots to only the hake prey items
   post_dirichlet_hake <- post_dirichlet_long %>% filter(prey != "other")
   dirichlet_results <- ggplot(post_dirichlet_hake, aes(x = prey)) +
@@ -463,16 +465,15 @@ run_Dirichlet <- function(data, name) {
     geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     xlab("prey item") + ylab("stomach proportion") +
-    ggtitle(name) +
-    scale_y_continuous(labels = scales::label_number(accuracy = NULL)) +  # THIS ISN'T WORKING FOR ALL YEARS
-    facet_wrap(~ predator)
+    scale_y_continuous(labels = scaleFUN) + 
+    facet_wrap(~ predator, ncol = 3)
   
   # Compare simple and bootstrapped average
   post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple_average", "boot_average"))
   comparison_plot <- ggplot(post_dirichlet_hake2, aes(x=predator, y=value, fill=factor(prey))) +
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    scale_y_continuous(labels = scales::label_number(accuracy = NULL)) +  # THIS ISN'T WORKING FOR ALL YEARS
+    scale_y_continuous(labels = scaleFUN) + 
     facet_wrap(~ variable)
   comparison_plot
   
@@ -491,7 +492,7 @@ all_years_df <- all_years[[1]]
 
 all_years[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years[[2]], 
-       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+       bg = "transparent", width=160, height=180, units="mm", dpi=300)
 
 all_years[[3]]
 
@@ -501,7 +502,7 @@ df_90s <- aged_dataset %>% filter(year %in% y90s)
 dirichlet_90s <- run_Dirichlet(df_90s, "1991-1999")
 dirichlet_90s[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_90s.png", dirichlet_90s[[2]], 
-       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+       bg = "transparent", width=160, height=180, units="mm", dpi=300)
 dirichlet_90s[[3]]
 
 # Run with recent data
@@ -510,7 +511,7 @@ df_recent <- aged_dataset %>% filter(year %in% recent)
 dirichlet_recent <- run_Dirichlet(df_recent, "2005-2019")
 dirichlet_recent[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_recent.png", dirichlet_recent[[2]], 
-       bg = "transparent", width=300, height=200, units="mm", dpi=300)
+       bg = "transparent", width=160, height=180, units="mm", dpi=300)
 dirichlet_recent[[3]]
 
 
@@ -594,10 +595,10 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   scale_x_discrete(limits = factor(1:15), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab("predator hake age") + ylab("Dirichlet-weighted diet proportion") +
+  xlab("predator hake age") + ylab("diet proportion") +
   labs(fill = "prey hake age") +
   facet_wrap(~ data)
 comp2_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
-       bg = "transparent", width=200, height=60, units="mm", dpi=300)
+       bg = "transparent", width=160, height=50, units="mm", dpi=300)

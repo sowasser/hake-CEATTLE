@@ -243,9 +243,9 @@ hake_hake[[6]]  # yearly predation by type
 hake_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
-       bg = "transparent", width=200, height=80, units="mm", dpi=300)
+       bg = "transparent", width=180, height=70, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
-       bg = "transparent", width=170, height=100, units="mm", dpi=300)
+       bg = "transparent", width=160, height=80, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[7]], 
        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]], 

@@ -100,7 +100,7 @@ popdy_plot <- ggplot(popdy, aes(x=year, y=value, color = model, fill = model)) +
 popdy_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/dirichlet_popdy.png", popdy_plot, 
-       bg = "transparent", width=200, height=170, units="mm", dpi=300)
+       bg = "transparent", width=170, height=140, units="mm", dpi=300)
 
 
 ### Plot mortality ------------------------------------------------------------
@@ -236,10 +236,13 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
               p = p + ggtitle(paste0(title,": ",spnames[j] )) + 
                 theme(plot.title = element_text(size = title_cex))
             }
+            
+            scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for legend
+            
             if(log){
-              p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]), labels = scales::number_format(accuracy = 0.01))
+              p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
             } else {
-              p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scales::number_format(accuracy = 0.01))
+              p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
             }
             return(p)
           }

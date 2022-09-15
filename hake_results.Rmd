@@ -43,4 +43,4 @@ knitr::opts_chunk$set(echo = TRUE)
 ![**Figure 9**: Runs of CEATTLE with varying levels of intraspecific predation (0.5% to 80%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.](./plots/CEATTLE/intraspecies%20predation/Testing/test_intrasp_popdy.png)
 
 
-![**Figure 10:** Residual (M1) and predation (M2) mortality by age an year for CEATTLE run with varying levels of intraspecific predation (0.5% to 80%).](./plots/CEATTLE/intraspecies%20predation/Testing/test_instrasp_M.png)
+![**Figure 10:** Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with varying levels of intraspecific predation (0.5% to 80%).](./plots/CEATTLE/intraspecies%20predation/Testing/test_instrasp_M.png)

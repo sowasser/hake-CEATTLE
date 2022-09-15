@@ -145,7 +145,7 @@ test_popdy_plot <- test_plot_popdy()
 test_popdy_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy_plot, 
-       bg = "transparent", width=200, height=170, units="mm", dpi=300)
+       bg = "transparent", width=170, height=140, units="mm", dpi=300)
 
 
 # Numbers-at-age for each model run -------------------------------------------
@@ -352,10 +352,13 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
               if(!is.null(title)){
                 p = p + ggtitle(paste0(title,": ",spnames[j] )) + theme(plot.title = element_text(size = title_cex))
               }
+              
+              scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for legend
+              
               if(log){
-                p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]))
+                p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
               } else {
-                p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]))
+                p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
               }
               return(p)
             }
@@ -405,5 +408,5 @@ m_test <- ggpubr::ggarrange(plot_mortality_custom(Rceattle = run_wt05, type = 0,
                             ncol = 2, nrow = 2)
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_instrasp_M.png", m_test, 
-       width=230, height = 120, units = "mm", dpi=300)
+       width=180, height = 90, units = "mm", dpi=300)
 
