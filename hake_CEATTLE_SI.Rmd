@@ -24,3 +24,5 @@ output:
 ![**SI Figure 8**: Dirichlet reweighting output for calculation of mean diet proportion from records of hake depredation in years 2005-2019 by predator age (box) and prey age (column). Black bars represent 95% confidence interval. ](./plots/diet/Dirichlet/Dirichlet_recent.png)
 
 ![**SI Figure 9**: Top hake prey by occurrence and weight in hake stomachs within the CCTD.](./plots/diet/hake_prey_species.png)
+
+![**SI Figure 10**: Island-wide hake anomaly in California sea lion scat collected on San Clemente Island and San Nichols Island in the Spring, Summer, Fall, and Winter from 1980-2021. Provided by Dr. Alexandra Curtis.](./Resources/Sea lions/image.png)
