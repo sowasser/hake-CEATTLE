@@ -408,5 +408,5 @@ m_test <- ggpubr::ggarrange(plot_mortality_custom(Rceattle = run_wt05, type = 0,
                             ncol = 2, nrow = 2)
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_instrasp_M.png", m_test, 
-       width=180, height = 90, units = "mm", dpi=300)
+       width=200, height = 100, units = "mm", dpi=300)
 
