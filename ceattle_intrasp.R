@@ -12,7 +12,7 @@ source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220914.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221011.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
@@ -43,7 +43,7 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 
 
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
-years <- 1988:2022
+years <- 1988:2019
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
   ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -71,8 +71,8 @@ plot_popdy <- function() {
   # Put biomass together
   nodiet_biom <- ceattle_biomass(nodiet_run, "CEATTLE - single-species")
   # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
-  ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[23:57, 2:3], type = rep("SSB"))
-  ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:57, 2:3], type = rep("Total Biomass"))
+  ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[23:54, 2:3], type = rep("SSB"))
+  ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:54, 2:3], type = rep("Total Biomass"))
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
                                   model = rep("Stock Synthesis", length(ss3_ssb$V2) * 2)))
@@ -87,10 +87,10 @@ plot_popdy <- function() {
   colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
   R <- melt(R_wide, id.vars = "year")
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
-  ss3_1 <- as.data.frame(cbind(year = 1989:2022, 
-                               variable = rep("Stock Synthesis", (length(1989:2022))), 
-                               value = ss3_R[1:length(1989:2022), 2],
-                               error = ss3_R[1:length(1989:2022), 3]))
+  ss3_1 <- as.data.frame(cbind(year = 1989:2019, 
+                               variable = rep("Stock Synthesis", (length(1989:2019))), 
+                               value = ss3_R[1:length(1989:2019), 2],
+                               error = ss3_R[1:length(1989:2019), 3]))
   R_all <- rbind(cbind(R, error = rep(0, length(2 * R$value))), 
                  ss3_1)
   R_all$value <- as.numeric(R_all$value)
