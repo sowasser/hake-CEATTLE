@@ -65,10 +65,9 @@ data/diet/Dirichlet/plots
 *.docx
 *.pdf
 hake_document.log
-
 *.log
-
 *.tex
+*.txt
 
 # Ignore Microsoft temporary files
 [~][$]*  
