@@ -32,7 +32,8 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
 
-# # Rceattle diagmostics
+# # Rceattle diagnostics ------------------------------------------------------
+# plot_biomass(intrasp_run, add_ci = TRUE)
 # plot_index(intrasp_run)
 # plot_catch(intrasp_run)
 # plot_selectivity(intrasp_run)
@@ -43,18 +44,26 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 # plot_comp(intrasp_run)
 # plot_srv_comp(intrasp_run)
 
+# # Get SD of quantity
+sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "biomass")
+sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "biomassSSB")
+sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "R")
 
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
 years <- 1988:2019
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
+  # run <- intrasp_run
+  # name <- "CEATTLE - cannibalism"
   ssb <- (c(run$quantities$biomassSSB) * 2)
   biom <- c(run$quantities$biomass)
+  biom_sd <- run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]
   wide <- as.data.frame(cbind(years, ssb, biom))
   colnames(wide) <- c("year", "SSB", "Total Biomass")
   all_biom <- melt(wide, id.vars = "year")
   all_biom2 <- cbind(all_biom, 
-                     error = rep(0, length(all_biom$year)),  # add error, 0 for now
+                     error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
+                               run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]), 
                      model = rep(name, length(all_biom$year)))  
   colnames(all_biom2)[2:3] <- c("type", "value")
   
@@ -93,7 +102,8 @@ plot_popdy <- function() {
                                variable = rep("Stock Synthesis", (length(1989:2019))), 
                                value = ss3_R[1:length(1989:2019), 2],
                                error = ss3_R[1:length(1989:2019), 3]))
-  R_all <- rbind(cbind(R, error = rep(0, length(2 * R$value))), 
+  R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(run$sdrep$value) == "R")], 
+                                    nodiet_run$sdrep$sd[which(names(run$sdrep$value) == "R")])), 
                  ss3_1)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
@@ -113,7 +123,7 @@ plot_popdy <- function() {
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
-    geom_ribbon(aes(ymin=(value-error), ymax=(value+error)), alpha = 0.2, color = NA) + 
+    geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     ylab(" ") +
