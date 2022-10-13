@@ -127,7 +127,7 @@ popdy_plot <- plot_popdy()
 popdy_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy_plot, 
-       bg = "transparent", width=170, height=140, units="mm", dpi=300)
+       bg = "white", width=170, height=140, units="mm", dpi=300)
 
 
 ### Numbers-at-age for each model run -----------------------------------------
@@ -137,7 +137,7 @@ extract_nbyage <- function(run, name) {
   
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
-  levels(df$Var4) <- c(1980:2022)
+  levels(df$Var4) <- c(years)
   colnames(df) <- c("age", "year", "numbers")
   
   df <- cbind(df, rep(name, nrow(df)))
@@ -154,7 +154,7 @@ plot_nbyage <- function(output) {
   nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
 
   # Read in data from SS3 & average beginning & middle of the year
-  nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")
+  nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")[c(9:40, 52:83), ]
   colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
   
   nbyage_ss3_wide <- nbyage_ss3_all %>%
@@ -205,7 +205,7 @@ nbyage_plot_yearly <- plot_nbyage(output = "yearly")
 nbyage_plot_yearly
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nbyage_plot_mean, 
-       bg = "transparent", width=170, height=90, units="mm", dpi=300)
+       bg = "white", width=170, height=90, units="mm", dpi=300)
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
@@ -242,7 +242,7 @@ survey_plot <- plot_survey()
 survey_plot
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", survey_plot, 
-       bg = "transparent", width=200, height=120, units="mm", dpi=300)
+       bg = "white", width=200, height=120, units="mm", dpi=300)
 
 
 ### Compare predation mortality (M2) ------------------------------------------
