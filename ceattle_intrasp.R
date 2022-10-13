@@ -19,15 +19,17 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  file = NULL, # Don't save
                                  # debug = 1, # 1 = estimate, 0 = don't estimate
                                  random_rec = FALSE, # No random recruitment
-                                 msmMode = 1, # Single-species mode
+                                 msmMode = 1, # Multi-species mode
                                  phase = "default")
 
+hake_nodiet <- hake_intrasp
+hake_nodiet$est_M1 <- 0  # Use base M1
 nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 inits = NULL, # Initial parameters = 0
                                 file = NULL, # Don't save
                                 # debug = 1, # 1 = estimate, 0 = don't estimate
                                 random_rec = FALSE, # No random recruitment
-                                msmMode = 0, # Multi-species mode
+                                msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
 
 # # Rceattle diagmostics
