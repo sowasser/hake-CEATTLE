@@ -6,6 +6,7 @@ library(viridis)
 library(FSA)
 library(dplyr)
 library(tidyr)
+library(stats4)
 
 # Set transparent ggplot theme
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
@@ -16,23 +17,58 @@ all_prey <- read.csv("data/diet/CCTD/hake_prey.csv")
 
 
 ### Parameterize length to age calculation  -----------------------------------
-hake_ages <- 0:15
+hake_ages <- 0:20
 
 # Read in maturity data
 maturity <- read.csv("~/Desktop/Local/hake-CEATTLE/Resources/hake-assessment-master/data/hake-maturity-data.csv")
 
-# Estimate VBGF (http://derekogle.com/fishR/2019-12-31-ggplot-vonB-fitPlot-1)
-vb <- vbFuns(param="Typical")  # define von Bert function
-# Get reasonable starting values, fit model, extract parameters
-f.starts <- vbStarts(Length_cm ~ Age, data = maturity)
-f.fit <- nls(Length_cm ~ vb(Age, Linf, K, t0), data = maturity, start = f.starts)
-params <- coef(f.fit)
+age_length <- data.frame(na.omit(cbind(Age = maturity$Age, Length = maturity$Length_cm)))
+
+like <- function(logLinf,logK,a0,logSigma)
+{
+  # Extract the parameters
+  Linf <- exp(logLinf); Kappa <- exp(logK); Sigma <- exp(logSigma)
+  
+  # make the model predictions
+  Pred <- Linf*(1.0-exp(-Kappa*(Ages-a0)))
+  
+  # Compute the negative log-likelihood
+  NegLogL <- -1*sum(dnorm(Lengths,Pred,Sigma,TRUE))
+  
+  return(NegLogL)
+}  
+
+start <- list(logLinf=log(100),logK=log(0.2),a0=0,logSigma=5)
+fixed <- NULL
+Ages <- age_length$Age
+Lengths <- age_length$Length
+mleOutput <- mle(like,start=start)
+print(summary(mleOutput))
+
+# Extract the parameters
+Linf <- exp(coef(mleOutput)[1])
+K <- exp(coef(mleOutput)[2])
+a0 <- coef(mleOutput)[3]
+Sigma <- exp(coef(mleOutput)[4])
+
+# Check AIC... yike
+AIC(mleOutput)
+
+# Plot the model fit
+# Generate modelled data
+pred_lengths <- Linf*(1.0-exp(-K*(hake_ages-a0)))
+pred_data <- data.frame(hake_ages, pred_lengths)
+
+ggplot(pred_data, aes(x = hake_ages, y = pred_lengths)) +
+  geom_line() +
+  geom_point(data = age_length, aes(x = Ages, y = Lengths))
+
 
 # Calculate ages from lengths in dataset
-age_calc <- function(lengths, Linf, K, t0) {
+age_calc <- function(lengths, Linf, K, a0) {
   ages <- c()
   for(L in lengths) {
-    a <- max(1, ((-log(1 - L/Linf))/K + t0))
+    a <- max(1, ((-log(1 - L/Linf))/K + a0))
     ages <- c(ages, a)
   }
 
@@ -43,14 +79,20 @@ age_calc <- function(lengths, Linf, K, t0) {
 pred_ages <- age_calc(lengths = all_pred$FL_cm, 
                       Linf = params[1], K = params[2], t0 = params[3])
 
+max(na.omit(pred_ages))
+min(na.omit(pred_ages))
+
 # Add ages column to predator dataset 
 new_pred <- cbind(all_pred, pred_ages)
-# Fill in age = 15 for any length > Linf
-new_pred$pred_ages[new_pred$FL_cm > params[1]] <- 15
+
+# Check missing values
+nrow(new_pred %>% filter(FL_cm > params[1]))
+# Fill in age = 20 for any length > Linf
+new_pred$pred_ages[new_pred$FL_cm > params[1]] <- 20
 # Round to whole number 
 new_pred$pred_ages <- round(new_pred$pred_ages, digits = 0)
-# Set any ages > 15 to 15 (accumulator age)
-new_pred$pred_ages[new_pred$pred_ages > 15] <- 15
+# Set any ages > 20 to 20 (accumulator age)
+new_pred$pred_ages[new_pred$pred_ages > 20] <- 20
 
 
 ### Run prey age calculation --------------------------------------------------
@@ -116,14 +158,10 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 
 
 # ### Age-length key method for ageing ------------------------------------------
-# # Mean Length at age (this is Mn_LatAge in the CEATTLE input excel sheet)
-# mean_lengths <- maturity %>% group_by(Age) %>% 
-#   summarise(Length = mean(Length_cm))
-# 
 # # Set up hake age-length key
-# hake_lbin <- c(0, seq(23, 56, by = 1), 999)
-# hake_age_bin <- c(0:14 + 0.5, 99)
-# hake_ages <- 1:15
+# hake_lbin <- c(0, seq(20, 68, by = 2), 999)
+# hake_age_bin <- c(0:19 + 0.5, 99)
+# hake_ages <- 1:20
 # 
 # maturity$BIN <- cut(maturity$Length_cm, breaks = hake_lbin)
 # levels(maturity$BIN) <- 1:length(hake_lbin[-1])
@@ -136,11 +174,21 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 # alk_hake <- prop.table(hake_table, margin=1)
 # alk_hake[is.na(alk_hake)] <- 0
 # 
+# # # Save for age_trans_matrix in CEATTLE input excel sheet
+# # age_trans_matrix <- t(as.data.frame.matrix(alk_hake))
+# # write.csv(age_trans_matrix, "data/assessment/age_trans_matrix.csv", row.names = FALSE)
+# 
 # # Predator age calculations
-# pred_ages <- alkIndivAge(key = alk_hake, 
-#                          formula = age ~ length, 
-#                          data = data.frame(cbind(length = all_pred$FL_cm, age = rep(NA))), 
+# pred_ages <- alkIndivAge(key = alk_hake,
+#                          formula = age ~ length,
+#                          data = data.frame(cbind(length = all_pred$FL_cm, age = rep(NA))),
 #                          type="CR")
+# # Check min and max age
+# max(pred_ages$age)
+# min(pred_ages)
+# 
+# # Add to exising data
+# all_pred$age <- pred_ages$age
 # 
 # # Prey age calculations - more complicated
 # prey_hake <- all_prey %>%
@@ -148,7 +196,15 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 # prey_hake$Prey_Length1 <- prey_hake$Prey_Length1 / 10  # convert to cm
 # prey_hake[is.na(prey_hake)] <- 1  # All NAs in length correspond to immature - below age 2
 # 
-# prey_ages <- alkIndivAge(key = alk_hake, 
-#                          formula = age ~ length, 
-#                          data = data.frame(cbind(length = prey_hake$Prey_Length1, age = rep(NA))), 
+# prey_ages <- alkIndivAge(key = alk_hake,
+#                          formula = age ~ length,
+#                          data = data.frame(cbind(length = prey_hake$Prey_Length1, age = rep(NA))),
 #                          type="CR")
+# # Check min and max age
+# max(prey_ages$age)
+# min(prey_ages$age)
+# 
+# # Add to existing data
+# prey_hake$age <- prey_ages$age
+# all_prey$age <- NA
+# all_prey$age[all_prey$Prey_Com_Name == "Pacific Hake"] <- prey_ages$age
