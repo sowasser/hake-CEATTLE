@@ -31,6 +31,7 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 random_rec = FALSE, # No random recruitment
                                 msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
+plot_biomass(nodiet_run, add_ci = TRUE)
 
 # # Rceattle diagnostics ------------------------------------------------------
 # plot_biomass(intrasp_run, add_ci = TRUE)
