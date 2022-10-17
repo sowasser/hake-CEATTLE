@@ -31,7 +31,7 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 random_rec = FALSE, # No random recruitment
                                 msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
-plot_biomass(nodiet_run, add_ci = TRUE)
+# plot_biomass(nodiet_run, add_ci = TRUE)
 
 # # Rceattle diagnostics ------------------------------------------------------
 # plot_biomass(intrasp_run, add_ci = TRUE)
@@ -45,10 +45,6 @@ plot_biomass(nodiet_run, add_ci = TRUE)
 # plot_comp(intrasp_run)
 # plot_srv_comp(intrasp_run)
 
-# # Get SD of quantity
-sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "biomass")
-sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "biomassSSB")
-sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "R")
 
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
 years <- 1988:2019
@@ -103,8 +99,8 @@ plot_popdy <- function() {
                                variable = rep("Stock Synthesis", (length(1989:2019))), 
                                value = ss3_R[1:length(1989:2019), 2],
                                error = ss3_R[1:length(1989:2019), 3]))
-  R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(run$sdrep$value) == "R")], 
-                                    nodiet_run$sdrep$sd[which(names(run$sdrep$value) == "R")])), 
+  R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(intrasp_run$sdrep$value) == "R")], 
+                                    nodiet_run$sdrep$sd[which(names(nodiet_run$sdrep$value) == "R")])), 
                  ss3_1)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
@@ -442,3 +438,4 @@ m_plot
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/M_intrasp.png", m_plot, 
        width = 160, height = 70, units = "mm", dpi=300)
+
