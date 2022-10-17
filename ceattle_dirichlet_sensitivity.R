@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_220914.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221011.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -46,7 +46,7 @@ run_ceattle <- function(df, start, end, proj) {
 }
 
 # Run low-cannibalism models
-run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2022)
+run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2019)
 run_90s <- run_ceattle(dirichlet_90s, 1988, 1999, 1999)
 run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019)
 
@@ -80,10 +80,10 @@ ceattle_popdy <- function(run, name, years) {
   return(popdy)
 }
 
-popdy <- rbind(ceattle_popdy(run_all, "all years", 1988:2022), 
+popdy <- rbind(ceattle_popdy(run_all, "all years", 1988:2019), 
                ceattle_popdy(run_90s, "1988-1999", 1988:1999), 
                ceattle_popdy(run_recent, "2005-2019", 2005:2019),
-               ceattle_popdy(nodiet_run, "single-species", 1988:2022))
+               ceattle_popdy(nodiet_run, "single-species", 1988:2019))
 
 popdy$year <- as.numeric(popdy$year)
 popdy$value <- as.numeric(popdy$value)
@@ -291,7 +291,6 @@ m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all,
                                        plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15),
                                        ncol = 2, nrow = 2, 
                                        layout_matrix = rbind(c(1,1), c(2,3)))
-m_dirichlet
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_dirichlet.png", 
        m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
