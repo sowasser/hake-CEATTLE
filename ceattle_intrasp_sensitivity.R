@@ -25,10 +25,10 @@ hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_221011.xlsx")
 
 # Run CEATTLE with differing diet weight proportions --------------------------
 # Set different diet weight proportion distributions
-wt05 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
-wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
-wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+wt05 <- c(0.0, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005)
+wt10 <- c(0.0, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+wt50 <- c(0.0, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+wt80 <- c(0.0, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.72, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
 
 # Plot stomach contents curves
 # Pull out data from base intrasp run
@@ -36,7 +36,7 @@ wts <- hake_intrasp$UobsWtAge %>%
   group_by(Pred_age) %>%
   summarize(wt_prop = mean(Stomach_proportion_by_weight))
 
-prop <- as.data.frame(cbind(1:15, wt05, wt10, wt50, wt80, wts$wt_prop))
+prop <- as.data.frame(cbind(1:length(wts$wt_prop), wt05, wt10, wt50, wt80, wts$wt_prop))
 colnames(prop)[c(1, 6)] <- c("age", "empirical data")
 prop_all <- melt(prop, id.vars = "age")
 
