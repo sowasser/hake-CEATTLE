@@ -12,7 +12,7 @@ source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221011.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
@@ -137,119 +137,119 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy_
        bg = "white", width=170, height=140, units="mm", dpi=300)
 
 
-### Numbers-at-age for each model run -----------------------------------------
-# Extract numbers at age for intraspecies predation model run
-extract_nbyage <- function(run, name) {
-  df <- as.data.frame(as.table(run$quantities$NByage))
-  
-  df <- df[-seq(0, nrow(df), 2), -c(1:2)]
-  levels(df$Var3) <- c(1:20)
-  levels(df$Var4) <- c(years)
-  colnames(df) <- c("age", "year", "numbers")
-  
-  df <- cbind(df, rep(name, nrow(df)))
-  colnames(df)[4] <- "model"
-  
-  return(df)
-}
-
-nbyage <- extract_nbyage(intrasp_run, "CEATTLE - cannibalism")
-write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
-
-plot_nbyage <- function(output) {
-  # Read in data from no diet CEATTLE run
-  nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
-
-  # Read in data from SS3 & average beginning & middle of the year
-  nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")[c(9:40, 52:83), ]
-  colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
-  
-  nbyage_ss3_wide <- nbyage_ss3_all %>%
-    group_by(year) %>%
-    summarize_at(vars("0":"20"), mean)
-  
-  nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
-  nbyage_ss3 <- cbind(nbyage_ss3, rep("Stock Synthesis", length(nbyage_ss3$year)))
-  colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
-  
-  # Combine with nbyage from intrasp run
-  nbyage_all <- rbind(nbyage, nbyage_nodiet, nbyage_ss3)
-  
-  # Set 15 as accumulation age
-  nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
-  
-  # Calculate mean numbers at age & plot
-  nbyage_mean <- nbyage_all %>% 
-    group_by(age, model) %>%
-    summarize(mean = mean(numbers), sd = sd(numbers)) 
-  
-  # Plot mean nbyage across years
-  nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean, fill=model, color=model)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    geom_errorbar(aes(ymin=mean, ymax=mean+sd), width=.2, position=position_dodge(.9)) +  # only upper error bars
-    scale_x_discrete(labels = c(1:14, "15+")) +
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    xlab("age") + ylab("numbers") 
-  
-  # Plot yearly nbyage
-  nbyage_plot_yearly <- ggplot(nbyage_all, aes(x=age, y=numbers, fill=model)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    scale_x_discrete(labels = c(1:14, "15+")) +
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    xlab("age") + ylab("numbers") +
-    facet_wrap(~ year)
-  
-  # Conditionally return plots
-  if(output == "mean") {return(nbyage_plot_mean)}
-  if(output == "yearly") {return(nbyage_plot_yearly)}
-}
-
-nbyage_plot_mean <- plot_nbyage(output = "mean")
-nbyage_plot_mean
-
-nbyage_plot_yearly <- plot_nbyage(output = "yearly")
-nbyage_plot_yearly
-
-ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nbyage_plot_mean, 
-       bg = "white", width=170, height=90, units="mm", dpi=300)
-
-
-### Compare survey biomass estimate from CEATTLE to true values ---------------
-survey_biom <- function(run, name) {
-  srv <- data.frame(year = 1995:2019,
-                    biomass = run$quantities$srv_bio_hat,
-                    log_sd = run$quantities$srv_log_sd_hat,
-                    model = rep(name, length(1995:2019)))
-  return(srv)
-}
-
-plot_survey <- function() {
-  intrasp_srv <- survey_biom(intrasp_run, "CEATTLE - cannibalism")
-
-  nodiet_srv <- survey_biom(nodiet_run, "CEATTLE - no diet")
-  
-  survey <- read.csv("data/assessment/survey_data.csv")
-  survey <- cbind(survey, model = rep("Stock Synthesis", length(survey$year)))
-  
-  survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
-  
-  survey_plot <- ggplot(survey_all, aes(x=year, y=biomass, color=model)) +
-    geom_line(alpha = 0.3) +
-    geom_point() +
-    # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    xlab("year") + ylab("survey biomass") 
-  
-  return(survey_plot)
-}
-
-survey_plot <- plot_survey()
-survey_plot
-
-ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", survey_plot, 
-       bg = "white", width=200, height=120, units="mm", dpi=300)
+# ### Numbers-at-age for each model run -----------------------------------------
+# # Extract numbers at age for intraspecies predation model run
+# extract_nbyage <- function(run, name) {
+#   df <- as.data.frame(as.table(run$quantities$NByage))
+#   
+#   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
+#   levels(df$Var3) <- c(1:20)
+#   levels(df$Var4) <- c(years)
+#   colnames(df) <- c("age", "year", "numbers")
+#   
+#   df <- cbind(df, rep(name, nrow(df)))
+#   colnames(df)[4] <- "model"
+#   
+#   return(df)
+# }
+# 
+# nbyage <- extract_nbyage(intrasp_run, "CEATTLE - cannibalism")
+# write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
+# 
+# plot_nbyage <- function(output) {
+#   # Read in data from no diet CEATTLE run
+#   nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
+# 
+#   # Read in data from SS3 & average beginning & middle of the year
+#   nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")[c(9:40, 52:83), ]
+#   colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
+#   
+#   nbyage_ss3_wide <- nbyage_ss3_all %>%
+#     group_by(year) %>%
+#     summarize_at(vars("0":"20"), mean)
+#   
+#   nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
+#   nbyage_ss3 <- cbind(nbyage_ss3, rep("Stock Synthesis", length(nbyage_ss3$year)))
+#   colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
+#   
+#   # Combine with nbyage from intrasp run
+#   nbyage_all <- rbind(nbyage, nbyage_nodiet, nbyage_ss3)
+#   
+#   # Set 15 as accumulation age
+#   nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
+#   
+#   # Calculate mean numbers at age & plot
+#   nbyage_mean <- nbyage_all %>% 
+#     group_by(age, model) %>%
+#     summarize(mean = mean(numbers), sd = sd(numbers)) 
+#   
+#   # Plot mean nbyage across years
+#   nbyage_plot_mean <- ggplot(nbyage_mean, aes(x=age, y=mean, fill=model, color=model)) +
+#     geom_bar(stat = "identity", position = "dodge") +
+#     geom_errorbar(aes(ymin=mean, ymax=mean+sd), width=.2, position=position_dodge(.9)) +  # only upper error bars
+#     scale_x_discrete(labels = c(1:14, "15+")) +
+#     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#     xlab("age") + ylab("numbers") 
+#   
+#   # Plot yearly nbyage
+#   nbyage_plot_yearly <- ggplot(nbyage_all, aes(x=age, y=numbers, fill=model)) +
+#     geom_bar(stat = "identity", position = "dodge") +
+#     scale_x_discrete(labels = c(1:14, "15+")) +
+#     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#     xlab("age") + ylab("numbers") +
+#     facet_wrap(~ year)
+#   
+#   # Conditionally return plots
+#   if(output == "mean") {return(nbyage_plot_mean)}
+#   if(output == "yearly") {return(nbyage_plot_yearly)}
+# }
+# 
+# nbyage_plot_mean <- plot_nbyage(output = "mean")
+# nbyage_plot_mean
+# 
+# nbyage_plot_yearly <- plot_nbyage(output = "yearly")
+# nbyage_plot_yearly
+# 
+# ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nbyage_plot_mean, 
+#        bg = "white", width=170, height=90, units="mm", dpi=300)
+# 
+# 
+# ### Compare survey biomass estimate from CEATTLE to true values ---------------
+# survey_biom <- function(run, name) {
+#   srv <- data.frame(year = 1995:2019,
+#                     biomass = run$quantities$srv_bio_hat,
+#                     log_sd = run$quantities$srv_log_sd_hat,
+#                     model = rep(name, length(1995:2019)))
+#   return(srv)
+# }
+# 
+# plot_survey <- function() {
+#   intrasp_srv <- survey_biom(intrasp_run, "CEATTLE - cannibalism")
+# 
+#   nodiet_srv <- survey_biom(nodiet_run, "CEATTLE - no diet")
+#   
+#   survey <- read.csv("data/assessment/survey_data.csv")
+#   survey <- cbind(survey, model = rep("Stock Synthesis", length(survey$year)))
+#   
+#   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
+#   
+#   survey_plot <- ggplot(survey_all, aes(x=year, y=biomass, color=model)) +
+#     geom_line(alpha = 0.3) +
+#     geom_point() +
+#     # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
+#     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#     xlab("year") + ylab("survey biomass") 
+#   
+#   return(survey_plot)
+# }
+# 
+# survey_plot <- plot_survey()
+# survey_plot
+# 
+# ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", survey_plot, 
+#        bg = "white", width=200, height=120, units="mm", dpi=300)
 
 
 ### Compare predation mortality (M2) ------------------------------------------
