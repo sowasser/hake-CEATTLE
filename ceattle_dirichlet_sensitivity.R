@@ -11,7 +11,7 @@ library(viridis)
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221011.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -96,11 +96,11 @@ popdy_plot <- ggplot(popdy, aes(x=year, y=value, color = model, fill = model)) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
   ylab(" ") +
   labs(color = "model") +
-  facet_wrap(~type, ncol = 1, scales = "free_y")
+  facet_wrap(~type, ncol = 2, scales = "free_y")
 popdy_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/dirichlet_popdy.png", popdy_plot, 
-       bg = "transparent", width=170, height=140, units="mm", dpi=300)
+       bg = "transparent", width=280, height=140, units="mm", dpi=300)
 
 
 ### Plot mortality ------------------------------------------------------------

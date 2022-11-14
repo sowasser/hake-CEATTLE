@@ -10,6 +10,7 @@ library(viridis)
 # Set transparent ggplot theme
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
@@ -83,7 +84,7 @@ plot_popdy <- function() {
   ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:54, 2:3], type = rep("Total Biomass"))
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
-                                  model = rep("Stock Synthesis", length(ss3_ssb$V2) * 2)))
+                                  model = rep("Assessment", length(ss3_ssb$V2) * 2)))
   colnames(ss3_biom)[2:3] <- c("value", "error")
   ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
   biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
@@ -96,7 +97,7 @@ plot_popdy <- function() {
   R <- melt(R_wide, id.vars = "year")
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
   ss3_1 <- as.data.frame(cbind(year = 1989:2019, 
-                               variable = rep("Stock Synthesis", (length(1989:2019))), 
+                               variable = rep("Assessment", (length(1989:2019))), 
                                value = ss3_R[1:length(1989:2019), 2],
                                error = ss3_R[1:length(1989:2019), 3]))
   R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(intrasp_run$sdrep$value) == "R")], 
@@ -117,6 +118,7 @@ plot_popdy <- function() {
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
+  all_popdy$model <- factor(all_popdy$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
@@ -125,16 +127,35 @@ plot_popdy <- function() {
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~type, ncol = 1, scales = "free_y")
+    facet_wrap(~type, ncol = 2, scales = "free_y")
   
-  return(popdy_plot)
+  # Plot ratio of SSB:Biomass to look for skewness in age composition
+  ratio <- as.data.frame(cbind(year = years,
+                               assessment = ss3_ssb[, 1]/ss3_biomass[, 1],
+                               cannibalism = biomass[1:length(years), 3] / biomass[(length(years)+1):(length(years)*2), 3],
+                               single_species = nodiet_biom[1:length(years), 3] / nodiet_biom[(length(years)+1):(length(years)*2), 3]))
+                 
+  colnames(ratio) <- c("year", "Assessment", "CEATTLE - cannibalism", "CEATTLE - single-species")
+  ratio2 <- melt(ratio, id.vars = "year", variable.name = "model")
+  ratio2$model <- factor(ratio2$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+  
+  ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
+    geom_line() +
+    scale_color_manual(values = halloween) +
+    ylab("SSB/Biomass")
+  
+  return(list(popdy_plot, ratio_plot))
 }
 
-popdy_plot <- plot_popdy()
-popdy_plot
+popdy <- plot_popdy()
+popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy_plot, 
-       bg = "white", width=170, height=140, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy[[1]], 
+       bg = "transparent", width=280, height=140, units="mm", dpi=300)
+
+popdy[[2]]
+ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_ratio.png", popdy[[2]], 
+       bg = "transparent", width=150, height=80, units="mm", dpi=300)
 
 
 # ### Numbers-at-age for each model run -----------------------------------------

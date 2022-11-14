@@ -41,13 +41,13 @@ prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
 stomach_props <- ggplot(prop_all, aes(x=Pred_age, y=value, fill=variable)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  ylab("stomach proportion") +
+  scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3, direction = -1) +
+  ylab("stomach proportion") + xlab("predator age") +
   facet_wrap(~Prey_age)
 stomach_props
 
-# ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png", stomach_props,
-#        bg = "transparent", width=150, height=80, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png", stomach_props,
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -128,20 +128,45 @@ test_plot_popdy <- function() {
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = variable, fill = variable)) +
     geom_line(aes(linetype = variable)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
+    scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) + 
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~type, ncol = 1, scales = "free_y")
+    facet_wrap(~type, ncol = 2, scales = "free_y")
   
-  return(popdy_plot)
+  # Plot ratio of SSB:Biomass to look for skewness in age composition
+
+  ratio <- as.data.frame(cbind(year = years,
+                               wt05 = (c(run_wt05$quantities$biomassSSB) * 2) / c(run_wt05$quantities$biomass),
+                               wt10 = (c(run_wt10$quantities$biomassSSB) * 2) / c(run_wt10$quantities$biomass),
+                               wt50 = (c(run_wt50$quantities$biomassSSB) * 2) / c(run_wt50$quantities$biomass),
+                               wt80 = (c(run_wt75$quantities$biomassSSB) * 2) / c(run_wt75$quantities$biomass)))
+
+  colnames(ratio) <- c("year",
+                       "CEATTLE - 0.5% cannibalism",
+                       "CEATTLE - 10% cannibalism",
+                       "CEATTLE - 50% cannibalism",
+                       "CEATTLE - 75% cannibalism")
+  ratio2 <- melt(ratio, id.vars = "year", variable.name = "model")
+
+  ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
+    geom_line() +
+    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3, direction = -1) +
+    ylab("SSB/Biomass")
+  ratio_plot
+  
+  return(list(popdy_plot, ratio_plot))
 }
 
-test_popdy_plot <- test_plot_popdy()
-test_popdy_plot
+test_popdy <- test_plot_popdy()
+test_popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy_plot, 
-       bg = "transparent", width=170, height=140, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy[[1]], 
+       bg = "transparent", width=280, height=140, units="mm", dpi=300)
+
+test_popdy[[2]]
+ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_ratio.png", test_popdy[[2]], 
+       bg = "transparent", width=150, height=80, units="mm", dpi=300)
 
 
 # # Numbers-at-age for each model run -------------------------------------------
