@@ -469,7 +469,7 @@ run_Dirichlet <- function(data, name) {
     facet_wrap(~ predator, ncol = 3)
   
   # Compare simple and bootstrapped average
-  post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple_average", "boot_average"))
+  post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple average", "bootstrapped average"))
   comparison_plot <- ggplot(post_dirichlet_hake2, aes(x=predator, y=value, fill=factor(prey))) +
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
@@ -522,32 +522,15 @@ to_ceattle <- function(df) {
     filter(prey != "other") %>%
     arrange(predator, prey)
   
-  df3 <- data.frame(cbind(Pred = as.integer(rep(1, nrow(df2))),
-                          Prey = as.integer(rep(1, nrow(df2))),
-                          Pred_sex = as.integer(rep(0, nrow(df2))),
-                          Prey_sex = as.integer(rep(0, nrow(df2))),
-                          Pred_age = as.numeric(df2$predator),
-                          Prey_age = as.numeric(df2$prey),
-                          Year = as.integer(rep(0, nrow(df2))),
-                          Sample_size = as.integer(rep(10, nrow(df2))),
-                          Stomach_proportion_by_weight = as.numeric(df2$boot_average)))
-  
-  all_ages <- data.frame(Pred = rep(1, 100),
-                         Prey = rep(1, 100),
-                         Pred_sex = rep(0, 100),
-                         Prey_sex = rep(0, 100),
-                         Pred_age = rep(1:20, each = 5),
-                         Prey_age = rep(1:5, times = 20),
-                         Year = rep(0, 100),
-                         Sample_size = rep(10, 100),
-                         Stomach_proportion_by_weight = rep(0, 100))
-  
-  df_ceattle <- df3 %>% 
-    full_join(all_ages) %>%
-    arrange(Pred_age, Prey_age) %>%
-    distinct(Pred_age, Prey_age, .keep_all = TRUE) 
-  
-  return(df_ceattle)
+  dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(dirichlet_ceattle)),
+                                        Prey = rep(1, nrow(dirichlet_ceattle)),
+                                        Pred_sex = rep(0, nrow(dirichlet_ceattle)),
+                                        Prey_sex = rep(0, nrow(dirichlet_ceattle)),
+                                        Pred_age = dirichlet_ceattle$predator,
+                                        Prey_age = dirichlet_ceattle$prey,
+                                        Year = rep(0, nrow(dirichlet_ceattle)),
+                                        Sample_size = rep(10, nrow(dirichlet_ceattle)),
+                                        Stomach_proportion_by_weight = dirichlet_ceattle$boot_average))
 }
 
 ceattle_all <- to_ceattle(all_years_df)
@@ -586,7 +569,7 @@ comparison <- comparison %>% filter(prey_age <= 5)
 
 comparison_plot <- ggplot(comparison, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_discrete(limits = factor(1:20)) +  # add in missing predator ages
+  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
@@ -612,7 +595,7 @@ comp2 <- comp2 %>% filter(prey_age <= 5)
 
 comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_discrete(limits = factor(1:20), breaks = c(1, 5, 10, 15, 20)) +  # add in missing predator ages
+  scale_x_discrete(limits = factor(1:15), breaks = c(1, 5, 10, 15)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion") +

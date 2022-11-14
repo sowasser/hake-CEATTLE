@@ -21,7 +21,7 @@ all_prey <- read.csv("data/diet/CCTD/hake_prey.csv")
 maturity <- read.csv("~/Desktop/Local/hake-CEATTLE/Resources/hake-assessment-master/data/hake-maturity-data.csv")
 age_length <- data.frame(na.omit(cbind(Age = maturity$Age, Length = maturity$Length_cm)))
 
-hake_ages <- 0:20
+hake_ages <- 0:15
 hake_lengths <- min(age_length$Length):max(age_length$Length)
 
 like <- function(logLinf,logK,a0,logSigma) {
@@ -69,6 +69,7 @@ pred_ages <- (-log(1 - all_pred$FL_cm / Linf) / K) + a0
 max(na.omit(pred_ages))  # check maximum
 min(na.omit(pred_ages))  # check minimum
 pred_ages[pred_ages < 1] <- 1  # replace values < 1 (lower accumulation age) <---- THIS SHOULD CHANGE WHEN AGE 0 WORKS
+pred_ages[pred_ages > 15] <- 15  # set upper accumulation age to 15
 pred_ages <- round(pred_ages, digits = 0)  # round to whole number
 
 # Add ages column to predator dataset 
@@ -142,8 +143,8 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 # ### Age-length key method for ageing ------------------------------------------
 # # Set up hake age-length key
 # hake_lbin <- c(0, seq(20, 68, by = 2), 999)
-# hake_age_bin <- c(0:19 + 0.5, 99)
-# hake_ages <- 1:20
+# hake_age_bin <- c(0:14 + 0.5, 99)
+# hake_ages <- 1:15
 # 
 # maturity$BIN <- cut(maturity$Length_cm, breaks = hake_lbin)
 # levels(maturity$BIN) <- 1:length(hake_lbin[-1])
@@ -157,8 +158,8 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 # alk_hake[is.na(alk_hake)] <- 0
 # 
 # # # Save for age_trans_matrix in CEATTLE input excel sheet
-# # age_trans_matrix <- t(as.data.frame.matrix(alk_hake))
-# # write.csv(age_trans_matrix, "data/assessment/age_trans_matrix.csv", row.names = FALSE)
+# age_trans_matrix <- t(as.data.frame.matrix(alk_hake))
+# write.csv(age_trans_matrix, "data/assessment/age_trans_matrix.csv", row.names = FALSE)
 # 
 # # Predator age calculations
 # pred_ages <- alkIndivAge(key = alk_hake,
