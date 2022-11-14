@@ -74,7 +74,7 @@ run_Dirichlet <- function(data, name) {
   #--------------CHECK ME BEFORE RUNNING-----------------
   # What graphs do you want to produce? Chose whatplot 1-4
   # whatplot <- 1  # (fitted marginal betas for all predators)
-  # whatplot <- 2  # (bootstrapped data histogram)
+  whatplot <- 2  # (bootstrapped data histogram)
   # whatplot <- 3  # (A larger plot of marginal beta dist for a particular predator) 
   # whatplot <- 4  # (shows marginal beta, bootstrap histogram and simple average for a particular predator-prey interaction)
   
@@ -483,12 +483,10 @@ all_years <- run_Dirichlet(aged_dataset, "All years")
 
 all_years_df <- all_years[[1]]
 
-
 all_years[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years[[2]], 
        bg = "transparent", width=160, height=180, units="mm", dpi=300)
 
-all_years[[3]]
 
 # Run for only 1991-1999
 y90s <- c(1988, 1989, 1990, 1991, 1995, 1996, 1997, 1998, 1999)
@@ -497,7 +495,6 @@ dirichlet_90s <- run_Dirichlet(df_90s, "1991-1999")
 dirichlet_90s[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_90s.png", dirichlet_90s[[2]], 
        bg = "transparent", width=160, height=180, units="mm", dpi=300)
-dirichlet_90s[[3]]
 
 # Run with recent data
 recent <- c(2005, 2007, 2011, 2015, 2019)
@@ -506,7 +503,6 @@ dirichlet_recent <- run_Dirichlet(df_recent, "2005-2019")
 dirichlet_recent[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_recent.png", dirichlet_recent[[2]], 
        bg = "transparent", width=160, height=180, units="mm", dpi=300)
-dirichlet_recent[[3]]
 
 
 ### Re-organize dataframe for CEATTLE -----------------------------------------
@@ -516,15 +512,15 @@ to_ceattle <- function(df) {
     filter(prey != "other") %>%
     arrange(predator, prey)
   
-  dirichlet_ceattle <- data.frame(cbind(Pred = rep(1, nrow(dirichlet_ceattle)),
-                                        Prey = rep(1, nrow(dirichlet_ceattle)),
-                                        Pred_sex = rep(0, nrow(dirichlet_ceattle)),
-                                        Prey_sex = rep(0, nrow(dirichlet_ceattle)),
-                                        Pred_age = dirichlet_ceattle$predator,
-                                        Prey_age = dirichlet_ceattle$prey,
-                                        Year = rep(0, nrow(dirichlet_ceattle)),
-                                        Sample_size = rep(10, nrow(dirichlet_ceattle)),
-                                        Stomach_proportion_by_weight = dirichlet_ceattle$boot_average))
+  df2 <- data.frame(cbind(Pred = rep(1, nrow(df2)),
+                          Prey = rep(1, nrow(df2)),
+                          Pred_sex = rep(0, nrow(df2)),
+                          Prey_sex = rep(0, nrow(df2)),
+                          Pred_age = df2$predator,
+                          Prey_age = df2$prey,
+                          Year = rep(0, nrow(df2)),
+                          Sample_size = rep(10, nrow(df2)),
+                          Stomach_proportion_by_weight = df2[, 7]))
 }
 
 ceattle_all <- to_ceattle(all_years_df)
