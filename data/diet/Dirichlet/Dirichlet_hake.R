@@ -73,7 +73,7 @@ run_Dirichlet <- function(data, name) {
   
   #--------------CHECK ME BEFORE RUNNING-----------------
   # What graphs do you want to produce? Chose whatplot 1-4
-  whatplot <- 1  # (fitted marginal betas for all predators)
+  # whatplot <- 1  # (fitted marginal betas for all predators)
   # whatplot <- 2  # (bootstrapped data histogram)
   # whatplot <- 3  # (A larger plot of marginal beta dist for a particular predator) 
   # whatplot <- 4  # (shows marginal beta, bootstrap histogram and simple average for a particular predator-prey interaction)
@@ -443,7 +443,7 @@ run_Dirichlet <- function(data, name) {
   
   # Fix issues from export from the Dirichlet script
   colnames(post_dirichlet) <- c("predator", "prey", "lower95", "upper95", "mode", 
-                                "simple_average", "boot_average", "boot_mode",
+                                "simple average", "bootstrapped average", "boot_mode",
                                 "normalized_mode")
   post_dirichlet <- post_dirichlet[-1, ]
   
@@ -457,27 +457,21 @@ run_Dirichlet <- function(data, name) {
   
   scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for y-axis
   
-  # Restrict plots to only the hake prey items
-  post_dirichlet_hake <- post_dirichlet_long %>% filter(prey != "other")
+  # Restrict plots to only the hake prey items & the averages
+  post_dirichlet_hake <- post_dirichlet_long %>% 
+    filter(prey != "other") %>%
+    filter(variable == "simple average" | variable == "bootstrapped average")
   dirichlet_results <- ggplot(post_dirichlet_hake, aes(x = prey)) +
     geom_errorbar(aes(ymin = lower95, ymax = upper95), 
                   width = .3, position = position_dodge(.9)) +
-    geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
+    geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.8) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    xlab("prey item") + ylab("stomach proportion") +
+    xlab("prey age") + ylab("stomach proportion") +
     scale_y_continuous(labels = scaleFUN) + 
+    theme(legend.title=element_blank()) +
     facet_wrap(~ predator, ncol = 3)
   
-  # Compare simple and bootstrapped average
-  post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple average", "bootstrapped average"))
-  comparison_plot <- ggplot(post_dirichlet_hake2, aes(x=predator, y=value, fill=factor(prey))) +
-    geom_bar(stat = "identity", position = "stack") +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    scale_y_continuous(labels = scaleFUN) + 
-    facet_wrap(~ variable)
-  comparison_plot
-  
-  return(list(post_dirichlet, dirichlet_results, comparison_plot))
+  return(list(post_dirichlet, dirichlet_results))
 }
 
 ### Results -------------------------------------------------------------------
