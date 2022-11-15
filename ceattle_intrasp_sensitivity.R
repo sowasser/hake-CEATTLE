@@ -5,12 +5,13 @@
 library(Rceattle)
 library(reshape2)
 library(dplyr)
+library(scales)
 library(ggplot2)
 library(viridis)
-library(scales)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggridges)
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_221026.xlsx")
 
@@ -41,13 +42,13 @@ prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
 stomach_props <- ggplot(prop_all, aes(x=Pred_age, y=value, fill=variable)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3, direction = -1) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   ylab("stomach proportion") + xlab("predator age") +
   facet_wrap(~Prey_age)
 stomach_props
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png", stomach_props,
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+       width=200, height=100, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -128,11 +129,11 @@ test_plot_popdy <- function() {
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = variable, fill = variable)) +
     geom_line(aes(linetype = variable)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
-    scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) + 
+    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~type, ncol = 2, scales = "free_y")
+    facet_wrap(~type, ncol = 1, scales = "free_y")
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition
 
@@ -151,7 +152,7 @@ test_plot_popdy <- function() {
 
   ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
     geom_line() +
-    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3, direction = -1) +
+    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
   ratio_plot
   
@@ -162,57 +163,59 @@ test_popdy <- test_plot_popdy()
 test_popdy[[1]]
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy[[1]], 
-       bg = "transparent", width=280, height=140, units="mm", dpi=300)
+       width=140, height=150, units="mm", dpi=300)
 
 test_popdy[[2]]
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_ratio.png", test_popdy[[2]], 
-       bg = "transparent", width=150, height=80, units="mm", dpi=300)
+       width=150, height=80, units="mm", dpi=300)
 
 
-# # Numbers-at-age for each model run -------------------------------------------
-# # Read in data from no diet CEATTLE run
-# intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
-# intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("CEATTLE - diet data", nrow(intrasp_nbyage)))
-# colnames(intrasp_nbyage)[4] <- "model"
-# 
-# extract_nbyage <- function(run, name) {
-#   df <- as.data.frame(as.table(run$quantities$NByage))
-#   
-#   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
-#   levels(df$Var3) <- c(1:20)
-#   levels(df$Var4) <- c(years)
-#   colnames(df) <- c("age", "year", "numbers")
-#   
-#   df <- cbind(df, rep(name, nrow(df)))
-#   colnames(df)[4] <- "model"
-#   
-#   return(df)
-# }
-# 
-# nbyage_test_all <- rbind(extract_nbyage(run_wt05, "CEATTLE - 0.5% cannibalism"),
-#                          extract_nbyage(run_wt10, "CEATTLE - 10% cannibalism"),
-#                          extract_nbyage(run_wt50, "CEATTLE - 50% cannibalism"),
-#                          extract_nbyage(run_wt80, "CEATTLE - 80% cannibalism"),
-#                          intrasp_nbyage)
-# 
-# # Set 15 as accumulation age
-# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
-# 
-# # Calculate mean numbers at age & plot
-# nbyage_test_mean <- nbyage_test_all %>% group_by(age, model) %>%
-#   summarize(mean_number = mean(numbers))
-# 
-# test_nbyage_plot <- ggplot(nbyage_test_mean, aes(x=age, y=mean_number, fill=model)) +
-#   geom_bar(stat = "identity", position = "dodge") +
-#   scale_x_discrete(labels = c(1:14, "15+")) +
-#   scale_fill_viridis(discrete = TRUE, direction = -1) +
-#   xlab("age") + ylab("numbers") 
-# test_nbyage_plot
-# 
-# ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", test_nbyage_plot, 
-#        bg = "transparent", width=200, height=100, units="mm", dpi=300)
-# 
-# 
+# Numbers-at-age for each model run -------------------------------------------
+# Read in data from no diet CEATTLE run
+intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
+intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("diet data", nrow(intrasp_nbyage)))
+colnames(intrasp_nbyage)[4] <- "model"
+
+extract_nbyage <- function(run, name) {
+  df <- as.data.frame(as.table(run$quantities$NByage))
+
+  df <- df[-seq(0, nrow(df), 2), -c(1:2)]
+  levels(df$Var3) <- c(1:20)
+  levels(df$Var4) <- c(years)
+  colnames(df) <- c("age", "year", "numbers")
+
+  df <- cbind(df, rep(name, nrow(df)))
+  colnames(df)[4] <- "model"
+
+  return(df)
+}
+
+nbyage_test_all <- rbind(extract_nbyage(run_wt05, "0.5% cannibalism"),
+                         extract_nbyage(run_wt10, "10% cannibalism"),
+                         extract_nbyage(run_wt50, "50% cannibalism"),
+                         extract_nbyage(run_wt75, "75% cannibalism"),
+                         intrasp_nbyage)
+
+# Set 15 as accumulation age
+nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+
+# Plot yearly nbyage
+nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+
+test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=age, y=year, height=numbers, group=year, fill=age)) +
+  geom_density_ridges_gradient(stat = "identity") +
+  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_x_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_y_discrete(limits = rev) +
+  ylab(" ") +
+  theme(legend.position = "none") +
+  facet_wrap(~model, ncol=5)
+test_nbyage_plot
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", test_nbyage_plot,
+       width=250, height=150, units="mm", dpi=300)
+
+
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------
 # survey <- read.csv("data/assessment/survey_data.csv")
 # survey <- cbind(survey, model = rep("SS3", length(survey$year)))

@@ -7,9 +7,10 @@ library(reshape2)
 library(dplyr)
 library(ggplot2)
 library(viridis)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggridges)
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
 
@@ -100,7 +101,50 @@ popdy_plot <- ggplot(popdy, aes(x=year, y=value, color = model, fill = model)) +
 popdy_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/dirichlet_popdy.png", popdy_plot, 
-       bg = "transparent", width=280, height=140, units="mm", dpi=300)
+       width=280, height=140, units="mm", dpi=300)
+
+
+# Numbers-at-age for each model run -------------------------------------------
+# Read in data from no diet CEATTLE run
+extract_nbyage <- function(run, name, years) {
+  df <- as.data.frame(as.table(run$quantities$NByage))
+  
+  df <- df[-seq(0, nrow(df), 2), -c(1:2)]
+  levels(df$Var3) <- c(1:20)
+  levels(df$Var4) <- c(years)
+  colnames(df) <- c("age", "year", "numbers")
+  
+  df <- cbind(df, rep(name, nrow(df)))
+  colnames(df)[4] <- "model"
+  # years <- as.character(years)
+  # df <- df %>% filter(year %in% years)
+  
+  return(df)
+}
+
+nbyage_test_all <- rbind(extract_nbyage(run_90s, "1988-1999", 1988:1999),
+                         extract_nbyage(run_all, "all years", 1988:2019),
+                         extract_nbyage(run_recent, "2005-2019", 2005:2019))
+
+# Set 15 as accumulation age
+nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+
+# Plot yearly nbyage
+nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+nbyage_test_all$model <- factor(nbyage_test_all$model, levels = c("1988-1999", "all years", "2005-2019"))
+
+test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=age, y=year, height=numbers, group=year, fill=age)) +
+  geom_density_ridges_gradient(stat = "identity") +
+  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_x_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_y_discrete(limits = rev) +
+  ylab(" ") +
+  theme(legend.position = "none") +
+  facet_wrap(~model, ncol=5)
+test_nbyage_plot
+
+ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", test_nbyage_plot,
+       width=250, height=150, units="mm", dpi=300)
 
 
 ### Plot mortality ------------------------------------------------------------

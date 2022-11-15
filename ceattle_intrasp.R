@@ -201,7 +201,6 @@ plot_nbyage <- function() {
 
   # Plot yearly nbyage
   nbyage_all$age <- as.numeric(nbyage_all$age)
-  nbyage_all <- nbyage_all[order(nbyage_all$year), ]
   
   nbyage_plot <- ggplot(nbyage_all, aes(x=age, y=year, height=numbers, group=year, fill=age)) +
     geom_density_ridges_gradient(stat = "identity") +
