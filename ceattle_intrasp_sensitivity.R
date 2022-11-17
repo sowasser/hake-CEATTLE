@@ -65,93 +65,89 @@ run_ceattle <- function(wt, df) {
 }
 
 # Run low-cannibalism models
+run_intrasp <- run_ceattle(hake_intrasp$UobsWtAge$Stomach_proportion_by_weight, hake_intrasp)
 run_wt05 <- run_ceattle(wt05, hake_intrasp)
 run_wt10 <- run_ceattle(wt10, hake_intrasp)
 run_wt50 <- run_ceattle(wt50, hake_intrasp)
 run_wt75 <- run_ceattle(wt75, hake_intrasp)
 
 
-# Plot biomass in comparison to no diet & asssessment -------------------------
+# Plot biomass & recruitment in comparison to original diet run ---------------
 years <- 1988:2019
 
-# Pull out SSB & overall biomass from CEATTLE runs
-ceattle_biomass <- function(run, name) {
-  ssb <- (c(run$quantities$biomassSSB) * 2)
-  biom <- c(run$quantities$biomass)
-  wide <- as.data.frame(cbind(years, ssb, biom))
-  colnames(wide) <- c("year", "SSB", "Total Biomass")
-  all_biom <- melt(wide, id.vars = "year")
-  colnames(all_biom)[2:3] <- c("type", name)
-  
-  return(all_biom)
-}
-
-test_biom <- cbind(ceattle_biomass(run_wt05, "0.5% cannibalism"),
-                   ceattle_biomass(run_wt10, "10% cannibalism"),
-                   ceattle_biomass(run_wt50, "50% cannibalism"),
-                   ceattle_biomass(run_wt75, "75% cannibalism"))
-test_biom <- test_biom[, c(1:3, 6, 9, 12)]
-
-# Read in intra-species predation run data
-intrasp_biom <- read.csv("data/ceattle_intrasp_biomass.csv")
-colnames(intrasp_biom)[3] <- "observed proportion"
-
-intrasp_R <- read.csv("data/ceattle_intrasp_R.csv")
-
 test_plot_popdy <- function() {
-  # Reshape biomass data
-  wide <- cbind(test_biom, intrasp_biom[, 3])
-  colnames(wide)[ncol(wide)] <- c("observed proportion")
-  biom <- melt(wide, id.vars = c("year", "type"))
+  # Pull out SSB & overall biomass from CEATTLE runs
+  ceattle_biomass <- function(run, name) {
+    ssb <- (c(run$quantities$biomassSSB) * 2)
+    biom <- c(run$quantities$biomass)
+    wide <- as.data.frame(cbind(years, ssb, biom))
+    colnames(wide) <- c("year", "SSB", "Total Biomass")
+    all_biom <- melt(wide, id.vars = "year")
+    all_biom2 <- cbind(all_biom,
+                       error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
+                                 run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]),
+                       model = rep(name))
+    return(all_biom2)
+  }
+  
+  test_biom <- rbind(ceattle_biomass(run_intrasp, "observed proportion"),
+                     ceattle_biomass(run_wt05, "0.5% cannibalism"),
+                     ceattle_biomass(run_wt10, "10% cannibalism"),
+                     ceattle_biomass(run_wt50, "50% cannibalism"),
+                     ceattle_biomass(run_wt75, "75% cannibalism"))
   
   # Put recruitment together
-  R_test_all <- cbind(c(run_wt05$quantities$R), c(run_wt10$quantities$R),  
-                      c(run_wt50$quantities$R), c(run_wt75$quantities$R))
-  R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
-  colnames(R_test_wide) <- c("year",
-                             "0.5% cannibalism",
-                             "10% cannibalism",
-                             "50% cannibalism",
-                             "75% cannibalism",
-                             "observed proportion")
-  R_test <- melt(R_test_wide, id.vars = "year")
-  
-  R_new <- cbind(year = R_test$year,
-                 type = rep("Recruitment"),
-                 variable = as.character(R_test$variable),
-                 value = R_test$value)
+  ceattle_R <- function(run, name) {
+    R <- c(run$quantities$R)
+    error <- c(run$sdrep$sd[which(names(run$sdrep$value) == "R")])
+    R_all <- as.data.frame(cbind(year = years, 
+                                 variable = rep("Recruitment"),
+                                 value = R, 
+                                 error = error, 
+                                 model = rep(name)))
+    return(R_all)
+  }
+  R_test <- rbind(ceattle_R(run_intrasp, "observed proportion"),
+                  ceattle_R(run_wt05, "0.5% cannibalism"),
+                  ceattle_R(run_wt10, "10% cannibalism"),
+                  ceattle_R(run_wt50, "50% cannibalism"),
+                  ceattle_R(run_wt75, "75% cannibalism"))
   
   # Combine biomass & recruitment and plot
-  all_popdy <- rbind(biom, R_new)
+  all_popdy <- rbind(test_biom, R_test)
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
+  all_popdy$error <- as.numeric(all_popdy$error)
 
-  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = variable, fill = variable)) +
-    geom_line(aes(linetype = variable)) +
+  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
+    geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
+    geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~type, ncol = 1, scales = "free_y")
+    facet_wrap(~variable, ncol = 1, scales = "free_y")
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition
+  ratio <- function(run, name) {
+    df <- as.data.frame(cbind(year = years,
+                              value = (c(run$quantities$biomassSSB) * 2) / c(run$quantities$biomass),
+                              model = rep(name)))
+    return(df)
+  }
+  
+  ratio_all <- rbind(ratio(run_intrasp, "observed proportion"),
+                     ratio(run_wt05, "0.5% cannibalism"),
+                     ratio(run_wt10, "10% cannibalism"),
+                     ratio(run_wt50, "50% cannibalism"),
+                     ratio(run_wt75, "75% cannibalism"))
+  ratio_all$year <- as.numeric(ratio_all$year)
+  ratio_all$value <- as.numeric(ratio_all$value)
 
-  ratio <- as.data.frame(cbind(year = years,
-                               wt05 = (c(run_wt05$quantities$biomassSSB) * 2) / c(run_wt05$quantities$biomass),
-                               wt10 = (c(run_wt10$quantities$biomassSSB) * 2) / c(run_wt10$quantities$biomass),
-                               wt50 = (c(run_wt50$quantities$biomassSSB) * 2) / c(run_wt50$quantities$biomass),
-                               wt80 = (c(run_wt75$quantities$biomassSSB) * 2) / c(run_wt75$quantities$biomass)))
-
-  colnames(ratio) <- c("year",
-                       "0.5% cannibalism",
-                       "10% cannibalism",
-                       "50% cannibalism",
-                       "75% cannibalism")
-  ratio2 <- melt(ratio, id.vars = "year", variable.name = "model")
-
-  ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
-    geom_line() +
+  ratio_plot <- ggplot(ratio_all, aes(x=year, y=value, color=model)) +
+    geom_line(aes(linetype = model)) +
+    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
   ratio_plot
