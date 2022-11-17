@@ -138,11 +138,11 @@ test_plot_popdy <- function() {
 test_popdy <- test_plot_popdy()
 test_popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy[[1]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", test_popdy[[1]], 
        width=140, height=150, units="mm", dpi=300)
 
 test_popdy[[2]]
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_ratio.png", test_popdy[[2]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", test_popdy[[2]], 
        width=150, height=80, units="mm", dpi=300)
 
 
@@ -185,7 +185,7 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=age, y=year, height=numbers, g
   facet_wrap(~model, ncol=5)
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", test_nbyage_plot,
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_nbyage.png", test_nbyage_plot,
        width=250, height=150, units="mm", dpi=300)
 
 
@@ -378,6 +378,6 @@ m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all,
                                        ncol = 2, nrow = 2, 
                                        layout_matrix = rbind(c(1,1), c(2,3)))
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/M_dirichlet.png", 
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_M.png", 
        m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
 

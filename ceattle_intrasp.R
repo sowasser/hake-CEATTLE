@@ -148,16 +148,16 @@ plot_popdy <- function() {
 popdy <- plot_popdy()
 popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy[[1]], 
+ggsave(filename="plots/CEATTLE/cannibalism/intrasp_popdy.png", popdy[[1]], 
        width=140, height=150, units="mm", dpi=300)
 
 popdy[[2]]
-ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_ratio.png", popdy[[2]], 
+ggsave(filename="plots/CEATTLE/cannibalism/intrasp_ratio.png", popdy[[2]], 
        bg = "transparent", width=150, height=80, units="mm", dpi=300)
 
 
 ### Numbers-at-age for each model run -----------------------------------------
-# Extract numbers at age for intraspecies predation model run
+# Extract numbers at age for cannibalism model run
 extract_nbyage <- function(run, name) {
   df <- as.data.frame(as.table(run$quantities$NByage))
 
@@ -213,7 +213,7 @@ plot_nbyage <- function() {
 nbyage_plot <- plot_nbyage()
 nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/nbyage_intrasp.png", nbyage_plot,
+ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
        bg = "white", width=180, height=200, units="mm", dpi=300)
 
 
@@ -250,7 +250,7 @@ plot_survey <- function() {
 survey_plot <- plot_survey()
 survey_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/survey_biomass.png", survey_plot,
+ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", survey_plot,
        bg = "white", width=200, height=120, units="mm", dpi=300)
 
 
@@ -438,6 +438,6 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
 m_plot <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15) 
 m_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/M_intrasp.png", m_plot, 
+ggsave(filename = "plots/CEATTLE/cannibalism/M.png", m_plot, 
        width = 160, height = 70, units = "mm", dpi=300)
 

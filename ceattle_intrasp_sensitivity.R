@@ -47,7 +47,7 @@ stomach_props <- ggplot(prop_all, aes(x=Pred_age, y=value, fill=variable)) +
   facet_wrap(~Prey_age)
 stomach_props
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png", stomach_props,
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
        width=200, height=100, units="mm", dpi=300)
 
 
@@ -158,11 +158,11 @@ test_plot_popdy <- function() {
 test_popdy <- test_plot_popdy()
 test_popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_popdy.png", test_popdy[[1]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", test_popdy[[1]], 
        width=140, height=150, units="mm", dpi=300)
 
 test_popdy[[2]]
-ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_ratio.png", test_popdy[[2]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png", test_popdy[[2]], 
        width=150, height=80, units="mm", dpi=300)
 
 
@@ -208,7 +208,7 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=age, y=year, height=numbers, g
   facet_wrap(~model, ncol=5)
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_intrasp_nbyage.png", test_nbyage_plot,
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
        width=250, height=150, units="mm", dpi=300)
 
 
@@ -427,5 +427,5 @@ m_test <- ggpubr::ggarrange(plot_mortality_custom(Rceattle = run_wt05, type = 0,
                             plot_mortality_custom(Rceattle = run_wt75, type = 0, title = "75% cannibalism", maxage = 15),
                             ncol = 2, nrow = 2)
 
-ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_instrasp_M.png", m_test, 
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", m_test, 
        width=200, height = 100, units = "mm", dpi=300)
