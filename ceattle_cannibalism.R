@@ -148,11 +148,11 @@ plot_popdy <- function() {
 popdy <- plot_popdy()
 popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/cannibalism/intrasp_popdy.png", popdy[[1]], 
+ggsave(filename="plots/CEATTLE/cannibalism/popdy.png", popdy[[1]], 
        width=140, height=150, units="mm", dpi=300)
 
 popdy[[2]]
-ggsave(filename="plots/CEATTLE/cannibalism/intrasp_ratio.png", popdy[[2]], 
+ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], 
        bg = "transparent", width=150, height=80, units="mm", dpi=300)
 
 
