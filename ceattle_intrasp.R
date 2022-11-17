@@ -51,8 +51,6 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 years <- 1988:2019
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
-  # run <- intrasp_run
-  # name <- "CEATTLE - cannibalism"
   ssb <- (c(run$quantities$biomassSSB) * 2)
   biom <- c(run$quantities$biomass)
   biom_sd <- run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]

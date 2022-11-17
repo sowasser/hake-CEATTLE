@@ -86,22 +86,22 @@ ceattle_biomass <- function(run, name) {
   return(all_biom)
 }
 
-test_biom <- cbind(ceattle_biomass(run_wt05, "CEATTLE - 0.5% cannibalism"),
-                   ceattle_biomass(run_wt10, "CEATTLE - 10% cannibalism"),
-                   ceattle_biomass(run_wt50, "CEATTLE - 50% cannibalism"),
-                   ceattle_biomass(run_wt75, "CEATTLE - 75% cannibalism"))
+test_biom <- cbind(ceattle_biomass(run_wt05, "0.5% cannibalism"),
+                   ceattle_biomass(run_wt10, "10% cannibalism"),
+                   ceattle_biomass(run_wt50, "50% cannibalism"),
+                   ceattle_biomass(run_wt75, "75% cannibalism"))
 test_biom <- test_biom[, c(1:3, 6, 9, 12)]
 
 # Read in intra-species predation run data
 intrasp_biom <- read.csv("data/ceattle_intrasp_biomass.csv")
-colnames(intrasp_biom)[3] <- "CEATTLE - diet data"
+colnames(intrasp_biom)[3] <- "observed proportion"
 
 intrasp_R <- read.csv("data/ceattle_intrasp_R.csv")
 
 test_plot_popdy <- function() {
   # Reshape biomass data
   wide <- cbind(test_biom, intrasp_biom[, 3])
-  colnames(wide)[ncol(wide)] <- c("CEATTLE - diet data")
+  colnames(wide)[ncol(wide)] <- c("observed proportion")
   biom <- melt(wide, id.vars = c("year", "type"))
   
   # Put recruitment together
@@ -109,11 +109,11 @@ test_plot_popdy <- function() {
                       c(run_wt50$quantities$R), c(run_wt75$quantities$R))
   R_test_wide <- as.data.frame(cbind(years, R_test_all, intrasp_R))
   colnames(R_test_wide) <- c("year",
-                             "CEATTLE - 0.5% cannibalism",
-                             "CEATTLE - 10% cannibalism",
-                             "CEATTLE - 50% cannibalism",
-                             "CEATTLE - 75% cannibalism",
-                             "CEATTLE - diet data")
+                             "0.5% cannibalism",
+                             "10% cannibalism",
+                             "50% cannibalism",
+                             "75% cannibalism",
+                             "observed proportion")
   R_test <- melt(R_test_wide, id.vars = "year")
   
   R_new <- cbind(year = R_test$year,
@@ -144,10 +144,10 @@ test_plot_popdy <- function() {
                                wt80 = (c(run_wt75$quantities$biomassSSB) * 2) / c(run_wt75$quantities$biomass)))
 
   colnames(ratio) <- c("year",
-                       "CEATTLE - 0.5% cannibalism",
-                       "CEATTLE - 10% cannibalism",
-                       "CEATTLE - 50% cannibalism",
-                       "CEATTLE - 75% cannibalism")
+                       "0.5% cannibalism",
+                       "10% cannibalism",
+                       "50% cannibalism",
+                       "75% cannibalism")
   ratio2 <- melt(ratio, id.vars = "year", variable.name = "model")
 
   ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
@@ -173,7 +173,7 @@ ggsave(filename="plots/CEATTLE/intraspecies predation/Testing/test_intrasp_ratio
 # Numbers-at-age for each model run -------------------------------------------
 # Read in data from no diet CEATTLE run
 intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
-intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("diet data", nrow(intrasp_nbyage)))
+intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("observed proportion", nrow(intrasp_nbyage)))
 colnames(intrasp_nbyage)[4] <- "model"
 
 extract_nbyage <- function(run, name) {
@@ -433,4 +433,3 @@ m_test <- ggpubr::ggarrange(plot_mortality_custom(Rceattle = run_wt05, type = 0,
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/test_instrasp_M.png", m_test, 
        width=200, height = 100, units = "mm", dpi=300)
-

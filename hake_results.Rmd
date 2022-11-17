@@ -16,10 +16,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-![**Figure 1**: Individual hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple).](./plots/diet/hake_cannibalism.png)
+![**Figure 1**: Frequency of hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple).](./plots/diet/hake_cannibalism.png)
 
 
-![**Figure 2**: Dirichlet-weighted diet proportion by weight of Pacific hake intraspecific predation by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019.](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
+![**Figure 2**: Dirichlet-weighted diet proportion by weight of cannibalism by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019.](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
 
 
 ![**Figure 3**: Hake stomachs containing Pacific hake (in green) or only other food items (in purple) by location per year and by sampling month per year.](./plots/diet/locations_timing.png)
@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ![**Figure 5**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism.](./plots/CEATTLE/intraspecies%20predation/M_intrasp.png)
 
 
-![**Figure 6**: Mean and standard deviation of numbers-at-age from CEATTLE run in single-secies mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/intraspecies%20predation/nbyage_intrasp.png)
+![**Figure 6**: Mean and standard deviation of numbers-at-age from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/intraspecies%20predation/nbyage_intrasp.png)
 
 
 ![**Figure 7**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run with the estimate of mean cannibalism for the entire period, in single-species mode with no predation, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period.](./plots/CEATTLE/intraspecies%20predation/Testing/dirichlet_popdy.png)
@@ -40,7 +40,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ![**Figure 8**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism for the entire period, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period.](./plots/CEATTLE/intraspecies%20predation/Testing/M_dirichlet.png)
 
 
-![**Figure 9**: Runs of CEATTLE with varying levels of intraspecific predation (0.5% to 80%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.](./plots/CEATTLE/intraspecies%20predation/Testing/test_intrasp_popdy.png)
+![**Figure 9**: Runs of CEATTLE with varying levels of cannibalism (0.5% to 75%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.](./plots/CEATTLE/intraspecies%20predation/Testing/test_intrasp_popdy.png)
 
 
-![**Figure 10:** Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with varying levels of intraspecific predation (0.5% to 80%).](./plots/CEATTLE/intraspecies%20predation/Testing/test_instrasp_M.png)
+![**Figure 10:** Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with varying levels of cannibalism (0.5% to 75%).](./plots/CEATTLE/intraspecies%20predation/Testing/test_instrasp_M.png)
