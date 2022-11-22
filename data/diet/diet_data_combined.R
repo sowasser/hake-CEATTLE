@@ -9,8 +9,9 @@ library(sf)
 library(rnaturalearthdata)
 library(rgeos)
 library(purrr)
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 ### Read in & update CCTD data from SWFSC -------------------------------------
 CCTD_pred <- read.csv("data/diet/CCTD/hake_aged_pred.csv")
@@ -61,7 +62,7 @@ FEAT_sampling <- FEAT_all %>%
 FEAT_sampling
 
 ggsave(filename = "plots/diet/FEAT_sampling.png", FEAT_sampling, 
-       bg = "transparent", width=210, height=120, units="mm", dpi=300)
+       bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
 ### Combine datasets ----------------------------------------------------------

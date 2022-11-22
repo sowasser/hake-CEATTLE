@@ -3,9 +3,9 @@
 library(tidyverse)
 library(viridis)
 library(reshape2)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 # Read in full aged dataset
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")

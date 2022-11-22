@@ -1,10 +1,9 @@
 # Which predators eat the most hake?
-
 library(dplyr)
 library(ggplot2)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 path <- "data/diet/CCTD/v4/"
 
@@ -32,3 +31,4 @@ hake_pred_plot
 
 ggsave(filename = "plots/diet/hake_predators.png", hake_pred_plot, 
        bg = "transparent", width=180, height=100, units="mm", dpi=300)
+

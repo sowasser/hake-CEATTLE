@@ -5,9 +5,9 @@
 library(reshape2)
 library(ggplot2)
 library(viridis)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 proxy_params <- read.csv("data/bioenergetics/proxy_bioen_params.csv")
 

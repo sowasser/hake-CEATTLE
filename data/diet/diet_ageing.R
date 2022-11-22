@@ -7,10 +7,9 @@ library(FSA)
 library(dplyr)
 library(tidyr)
 library(stats4)
-
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 all_pred <- read.csv("data/diet/CCTD/hake_pred.csv")
 all_prey <- read.csv("data/diet/CCTD/hake_prey.csv") 
