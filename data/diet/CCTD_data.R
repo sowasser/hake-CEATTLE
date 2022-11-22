@@ -7,9 +7,9 @@ library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
 library(rgeos)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 path <- "data/diet/CCTD/v4/"
 
@@ -240,16 +240,16 @@ hake_pred <- hake_hake[[1]]
 hake_prey <- hake_hake[[2]]
 hake_hake[[5]]  # top prey species
 hake_hake[[6]]  # yearly predation by type
-hake_hake[[7]]  # overall locations of predation by type
+# hake_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
        bg = "transparent", width=180, height=70, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
        bg = "transparent", width=160, height=80, units="mm", dpi=300)
-ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[7]], 
-       bg = "transparent", width=100, height=100, units="mm", dpi=300)
-ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]], 
-       bg = "transparent", width=400, height=210, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[7]], 
+#        bg = "transparent", width=100, height=100, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]], 
+#        bg = "transparent", width=400, height=210, units="mm", dpi=300)
 
 
 ### Subset diet for arrowtooth flounder predator & hake prey ------------------
