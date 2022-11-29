@@ -40,15 +40,15 @@ prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = w
 colnames(prop)[3] <- c("empirical data")
 prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
-stomach_props <- ggplot(prop_all, aes(x=Pred_age, y=value, fill=variable)) +
+stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   ylab("stomach proportion") + xlab("predator age") +
-  facet_wrap(~Prey_age)
+  facet_wrap(~Pred_age)
 stomach_props
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
-       width=200, height=100, units="mm", dpi=300)
+       width=200, height=200, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -123,6 +123,7 @@ test_plot_popdy <- function() {
     geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
     geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
+    scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab(" ") +

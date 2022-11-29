@@ -62,7 +62,7 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 
 
 ### Plot population dynamics --------------------------------------------------
-timing_plot_popdy <- function() {
+test_plot_popdy <- function() {
   # Pull out SSB & overall biomass from CEATTLE runs
   ceattle_biomass <- function(run, name, years) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -106,7 +106,6 @@ timing_plot_popdy <- function() {
     geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
     geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
-    scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab(" ") +
@@ -136,14 +135,14 @@ timing_plot_popdy <- function() {
   return(list(popdy_plot, ratio_plot))
 }
 
-timing_popdy <- timing_plot_popdy()
-timing_popdy[[1]]
+test_popdy <- test_plot_popdy()
+test_popdy[[1]]
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[1]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", test_popdy[[1]], 
        width=140, height=150, units="mm", dpi=300)
 
-timing_popdy[[2]]
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", timing_popdy[[2]], 
+test_popdy[[2]]
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", test_popdy[[2]], 
        width=150, height=80, units="mm", dpi=300)
 
 

@@ -594,4 +594,4 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
 comp2_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
-       bg = "transparent", width=160, height=50, units="mm", dpi=300)
+       bg = "transparent", width=170, height=50, units="mm", dpi=300)
