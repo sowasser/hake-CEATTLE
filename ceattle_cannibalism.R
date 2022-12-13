@@ -177,8 +177,8 @@ nbyage <- extract_nbyage(intrasp_run, "CEATTLE - cannibalism")
 write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 
 plot_nbyage <- function() {
-  # Read in data from no diet CEATTLE run
-  nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
+  # # Read in data from no diet CEATTLE run
+  # nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
 
   # Read in data from SS3 & average beginning & middle of the year
   nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")[c(9:40, 52:83), ]
@@ -189,11 +189,11 @@ plot_nbyage <- function() {
     summarize_at(vars("0":"20"), mean)
 
   nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
-  nbyage_ss3 <- cbind(nbyage_ss3, rep("Stock Synthesis", length(nbyage_ss3$year)))
+  nbyage_ss3 <- cbind(nbyage_ss3, rep("Stock Assessment", length(nbyage_ss3$year)))
   colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
 
   # Combine with nbyage from intrasp run
-  nbyage_all <- rbind(nbyage, nbyage_nodiet, nbyage_ss3)
+  nbyage_all <- rbind(nbyage, nbyage_ss3)
 
   # Set 15 as accumulation age
   nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
@@ -215,7 +215,7 @@ nbyage_plot <- plot_nbyage()
 nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
-       bg = "white", width=180, height=200, units="mm", dpi=300)
+       bg = "white", width=100, height=120, units="mm", dpi=300)
 
 
 ### Plot biomass and temperature together -------------------------------------
