@@ -66,6 +66,27 @@ ggsave(filename="plots/bioenergetics/temp_consumption.png", temp_rate,
        bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
+# Simpler version of the plot
+spp_temp_wide2 <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
+                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
+                        temp_dependent(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
+colnames(spp_temp_wide2) <- c("Atlantic cod", 
+                              "Pollock", 
+                              "Pacific hake")
+spp_temp2 <- melt(as.data.frame(spp_temp_wide2))
+spp_temp2 <- cbind(spp_temp2, temp = rep(temp_range, times=3))
+temp_rate2 <- ggplot(spp_temp2, aes(x=temp, y=value)) +
+  geom_line(aes(color=variable), size=1) +
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
+  ylab("specific rate") +
+  labs(color = "species")
+temp_rate2
+
+ggsave(filename="plots/bioenergetics/temp_consumption2.png", temp_rate2,
+       bg = "transparent", width=150, height=70, units="mm", dpi=300)
+
+
+
 # Allometric mass function ----------------------------------------------------
 weights <- 10:400  # Range of hake weights
   
