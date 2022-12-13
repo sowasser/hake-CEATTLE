@@ -8,7 +8,7 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 library(ggridges)
-library(ggsidekick)
+library(ggview)
 # Set ggplot theme
 theme_set(theme_sleek())
 
@@ -143,7 +143,7 @@ plot_popdy <- function() {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
   
-  return(list(popdy_plot, ratio_plot))
+  return(list(popdy_plot, ratio_plot, ratio2))
 }
 
 popdy <- plot_popdy()
@@ -216,6 +216,28 @@ nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
        bg = "white", width=180, height=200, units="mm", dpi=300)
+
+
+### Plot biomass and temperature together -------------------------------------
+ratio <- cbind(popdy[[3]], type = rep("SSB/Biomass"))
+roms <- cbind(melt(read.csv("data/temperature/ROMS_mean.csv"), id.vars = "Year"),
+              type = rep("Mean Temperature")) %>%
+  filter(Year >= 1988 & Year <= 2019) 
+colnames(roms)[1:2] <- c("year", "model")
+roms$model <- rep("ROMS")
+
+bio_temp <- rbind(ratio, roms)
+
+bio_temp_plot <- ggplot(bio_temp, aes(x=year, y=value, color=model)) +
+  geom_line() +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+  ylab(" ") +
+  facet_wrap(~type, scales = "free_y", ncol = 1)
+bio_temp_plot
+
+ggsave(filename = "plots/CEATTLE/biomass_temp.png", bio_temp_plot,
+       width = 150, height = 100, units = "mm")
+
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
@@ -441,4 +463,5 @@ m_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/M.png", m_plot, 
        width = 160, height = 70, units = "mm", dpi=300)
+
 
