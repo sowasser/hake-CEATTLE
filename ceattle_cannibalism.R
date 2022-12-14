@@ -205,21 +205,22 @@ plot_nbyage <- function() {
   # Plot yearly nbyage
   nbyage_all$age <- as.numeric(nbyage_all$age)
   
-  nbyage_plot <- ggplot(nbyage_all, aes(x=age, y=year, height=numbers, group=year, fill=age)) +
-    geom_density_ridges_gradient(stat = "identity") +
+  nbyage_plot <- ggplot(nbyage_all, aes(x=year, y=age)) +
+    geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_x_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-    scale_y_discrete(limits = rev) +
+    scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+    scale_x_discrete(breaks = seq(1988, 2019, 3)) +
     ylab(" ") +
     theme(legend.position = "none") +
-    facet_wrap(~model)
+    facet_wrap(~model, ncol=1)
 }
 
 nbyage_plot <- plot_nbyage()
 nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
-       bg = "white", width=100, height=120, units="mm", dpi=300)
+       bg = "white", width=170, height=140, units="mm", dpi=300)
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
