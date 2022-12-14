@@ -211,7 +211,7 @@ plot_nbyage <- function() {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-    ylab(" ") +
+    ylab("Age") +
     theme(legend.position = "none") +
     facet_wrap(~model, ncol=1)
 }
