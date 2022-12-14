@@ -9,6 +9,7 @@ library(ggplot2)
 library(viridis)
 library(ggridges)
 library(ggview)
+library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
@@ -34,7 +35,7 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 phase = "default")
 # plot_biomass(nodiet_run, add_ci = TRUE)
 
-# # Rceattle diagnostics ------------------------------------------------------
+# ### Rceattle diagnostics ----------------------------------------------------
 # plot_biomass(intrasp_run, add_ci = TRUE)
 # plot_index(intrasp_run)
 # plot_catch(intrasp_run)
@@ -69,6 +70,9 @@ ceattle_biomass <- function(run, name) {
 biomass <- ceattle_biomass(intrasp_run, "CEATTLE - cannibalism")
 write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
 
+nodiet_biomass <- ceattle_biomass(nodiet_run, "CEATTLE - single-species")
+write.csv(nodiet_biomass, "data/ceattle_nodiet_biomass.csv", row.names = FALSE)
+
 recruitment <- c(intrasp_run$quantities$R)
 write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
 
@@ -82,7 +86,7 @@ plot_popdy <- function() {
   ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:54, 2:3], type = rep("Total Biomass"))
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
-                                  model = rep("Assessment", length(ss3_ssb$V2) * 2)))
+                                  model = rep("Assessment")))
   colnames(ss3_biom)[2:3] <- c("value", "error")
   ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
   biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
@@ -95,7 +99,7 @@ plot_popdy <- function() {
   R <- melt(R_wide, id.vars = "year")
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
   ss3_1 <- as.data.frame(cbind(year = 1989:2019, 
-                               variable = rep("Assessment", (length(1989:2019))), 
+                               variable = rep("Assessment"), 
                                value = ss3_R[1:length(1989:2019), 2],
                                error = ss3_R[1:length(1989:2019), 3]))
   R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(intrasp_run$sdrep$value) == "R")], 
@@ -143,7 +147,7 @@ plot_popdy <- function() {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
   
-  return(list(popdy_plot, ratio_plot, ratio2))
+  return(list(popdy_plot, ratio_plot))
 }
 
 popdy <- plot_popdy()
@@ -216,28 +220,6 @@ nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
        bg = "white", width=100, height=120, units="mm", dpi=300)
-
-
-### Plot biomass and temperature together -------------------------------------
-ratio <- cbind(popdy[[3]], type = rep("SSB/Biomass"))
-roms <- cbind(melt(read.csv("data/temperature/ROMS_mean.csv"), id.vars = "Year"),
-              type = rep("Mean Temperature")) %>%
-  filter(Year >= 1988 & Year <= 2019) 
-colnames(roms)[1:2] <- c("year", "model")
-roms$model <- rep("ROMS")
-
-bio_temp <- rbind(ratio, roms)
-
-bio_temp_plot <- ggplot(bio_temp, aes(x=year, y=value, color=model)) +
-  geom_line() +
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-  ylab(" ") +
-  facet_wrap(~type, scales = "free_y", ncol = 1)
-bio_temp_plot
-
-ggsave(filename = "plots/CEATTLE/biomass_temp.png", bio_temp_plot,
-       width = 150, height = 100, units = "mm")
-
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
