@@ -7,14 +7,13 @@ library(reshape2)
 library(dplyr)
 library(ggplot2)
 library(viridis)
-library(ggridges)
 library(ggview)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221216.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
@@ -211,7 +210,7 @@ plot_nbyage <- function() {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-    ylab("Age") +
+    xlab(" ") + ylab("Age") +
     theme(legend.position = "none") +
     facet_wrap(~model, ncol=1)
 }
@@ -446,5 +445,3 @@ m_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/M.png", m_plot, 
        width = 160, height = 70, units = "mm", dpi=300)
-
-

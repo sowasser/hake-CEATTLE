@@ -7,12 +7,11 @@ library(reshape2)
 library(dplyr)
 library(ggplot2)
 library(viridis)
-library(ggridges)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221216.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -28,7 +27,6 @@ hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
 # Read in different Dirichlet-corrected datasets
 dirichlet_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
 dirichlet_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
-
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
 run_ceattle <- function(df, start, end, proj) {
@@ -176,14 +174,15 @@ nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
 nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
 nbyage_test_all$model <- factor(nbyage_test_all$model, levels = c("1988-1999", "all years", "2005-2019"))
 
-test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=age, y=year, height=numbers, group=year, fill=age)) +
-  geom_density_ridges_gradient(stat = "identity") +
+test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
+  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_x_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_y_discrete(limits = rev) +
-  ylab(" ") +
+  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
-  facet_wrap(~model, ncol=5)
+  facet_wrap(~model, ncol = 1)
 test_nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_nbyage.png", test_nbyage_plot,

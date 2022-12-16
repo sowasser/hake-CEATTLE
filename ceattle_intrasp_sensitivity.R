@@ -8,12 +8,11 @@ library(dplyr)
 library(scales)
 library(ggplot2)
 library(viridis)
-library(ggridges)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_221026.xlsx")
+hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_221216.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -37,7 +36,7 @@ wt50 <- rescale_max(wts$wt_prop, to = c(0, 0.5))
 wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 
 prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
-colnames(prop)[3] <- c("empirical data")
+colnames(prop)[3] <- c("observed data")
 prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
 stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
@@ -198,19 +197,21 @@ nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
 
 # Plot yearly nbyage
 nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+# nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
 
-test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=age, y=year, height=numbers, group=year, fill=age)) +
-  geom_density_ridges_gradient(stat = "identity") +
+test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
+  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_x_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_y_discrete(limits = rev) +
-  ylab(" ") +
+  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
-  facet_wrap(~model, ncol=5)
+  facet_wrap(~model, ncol = 2, scales = "free_x")
 test_nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
-       width=250, height=150, units="mm", dpi=300)
+       width=220, height=210, units="mm", dpi=300)
 
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------

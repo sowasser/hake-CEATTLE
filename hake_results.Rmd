@@ -25,12 +25,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ![**Figure 5**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism.](./plots/CEATTLE/cannibalism/M.png)
 
-![**Figure 6**: Mean and standard deviation of numbers-at-age from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/nbyage.png)
+![**Figure 6**: Mean and standard deviation of numbers-at-age from CEATTLE run with the estimate of mean cannibalism and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/nbyage.png)
 
 ![**Figure 7**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run with the estimate of mean cannibalism for the entire period, in single-species mode with no predation, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
 
 ![**Figure 8**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism for the entire period, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_M.png)
 
-![**Figure 9**: Runs of CEATTLE with varying levels of cannibalism (0.5% to 75%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.](./plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png)
-
-![**Figure 10:** Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with varying levels of cannibalism (0.5% to 75%).](./plots/CEATTLE/cannibalism/Testing/sensitivity_M.png)
+![**Figure 9**: Ratio of spawning stock biomass (SSB) to total biomass for runs of CEATTLE with varying levels of cannibalism (0.5% to 75%) and the mean cannibalism by weight from the Pacific hake stomach contents datasets.](./plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png)
