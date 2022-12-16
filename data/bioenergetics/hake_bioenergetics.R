@@ -17,16 +17,14 @@ eq_2$Tco <- as.numeric(eq_2$Tco)
 eq_2$Tcm <- as.numeric(eq_2$Tcm)
 
 ### Temperature-dependent consumption -----------------------------------------
-temp_range <- seq(1, 20, by = 0.1)  # Hake thermal range from survey data
-
-temp_dependent <- function(Qc, Tco, Tcm) {
+temp_dependent <- function(Qc, Tco, Tcm, temp) {
   z <- (log(Qc) * (Tcm - Tco)) 
   y <- (log(Qc) * (Tcm - Tco + 2))
   
   x <- (((z^2) * (1 + (1 + (40/y))^0.5)^2) / 400)
   
   consumption <- c()
-  for(i in temp_range) { 
+  for(i in temp) { 
     V <- ((Tcm - i) / (Tcm - Tco))
     rate <- ((V^x) * exp(x * (1 - V)))
     consumption <- c(consumption, rate)
@@ -36,10 +34,11 @@ temp_dependent <- function(Qc, Tco, Tcm) {
 }
 
 # Run equation with cod, adult, juvenile pollock parameters & hake estimates
-spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
-                       temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
-                       temp_dependent(2.5, 8, 14.5),  # Hake estimates w/ temp from acoustic series
-                       temp_dependent(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
+temp_range <- seq(1, 20, by = 0.1)  # Hake thermal range from survey data
+spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7], temp_range), 
+                       temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7], temp_range), 
+                       temp_dependent(2.5, 8, 14.5, temp_range),  # Hake estimates w/ temp from acoustic series
+                       temp_dependent(2.5, 8, 10.5, temp_range))  # Hake estimates w/ kriged temp
 colnames(spp_temp_wide) <- c("Atlantic cod - fb4", 
                              "Pollock - fb4", 
                              "hake - survey temp",
@@ -127,6 +126,50 @@ mass_rate
 
 ggsave(filename="plots/bioenergetics/allometric_mass.png", mass_rate,
        bg = "transparent", width=180, height=90, units="mm", dpi=300)
+
+
+### Calculate relative foraging rate ------------------------------------------
+# Calculate maximum consumption rate (CA * WCB * fT)
+wtatage_kg <- read.csv("data/bioenergetics/wtatage_bioenergetics.csv")[, -1]  # mean annual weight-at-age
+wtatage <- wtatage_kg * 1000
+# Caclulate allometric mass function for annual weight-at-age
+CA_wtatage <- t(apply(wtatage, 1, allometric_mass, CA=0.0835, CB=-0.460))  # by rows and transposed to match input
+
+temp_yearly <- read.csv("data/temperature/ROMS_mean.csv")  # annual temperature
+fT <- temp_dependent(2.5, 8, 10.5, temp_yearly$mean_temp)
+
+multiply <- function(x) {
+  out <- x * fT
+}
+
+max_rate <- apply(CA_wtatage, 2, multiply)
+min(max_rate)
+max(max_rate)
+
+# Calculate observed consumption rate (for pollock)
+pollock_obs <- as.data.frame(cbind(W = c(18.43, 49.09, 85.02, 100.53, 187.05, 210.77, 226.35, 254.81, 267.29, 302.36, 35.90),
+                                   Cobs = c(0.022, 0.018, 0.015, 0.015, 0.008, 0.008, 0.007, 0.007, 0.008, 0.004, 0.027)))
+ggplot(pollock_obs, aes(x = W, y = Cobs)) +
+  geom_point()
+
+# Estimate observed consumption rate for hake
+summary(lm(Cobs ~ W, pollock_obs))
+calc_Cobs <- function(wt) {
+  out <- (-6.661e-05 * wt) + 2.316e-02
+}
+
+Cobs <- apply(wtatage, c(1, 2), calc_Cobs)
+
+plot_cobs <- data.frame(cbind(Cobs = colMeans(Cobs), age = 1:15))
+ggplot(plot_cobs, aes(x = age, y = Cobs)) +
+  geom_point()
+
+# Calculate relative foraging rate
+RFR <- Cobs / max_rate
+
+Pyrs <- RFR 
+max(Pyrs)
+min(Pyrs)
 
 
 ### Sensitivity of bioenergetics to temp anomaly ------------------------------
