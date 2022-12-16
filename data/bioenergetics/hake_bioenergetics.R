@@ -16,7 +16,7 @@ eq_2 <- proxy_params[c(1, 5:6), ]
 eq_2$Tco <- as.numeric(eq_2$Tco)
 eq_2$Tcm <- as.numeric(eq_2$Tcm)
 
-# Temperature-dependent consumption -------------------------------------------
+### Temperature-dependent consumption -----------------------------------------
 temp_range <- seq(1, 20, by = 0.1)  # Hake thermal range from survey data
 
 temp_dependent <- function(Qc, Tco, Tcm) {
@@ -53,7 +53,7 @@ spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4))
  
 # Plot consumption rate                 
 temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
-  geom_line(aes(color=variable), size=1) +
+  geom_line(aes(color=variable), linewidth=1) +
   # Following lines for distinguishing between lit & estimated hake values
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
@@ -87,10 +87,8 @@ ggsave(filename="plots/bioenergetics/temp_consumption2.png", temp_rate2,
 
 
 
-# Allometric mass function ----------------------------------------------------
-weights <- 10:400  # Range of hake weights
-  
-allometric_mass <- function(CA, CB) {
+### Allometric mass function --------------------------------------------------
+allometric_mass <- function(CA, CB, weights) {
   Cmax <- c()
   for(i in weights) {
     mass <- (CA * (i^CB))
@@ -100,16 +98,17 @@ allometric_mass <- function(CA, CB) {
 }
 
 # Run equation with cod, adult, juvenile pollock parameters & hake estimates
-spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4]), 
-                       allometric_mass(eq_2[2, 3], eq_2[2, 4]), 
-                       allometric_mass(0.167, -0.460),  # hake estimate from Francis (1983)
-                       allometric_mass(0.0835, -0.460))  # Francis (1983) estimate w/ CA/2  
+wt_range <- 10:400
+spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4], wt_range), 
+                       allometric_mass(eq_2[2, 3], eq_2[2, 4], wt_range), 
+                       allometric_mass(0.167, -0.460, wt_range),  # hake estimate from Francis (1983)
+                       allometric_mass(0.0835, -0.460, wt_range))  # Francis (1983) estimate w/ CA/2  
 colnames(spp_mass_wide) <- c("Atlantic cod - fb4", 
                              "Pollock (adult) - fb4", 
                              "hake - Francis",
                              "hake - Francis, CA/2")
 spp_mass <- melt(as.data.frame(spp_mass_wide))
-spp_mass <- cbind(spp_mass, weight = rep(weights, times=4))
+spp_mass <- cbind(spp_mass, weight = rep(wt_range, times=4))
 
 # # Distinguish between literature values & estimated value for Hake (when that's ready)
 # spp_mass <- cbind(spp_mass, ref = c(rep("a", times = (length(weights) * 5)), 
@@ -130,7 +129,7 @@ ggsave(filename="plots/bioenergetics/allometric_mass.png", mass_rate,
        bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
-# Sensitivity of bioenergetics to temp anomaly --------------------------------
+### Sensitivity of bioenergetics to temp anomaly ------------------------------
 # Following the temperature anomalies determined from the hake survey data in
 # this paper: https://www.int-res.com/abstracts/meps/v639/p185-197/
 anomalies <- c(-1, -0.5, 0, 0.5, 1, 1.5, 2)
