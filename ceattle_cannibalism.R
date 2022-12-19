@@ -84,16 +84,27 @@ ss3_biom <- as.data.frame(cbind(year = rep(years, 2),
 colnames(ss3_biom)[2:3] <- c("value", "error")
 ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
 
-# Find mean difference between the model runs
-mean((biomass[1:32, 4] / 1000000) - (ss3_biom[1:32, 4] / 1000000))  # SSB: -0.1742685
-sd((biomass[1:32, 4] / 1000000) - (ss3_biom[1:32, 4] / 1000000))/sqrt(32)  # 0.02077737
-mean((biomass[33:64, 4] / 1000000) - (ss3_biom[33:64, 4] / 1000000))  # Total: 0.2929684
-sd((biomass[33:64, 4] / 1000000) - (ss3_biom[33:64, 4] / 1000000))/sqrt(32)  # 0.02785554
+# Pull out recruitment
+nodiet_R <- c(nodiet_run$quantities$R)
+ss3_R <- read.table("data/assessment/recruitment.txt")[23:57,]
 
-mean((biomass[1:32, 4] / 1000000) - (nodiet_biom[1:32, 4] / 1000000))  # SSB: -0.01996151
-sd((biomass[1:32, 4] / 1000000) - (nodiet_biom[1:32, 4] / 1000000))/sqrt(32)  # 0.001969319
-mean((biomass[33:64, 4] / 1000000) - (nodiet_biom[33:64, 4] / 1000000))  # Total: -0.2356988
-sd((biomass[33:64, 4] / 1000000) - (nodiet_biom[33:64, 4] / 1000000))/sqrt(32)  # 0.007354876
+# Find mean difference between the model runs
+mean_SEM <- function(df1, df2, title) {
+  mean_out <- mean((df1 / 1000000) - (df2 / 1000000))
+  SEM <- sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range))
+  return(c(title, mean_out, SEM))
+}
+
+mean_SEM_all <- rbind(mean_SEM(biomass[1:32, 4], ss3_biom[1:32, 4], "cannibalism - SS3, SSB"),
+                      mean_SEM(biomass[33:64, 4], ss3_biom[33:64, 4], "cannibalism - SS3, Total"),
+                      mean_SEM(recruitment, ss3_R[1:32, 2], "cannibalism - SS3, R"),
+                      mean_SEM(biomass[1:32, 4], nodiet_biom[1:32, 4], "cannibalism - no diet, SSB"),
+                      mean_SEM(biomass[33:64, 4], nodiet_biom[33:64, 4], "cannibalism - no diet, Total"),
+                      mean_SEM(recruitment, nodiet_R, "cannibalism - no diet, R"),
+                      mean_SEM(nodiet_biom[1:32, 4], ss3_biom[1:32, 4], "no diet - SS3, SSB"),
+                      mean_SEM(nodiet_biom[33:64, 4], ss3_biom[33:64, 4], "no diet - SS3, Total"),
+                      mean_SEM(nodiet_R, ss3_R[1:32, 2], "no diet - SS3, R"))
+
 
 # Read in other model runs for comparison and plot
 plot_popdy <- function() {
@@ -106,8 +117,6 @@ plot_popdy <- function() {
   biom_all$error <- biom_all$error / 1000000
 
   # Put recruitment together
-  nodiet_R <- c(nodiet_run$quantities$R)
-  ss3_R <- read.table("data/assessment/recruitment.txt")[23:57,]
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
   colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
   R <- melt(R_wide, id.vars = "year")
