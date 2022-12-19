@@ -75,21 +75,36 @@ write.csv(nodiet_biomass, "data/ceattle_nodiet_biomass.csv", row.names = FALSE)
 recruitment <- c(intrasp_run$quantities$R)
 write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
 
+# Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
+ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[23:54, 2:3], type = rep("SSB"))
+ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:54, 2:3], type = rep("Total Biomass"))
+ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
+                                rbind(ss3_ssb, ss3_biomass),
+                                model = rep("Assessment")))
+colnames(ss3_biom)[2:3] <- c("value", "error")
+ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
+
+# Find mean difference between the model runs
+mean((biomass[1:32, 4] / 1000000) - (ss3_biom[1:32, 4] / 1000000))  # SSB: -0.1742685
+sd((biomass[1:32, 4] / 1000000) - (ss3_biom[1:32, 4] / 1000000))/sqrt(32)  # 0.02077737
+mean((biomass[33:64, 4] / 1000000) - (ss3_biom[33:64, 4] / 1000000))  # Total: 0.2929684
+sd((biomass[33:64, 4] / 1000000) - (ss3_biom[33:64, 4] / 1000000))/sqrt(32)  # 0.02785554
+
+mean((biomass[1:32, 4] / 1000000) - (nodiet_biom[1:32, 4] / 1000000))  # SSB: -0.01996151
+sd((biomass[1:32, 4] / 1000000) - (nodiet_biom[1:32, 4] / 1000000))/sqrt(32)  # 0.001969319
+mean((biomass[33:64, 4] / 1000000) - (nodiet_biom[33:64, 4] / 1000000))  # Total: -0.2356988
+sd((biomass[33:64, 4] / 1000000) - (nodiet_biom[33:64, 4] / 1000000))/sqrt(32)  # 0.007354876
 
 # Read in other model runs for comparison and plot
 plot_popdy <- function() {
   # Put biomass together
   nodiet_biom <- ceattle_biomass(nodiet_run, "CEATTLE - single-species")
-  # Pull out SSB & total biomass from stock synthesis & combine, remove pre-1980
-  ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[23:54, 2:3], type = rep("SSB"))
-  ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:54, 2:3], type = rep("Total Biomass"))
-  ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
-                                  rbind(ss3_ssb, ss3_biomass),
-                                  model = rep("Assessment")))
-  colnames(ss3_biom)[2:3] <- c("value", "error")
-  ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
-  biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
   
+  # Combine all biomass sources together
+  biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
+  biom_all$value <- biom_all$value / 1000000
+  biom_all$error <- biom_all$error / 1000000
+
   # Put recruitment together
   nodiet_R <- c(nodiet_run$quantities$R)
   ss3_R <- read.table("data/assessment/recruitment.txt")[23:57,]
@@ -110,8 +125,8 @@ plot_popdy <- function() {
   # Reshape to match biomass
   R_new <- cbind(year = R_all$year, 
                  type = rep("Recruitment"), 
-                 value = R_all$value,
-                 error = R_all$error,
+                 value = R_all$value / 1000000,
+                 error = R_all$error / 1000000,
                  model = as.character(R_all$variable))
   
   # Combine biomass & recruitment and plot
@@ -120,16 +135,18 @@ plot_popdy <- function() {
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+  all_popdy$type <- factor(all_popdy$type, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
     geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
-    scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
+    # scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~type, ncol = 1, scales = "free_y")
+    facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
+    theme(strip.background = element_blank(), strip.placement = "outside")
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition
   ratio <- as.data.frame(cbind(year = years,
