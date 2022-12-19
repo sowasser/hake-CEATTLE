@@ -7,6 +7,7 @@ library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
 library(rgeos)
+library(ggview)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
@@ -17,7 +18,7 @@ path <- "data/diet/CCTD/v4/"
 combine_diet <- function(type, pred_species, prey_species, label_specific) {
   # All collection info
   collection <- read.csv(paste0(path, "collection_information_v4.csv"))
-  
+
   # Filter predator dataset for just hake and collections from 1980 onwards
   if(type == "stomach") {
     predator <- read.csv(paste0(path, "predator_information_v4.csv")) %>%
@@ -107,8 +108,8 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     slice_max(n = 10, order_by = highest)
 
   # Combine together and select *actual* top 10, in the case of a tie
-  highest <- rbind(cbind(high_wt[1:10,], variable = rep("weight (top 10)", 10)),
-                   cbind(high_n[1:10,], variable = rep("occurrence (top 10)", 10)))
+  highest <- rbind(cbind(high_wt[1:10,], variable = rep("weight (top 10)")),
+                   cbind(high_n[1:10,], variable = rep("occurrence (top 10)")))
 
   prey_sp_plot <- ggplot(highest, aes(x = reorder(Prey_Com_Name, highest), y = highest,
                                       fill = ifelse(Prey_Com_Name == prey_species, "highlighted", "normal"))) +
@@ -227,7 +228,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
     insets
   
-  return(list(all_pred, all_prey, predated, pred_type,  # data
+  return(list(all_pred, all_prey, predated, pred_type, all_stomachs,  # data
               prey_sp_plot, predation_yearly, location_overall, location_timing))  # plots
 }
 
@@ -238,17 +239,36 @@ hake_hake <- combine_diet(type = "stomach", "Pacific Hake", "Pacific Hake", "can
 # Look at plots
 hake_pred <- hake_hake[[1]]
 hake_prey <- hake_hake[[2]]
-hake_hake[[5]]  # top prey species
-hake_hake[[6]]  # yearly predation by type
-# hake_hake[[7]]  # overall locations of predation by type
+hake_stomachs_all <- hake_hake[[5]]
+hake_hake[[6]]  # top prey species overall
+hake_hake[[7]]  # yearly predation by type - something wrong here!
+# hake_hake[[8]]  # overall locations of predation by type
 
-ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[5]], 
+high_wt_yearly <- hake_hake[[5]] %>%
+  group_by(Year, Prey_Com_Name) %>%
+  summarize(highest = sum(Prey_Weight_g)) %>%
+  slice_max(n = 10, order_by = highest)
+
+prey_wt_yearly <- ggplot(high_wt_yearly, 
+                         aes(x = reorder(Prey_Com_Name, highest), y = highest, 
+                             fill = ifelse(Prey_Com_Name == prey_species, "highlighted", "normal"))) +
+  geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
+  xlab(" ") + ylab("prey weight (g)") +
+  facet_wrap(~ Year, scales = "free", ncol = 3)
+prey_wt_yearly
+
+
+ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[6]], 
        bg = "transparent", width=180, height=70, units="mm", dpi=300)
-ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[6]], 
-       bg = "transparent", width=160, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[7]], 
+ggsave(filename = "plots/diet/hake_prey_yearly.png", prey_wt_yearly, 
+       bg = "transparent", width=230, height=160, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[7]], 
+#        bg = "transparent", width=160, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[8]], 
 #        bg = "transparent", width=100, height=100, units="mm", dpi=300)
-# ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[8]], 
+# ggsave(filename = "plots/diet/hake_location_timing.png", hake_hake[[9]], 
 #        bg = "transparent", width=400, height=210, units="mm", dpi=300)
 
 
@@ -260,9 +280,9 @@ ATF_prey <- arrowtooth_hake[[2]]
 ATF_hake <- arrowtooth_hake[[3]]  # Almost no hake prey information for arrowtooth.
 
 # Look at plots
-arrowtooth_hake[[5]]  # top prey species
-arrowtooth_hake[[6]]  # yearly predation by type
-arrowtooth_hake[[7]]  # overall locations of predation by type
+arrowtooth_hake[[6]]  # top prey species
+arrowtooth_hake[[7]]  # yearly predation by type
+arrowtooth_hake[[8]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/Non-hake/ATF_prey_species.png", arrowtooth_hake[[5]], 
        bg = "transparent", width=200, height=80, units="mm", dpi=300)
@@ -278,9 +298,9 @@ CSL_prey <- sealion_hake[[2]]
 CSL_hake <- sealion_hake[[3]]
 
 # Look at plots
-sealion_hake[[5]]  # top prey species
-sealion_hake[[6]]  # yearly predation by type
-sealion_hake[[7]]  # overall locations of predation by type
+sealion_hake[[6]]  # top prey species
+sealion_hake[[7]]  # yearly predation by type
+sealion_hake[[8]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/Non-hake/CSL_prey_species.png", sealion_hake[[5]], 
        bg = "transparent", width=200, height=80, units="mm", dpi=300)
@@ -288,9 +308,10 @@ ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[
        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
-  ggdist::stat_slab(aes(thickness = stat(pdf*n)), scale = 0.7) +
+  ggdist::stat_slab(aes(thickness = after_stat(pdf*n)), scale = 0.7) +
   ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
   xlab("prey hake length (cm)") + ylab(" ")
+CSL_hake_prey_size
 
 ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
        bg = "transparent", width=120, height=80, units="mm", dpi=300)

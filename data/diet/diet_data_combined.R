@@ -111,7 +111,7 @@ predation_all <- all_data %>%
 predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  labs(fill = "prey species (n)") + ylab(" ")
+  labs(fill = "prey species") + ylab("stomachs (n)")
 predation_yearly
 
 ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly, 
@@ -222,7 +222,6 @@ location_timing <- location_yearly +
   coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
   scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   insets
-location_timing
 
 ggsave(filename = "plots/diet/locations_timing.png", location_timing, 
        bg = "transparent", width=200, height=200, units="mm", dpi=300)
