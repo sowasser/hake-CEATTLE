@@ -121,8 +121,8 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   
   # Plot timing & location of instances of predation of interest
   pred_type <- all_pred
-  pred_type$type <- ifelse(pred_type$Predator_ID %in% predated$Predator_ID, label_specific, "general predator")
-  pred_type$type <- relevel(factor(pred_type$type), "general predator")
+  pred_type$type <- ifelse(pred_type$Predator_ID %in% predated$Predator_ID, label_specific, "all other prey")
+  pred_type$type <- relevel(factor(pred_type$type), "all other prey")
   
   predation_all <- pred_type %>%
     group_by(Year, type) %>%
@@ -132,7 +132,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   predation_yearly <- ggplot(predation_all, aes(x = Year, y = n, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    ylab(" ")
+    ylab("prey items (n)")
   
   ### Plot timing of sample collection ----------------------------------------
   timing_all <- pred_type %>%
@@ -291,7 +291,7 @@ ggsave(filename = "plots/diet/Non-hake/ATF_locations_overall.png", arrowtooth_ha
 
 
 ### Subset of diet for CA sea lion predator & hake prey -----------------------
-sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "hake predation")
+sealion_hake <- combine_diet(type = "scat", "California Sea Lion", "Pacific Hake", "Pacific Hake")
 
 CSL_pred <- sealion_hake[[1]]
 CSL_prey <- sealion_hake[[2]]
@@ -302,9 +302,9 @@ sealion_hake[[6]]  # top prey species
 sealion_hake[[7]]  # yearly predation by type
 sealion_hake[[8]]  # overall locations of predation by type
 
-ggsave(filename = "plots/diet/Non-hake/CSL_prey_species.png", sealion_hake[[5]], 
-       bg = "transparent", width=200, height=80, units="mm", dpi=300)
-ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[7]], 
+ggsave(filename = "plots/diet/Non-hake/CSL_hake_yearly.png", sealion_hake[[7]], 
+       bg = "transparent", width=150, height=80, units="mm", dpi=300)
+ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[8]], 
        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +

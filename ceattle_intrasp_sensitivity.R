@@ -42,12 +42,12 @@ prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  ylab("stomach proportion") + xlab("predator age") +
-  facet_wrap(~Pred_age)
+  ylab("stomach proportion") + xlab("prey age") +
+  facet_wrap(~Pred_age, ncol = 3)
 stomach_props
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
-       width=200, height=200, units="mm", dpi=300)
+       width=140, height=150, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
