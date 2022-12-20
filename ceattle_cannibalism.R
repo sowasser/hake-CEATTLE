@@ -24,7 +24,7 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  phase = "default")
 
 hake_nodiet <- hake_intrasp
-hake_nodiet$est_M1 <- 0  # Use base M1
+# hake_nodiet$est_M1 <- 0  # Use base M1
 nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 inits = NULL, # Initial parameters = 0
                                 file = NULL, # Don't save
@@ -98,11 +98,11 @@ mean_SEM <- function(df1, df2, title) {
 mean_SEM_all <- rbind(mean_SEM(biomass[1:32, 4], ss3_biom[1:32, 4], "cannibalism - SS3, SSB"),
                       mean_SEM(biomass[33:64, 4], ss3_biom[33:64, 4], "cannibalism - SS3, Total"),
                       mean_SEM(recruitment, ss3_R[1:32, 2], "cannibalism - SS3, R"),
-                      mean_SEM(biomass[1:32, 4], nodiet_biom[1:32, 4], "cannibalism - no diet, SSB"),
-                      mean_SEM(biomass[33:64, 4], nodiet_biom[33:64, 4], "cannibalism - no diet, Total"),
+                      mean_SEM(biomass[1:32, 4], nodiet_biomass[1:32, 4], "cannibalism - no diet, SSB"),
+                      mean_SEM(biomass[33:64, 4], nodiet_biomass[33:64, 4], "cannibalism - no diet, Total"),
                       mean_SEM(recruitment, nodiet_R, "cannibalism - no diet, R"),
-                      mean_SEM(nodiet_biom[1:32, 4], ss3_biom[1:32, 4], "no diet - SS3, SSB"),
-                      mean_SEM(nodiet_biom[33:64, 4], ss3_biom[33:64, 4], "no diet - SS3, Total"),
+                      mean_SEM(nodiet_biomass[1:32, 4], ss3_biom[1:32, 4], "no diet - SS3, SSB"),
+                      mean_SEM(nodiet_biomass[33:64, 4], ss3_biom[33:64, 4], "no diet - SS3, Total"),
                       mean_SEM(nodiet_R, ss3_R[1:32, 2], "no diet - SS3, R"))
 
 
@@ -204,6 +204,7 @@ extract_nbyage <- function(run, name) {
 nbyage <- extract_nbyage(intrasp_run, "CEATTLE - cannibalism")
 write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 
+
 plot_nbyage <- function() {
   # # Read in data from no diet CEATTLE run
   # nbyage_nodiet <- extract_nbyage(nodiet_run, "CEATTLE - single species")
@@ -222,13 +223,23 @@ plot_nbyage <- function() {
 
   # Combine with nbyage from intrasp run
   nbyage_all <- rbind(nbyage, nbyage_ss3)
+  
+  # Find mean numbers-at-age for each year
+  nbyage_all$age <- as.numeric(nbyage_all$age)
+  nbyage_mean <- nbyage_all %>%
+    group_by(year, model) %>%
+    summarize(mean = weighted.mean(age, numbers))
+  nbyage_mean$year <- as.numeric(nbyage_mean$year)
+  
+  mean_nbyage_plot <- ggplot(nbyage_mean, aes(x = year, y = mean)) +
+    geom_line(aes(color = model)) +
+    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) 
+  mean_nbyage_plot
 
   # Set 15 as accumulation age
   nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
 
   # Plot yearly nbyage
-  nbyage_all$age <- as.numeric(nbyage_all$age)
-  
   nbyage_plot <- ggplot(nbyage_all, aes(x=year, y=age)) +
     geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
