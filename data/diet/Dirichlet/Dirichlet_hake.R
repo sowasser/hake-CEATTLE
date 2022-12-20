@@ -532,7 +532,8 @@ write.csv(ceattle_90s, "data/diet/Dirichlet/Dirichlet_90s.csv", row.names = FALS
 ceattle_recent <- to_ceattle(dirichlet_recent[[1]])
 write.csv(ceattle_recent, "data/diet/Dirichlet/Dirichlet_recent.csv", row.names = FALSE)
 
-# Compare original proportions to weighted proportions
+
+### Compare original proportions to weighted proportions ----------------------
 original <- read.csv("data/diet/diet_for_CEATTLE_original.csv")
 
 new_df <- function(df, name) {
@@ -595,3 +596,11 @@ comp2_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
        bg = "transparent", width=170, height=50, units="mm", dpi=300)
+
+# Find maximum proportion for each period
+max_prop <- comp2 %>%
+  group_by(data, pred_age) %>%
+  summarize(max = sum(prop)) %>%
+  ungroup() %>%
+  group_by(data) %>%
+  summarize(max = max(max))
