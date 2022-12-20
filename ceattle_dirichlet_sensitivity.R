@@ -100,8 +100,27 @@ timing_plot_popdy <- function() {
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
-  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
   
+  # Find mean difference between the model runs
+  mean_SEM <- function(model1, model2, stat, years) {
+    df1 <- all_popdy %>% 
+      filter(model == model1) %>% filter(variable == stat) %>% filter(year %in% years)
+    df2 <- all_popdy %>%
+      filter(model == model2) %>% filter(variable == stat) %>% filter(year %in% years)
+    mean_out <- mean((df1$value) - (df2$value))
+    SEM <- sd((df1$value) - (df2$value)) / sqrt(length(df2$value))
+    return(c(paste0(model1, " - ", model2, ", ", stat), mean_out, SEM))
+  }
+  
+  mean_SEM_all <- rbind(mean_SEM("1988-1999", "all years", "SSB", 1988:1999),
+                        mean_SEM("1988-1999", "all years", "Total Biomass", 1988:1999),
+                        mean_SEM("1988-1999", "all years", "Recruitment", 1988:1999),
+                        mean_SEM("2005-2019", "all years", "SSB", 2005:2019),
+                        mean_SEM("2005-2019", "all years", "Total Biomass", 2005:2019),
+                        mean_SEM("2005-2019", "all years", "Recruitment", 2005:2019))
+  
+  # Plot population dynamics
+  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line(aes(linetype = model)) +
