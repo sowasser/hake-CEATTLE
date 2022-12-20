@@ -113,8 +113,8 @@ plot_popdy <- function() {
   
   # Combine all biomass sources together
   biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
-  biom_all$value <- biom_all$value / 1000000
-  biom_all$error <- biom_all$error / 1000000
+  biom_all$value <- biom_all$value / 1000000  # to mt
+  biom_all$error <- biom_all$error / 1000000  # to mt
 
   # Put recruitment together
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
@@ -134,8 +134,8 @@ plot_popdy <- function() {
   # Reshape to match biomass
   R_new <- cbind(year = R_all$year, 
                  type = rep("Recruitment"), 
-                 value = R_all$value / 1000000,
-                 error = R_all$error / 1000000,
+                 value = R_all$value / 1000000,  # to millions
+                 error = R_all$error / 1000000,  # to millions
                  model = as.character(R_all$variable))
   
   # Combine biomass & recruitment and plot
@@ -149,7 +149,6 @@ plot_popdy <- function() {
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
     geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
-    # scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     ylab(" ") +

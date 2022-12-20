@@ -94,22 +94,25 @@ timing_plot_popdy <- function() {
                   ceattle_R(run_90s, "1988-1999", 1988:1999),
                   ceattle_R(run_recent, "2005-2019", 2005:2019))
   
+  
   # Combine biomass & recruitment and plot
   all_popdy <- rbind(test_biom, R_test)
   all_popdy$year <- as.numeric(all_popdy$year)
-  all_popdy$value <- as.numeric(all_popdy$value)
-  all_popdy$error <- as.numeric(all_popdy$error)
+  all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
+  all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
+  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
+  
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
     geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
-    scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~variable, ncol = 1, scales = "free_y")
+    facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
+    theme(strip.background = element_blank(), strip.placement = "outside")
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition
   ratio <- function(run, name, years) {
