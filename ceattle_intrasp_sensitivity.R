@@ -153,17 +153,17 @@ test_plot_popdy <- function() {
     ylab("SSB/Biomass")
   ratio_plot
   
-  return(list(popdy_plot, ratio_plot))
+  return(list(all_popdy, popdy_plot, ratio_plot))
 }
 
 test_popdy <- test_plot_popdy()
-test_popdy[[1]]
+test_popdy[[2]]
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", test_popdy[[1]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", test_popdy[[2]], 
        width=140, height=150, units="mm", dpi=300)
 
-test_popdy[[2]]
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png", test_popdy[[2]], 
+test_popdy[[3]]
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png", test_popdy[[3]], 
        width=150, height=80, units="mm", dpi=300)
 
 
@@ -213,6 +213,39 @@ test_nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
        width=220, height=210, units="mm", dpi=300)
+
+
+### New plot of popdy and numbers-at-age --------------------------------------
+# Calculate annual mean age
+mean_nbyage_test <- nbyage_test_all %>%
+  group_by(year, model) %>%
+  summarize(value = weighted.mean(age, numbers)) %>%
+  ungroup()
+
+# Add extra columns, reorder, and combine with popdy dataframe
+mean_nbyage_test$variable <- rep("Mean Age")
+mean_nbyage_test$error <- rep(0)
+mean_nbyage_test <- mean_nbyage_test[, c(1, 4, 3, 5, 2)]
+
+popdy_meanage <- rbind(test_popdy[[1]], mean_nbyage_test) %>%
+  filter(variable != "SSB (mt)")
+popdy_meanage$year <- as.integer(popdy_meanage$year)
+popdy_meanage$model <- factor(popdy_meanage$model)
+
+meanage_popdy_plot <- ggplot(popdy_meanage, aes(x=year, y=value, color = model, fill = model)) +
+  geom_line(aes(linetype = model)) +
+  scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
+  geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  ylab(" ") +
+  labs(color = "model") +
+  facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
+  theme(strip.background = element_blank(), strip.placement = "outside")
+meanage_popdy_plot
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
+       width=140, height=150, units="mm", dpi=300)
 
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------
