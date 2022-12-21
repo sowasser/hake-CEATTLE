@@ -6,12 +6,12 @@
 library(dplyr)
 library(ggplot2)
 library(viridis)
-# Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+library(ggsidekick)
+theme_set(theme_sleek())
 
 survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
 summer_ROMS <- read.csv("data/temperature/ROMS_summer_mean.csv")
+ROMS <- read.csv("data/temperature/ROMS_mean.csv")
 
 missing_years <- c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
                    2014, 2016, 2018, 2020)
@@ -27,11 +27,15 @@ survey_mean <- survey_temp %>% group_by(year) %>%
 survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
 colnames(survey) <- c("year", "mean_temp", "source")
 
-ROMS <- cbind(summer_ROMS, rep("ROMS", length(summer_ROMS$mean_temp)))
+summer_ROMS <- cbind(summer_ROMS, rep("summer ROMS", length(summer_ROMS$mean_temp)))
+colnames(summer_ROMS) <- c("year", "mean_temp", "source")
+
+ROMS <- cbind(ROMS, rep("ROMS", length(ROMS$mean_temp)))
 colnames(ROMS) <- c("year", "mean_temp", "source")
 
+
 # Combine together and sort by year
-CEATTLE_temp <- rbind(ROMS, survey)
+CEATTLE_temp <- rbind(summer_ROMS, survey)
 CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 
 # Plot all mean temperatures 
@@ -104,15 +108,15 @@ temp_weighted <- temp_hake %>% group_by(year) %>%
   summarise(mean_temp = weighted.mean(temp_100_kriged, hake_biomass))
 
 # Combine into 1 dataset with labeled data sources, then plot
-means <- rbind(ROMS[, 1:2], survey_mean, temp_weighted)
-means <- cbind(means, c(rep("summer ROMS", 41),
+means <- rbind(ROMS[9:40, 1:2], survey_mean, temp_weighted)  # subset to model years
+means <- cbind(means, c(rep("ROMS", length(9:40)),
                         rep("survey", 13), 
                         rep("kriged, biomass weighted", 12)))
 colnames(means)[3] <- "dataset"
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
-  geom_line(aes(color=dataset), size=1, alpha = 0.3) +
+  geom_line(aes(color=dataset), linewidth=1, alpha = 0.3) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
   ylab("mean temperature")
 mean_temp_compared

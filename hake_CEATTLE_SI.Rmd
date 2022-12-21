@@ -10,7 +10,7 @@ output:
 
  &nbsp;  
  
- ![**SI Figure 2**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimate for that grid, mean survey temperatures, and mean ROMS output for the summer months (June to September).](./plots/temperature/mean_temp_compared.png)
+ ![**SI Figure 2**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimate for that grid, mean survey temperatures, and mean ROMS output.](./plots/temperature/mean_temp_compared.png)
 
  &nbsp;  
 
