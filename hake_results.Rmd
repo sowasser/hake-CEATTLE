@@ -15,36 +15,36 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-![**Figure 1**: Frequency of hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple).](./plots/diet/hake_cannibalism.png)
+![**Figure 1**: Frequency of hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple). ](./plots/diet/hake_cannibalism.png)
 
  &nbsp;
 
-![**Figure 2**: Dirichlet-weighted diet proportion by weight of cannibalism by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019.](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
+![**Figure 2**: Dirichlet-weighted diet proportion by weight of cannibalism by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019. ](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
 
  &nbsp;
 
-![**Figure 3**: Hake stomachs containing Pacific hake (in green) or only other food items (in purple) by location per year and by sampling month per year.](./plots/diet/locations_timing.png)
+![**Figure 3**: Hake stomachs containing Pacific hake (in green) or only other food items (in purple) by location per year and by sampling month per year. ](./plots/diet/locations_timing.png)
 
  &nbsp;
 
-![**Figure 4**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/popdy.png)
+![**Figure 4**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run in single-species mode with no predation, with the estimate of mean cannibalism, and the Stock Synthesis 3.0 run from the 2020 stock assessment. ](./plots/CEATTLE/cannibalism/popdy.png)
 
  &nbsp;
 
-![**Figure 5**: Numbers-at-age from CEATTLE run with the estimate of mean cannibalism and the Stock Synthesis 3.0 run from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/nbyage.png)
+![**Figure 5**: Numbers-at-age from CEATTLE run with the estimate of mean cannibalism and the Stock Synthesis 3.0 run from the 2020 stock assessment. ](./plots/CEATTLE/cannibalism/nbyage.png)
 
  &nbsp;
 
-![**Figure 6**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism.](./plots/CEATTLE/cannibalism/M.png)
+![**Figure 6**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism. ](./plots/CEATTLE/cannibalism/M.png)
 
 
  &nbsp;
 
-![**Figure 7**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run with the estimate of mean cannibalism for the entire period, in single-species mode with no predation, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
+![**Figure 7**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run with the estimate of mean cannibalism for the entire period, in single-species mode with no predation, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period. ](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
 
  &nbsp;
 
-![**Figure 8**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism for the entire period, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_M.png)
+![**Figure 8**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism for the entire period, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period. M1+M2 is scaled to maximum for the 1988-1999 period. ](./plots/CEATTLE/cannibalism/Testing/dirichlet_M.png)
 
  &nbsp;
 

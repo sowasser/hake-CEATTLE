@@ -476,7 +476,7 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
   }
 }
 
-m_plot <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15) 
+m_plot <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15, zlim = c(0,1.5)) 
 m_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/M.png", m_plot, 

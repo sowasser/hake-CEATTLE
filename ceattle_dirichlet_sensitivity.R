@@ -337,6 +337,7 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
           if(type == 0){
             p = ggplot2::ggplot(data, aes(y = Age, x = Year, zmin = zlim[1], zmax = zlim[2])) + 
               geom_tile(aes(fill = M))  + 
+              # scale_fill_viridis(limits=c(0, 2)) +  # set upper limit so plots match
               scale_y_continuous(expand = c(0, 0), breaks=seq(0,max(ages),round(nages[sp]/5))) + 
               coord_equal() +  scale_x_continuous(expand = c(0, 0))+ 
               theme( panel.border = element_rect(colour = "black", fill=NA, size=1))
@@ -393,10 +394,10 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
 }
 
 # Combine mortality plots together & save
-m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all, type = 0, title = "all years", maxage = 15),
-                                       plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1988-1999", maxage = 15) +
+m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all, type = 0, title = "all years", maxage = 15, zlim = c(0,2.2)),
+                                       plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1988-1999", maxage = 15, zlim = c(0,2.2)) +
                                          scale_x_continuous(expand = c(0, 0), breaks = c(1988, 1992, 1996)),
-                                       plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15),
+                                       plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15, zlim = c(0,2.2)),
                                        ncol = 2, nrow = 2, 
                                        layout_matrix = rbind(c(1,1), c(2,3)))
 
