@@ -57,7 +57,7 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
-  ylab("specific rate") +
+  xlab("temperature") + ylab("specific rate") +
   labs(color = "species")
 temp_rate
 

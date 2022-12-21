@@ -43,7 +43,7 @@ mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
 mean_temp_plot
 
 ggsave(filename="plots/temperature/mean_temp.png", mean_temp_plot,
-       bg = "transparent", width=150, height=100, units="mm", dpi=300)
+       bg = "transparent", width=150, height=90, units="mm", dpi=300)
 
 # Temperature distribution per year -------------------------------------------
 temp_dist_years <- ggplot(survey_temp, aes(x=temp_100)) +
@@ -118,4 +118,4 @@ mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
 mean_temp_compared
 
 ggsave(filename="plots/temperature/mean_temp_compared.png", mean_temp_compared,
-       bg = "transparent", width=150, height=90, units="mm", dpi=300)
+       bg = "transparent", width=180, height=90, units="mm", dpi=300)
