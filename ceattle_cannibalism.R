@@ -187,13 +187,13 @@ ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]],
 
 ### Numbers-at-age for each model run -----------------------------------------
 # Extract numbers at age for cannibalism model run
-extract_nbyage <- function(run, name) {
-  df <- as.data.frame(as.table(run$quantities$NByage))
+extract_byage <- function(result, name, type) {
+  df <- as.data.frame(as.table(result))
 
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
   levels(df$Var4) <- c(years)
-  colnames(df) <- c("age", "year", "numbers")
+  colnames(df) <- c("age", "year", type)
 
   df <- cbind(df, rep(name, nrow(df)))
   colnames(df)[4] <- "model"
@@ -201,7 +201,7 @@ extract_nbyage <- function(run, name) {
   return(df)
 }
 
-nbyage <- extract_nbyage(intrasp_run, "CEATTLE - cannibalism")
+nbyage <- extract_byage(intrasp_run$quantities$NByage, "CEATTLE - cannibalism", "numbers")
 write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 
 
@@ -238,6 +238,9 @@ plot_nbyage <- function() {
 
   # Set 15 as accumulation age
   nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
+  
+  # Reduce down to millions for plotting
+  nbyage_all$numbers <- nbyage_all$numbers / 1000000
 
   # Plot yearly nbyage
   nbyage_plot <- ggplot(nbyage_all, aes(x=year, y=age)) +
@@ -246,8 +249,7 @@ plot_nbyage <- function() {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-    xlab(" ") + ylab("Age") +
-    theme(legend.position = "none") +
+    xlab(" ") + ylab("Age") + labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
 }
 
@@ -255,7 +257,27 @@ nbyage_plot <- plot_nbyage()
 nbyage_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
-       bg = "white", width=170, height=140, units="mm", dpi=300)
+       bg = "white", width=160, height=120, units="mm", dpi=300)
+
+### Biomass-at-age for each model run -----------------------------------------
+biombyage <- extract_byage(intrasp_run$quantities$biomassByage, "CEATTLE - cannibalism", "biomass")
+
+# Set 15 as accumulation age
+biombyage$age[as.numeric(biombyage$age) > 15] <- 15
+biombyage$age <- as.integer(biombyage$age)
+  
+# Plot yearly biomass by age
+biombyage_plot <- ggplot(biombyage, aes(x=year, y=age)) +
+  geom_point(aes(size = biomass, color = biomass, fill = biomass)) +
+  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  xlab(" ") + ylab("Age") 
+biombyage_plot
+
+ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot,
+       bg = "white", width=160, height=80, units="mm", dpi=300)
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
