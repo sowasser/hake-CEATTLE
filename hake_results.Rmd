@@ -39,13 +39,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
  &nbsp;
+ 
+ ![**Figure 7**: Total biomass (mt), recruitment (n), and mean age for the CEATTLE model fitted with the observed proportion of cannibalism by weight and the observed data scaled to varying proportions (0.5% to 75%).](./plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png)
+ 
+  &nbsp;
 
-![**Figure 7**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run with the estimate of mean cannibalism for the entire period, in single-species mode with no predation, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period. ](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
+![**Figure 8**: Spawning stock biomass (mt), total biomass (mt), and recruitment (n) for Pacific hake from CEATTLE run with the estimate of mean cannibalism for the entire period, in single-species mode with no predation, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period. ](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
 
  &nbsp;
 
-![**Figure 8**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism for the entire period, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period. M1+M2 is scaled to maximum for the 1988-1999 period. ](./plots/CEATTLE/cannibalism/Testing/dirichlet_M.png)
-
- &nbsp;
-
-![**Figure 9**: Total biomass (mt), recruitment (n), and mean age for the CEATTLE model fitted with the observed proportion of cannibalism by weight and the observed data scaled to varying proportions (0.5% to 75%).](./plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png)
+![**Figure 9**: Residual (M1) and predation (M2) mortality by age and year for CEATTLE run with the estimate of mean cannibalism for the entire period, for 1988-1999 with the estimate of mean cannibalism for that period, and for 2005-2019 with the estimate of mean cannibalism for that period. M1+M2 is scaled to maximum for the 1988-1999 period. ](./plots/CEATTLE/cannibalism/Testing/dirichlet_M.png)

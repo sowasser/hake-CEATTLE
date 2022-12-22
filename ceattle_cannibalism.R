@@ -436,7 +436,7 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
             } else {
               p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
             }
-            return(p)
+            return(list(p, data))
           }
           
           # Plot as contours
@@ -476,10 +476,26 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
   }
 }
 
-m_plot <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15, zlim = c(0,1.5)) 
-m_plot
+M <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15, zlim = c(0,1.5)) 
+M[[1]]  # mortality plot
 
-intrasp_run$quantities$M1
-
-ggsave(filename = "plots/CEATTLE/cannibalism/M.png", m_plot, 
+ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]], 
        width = 160, height = 70, units = "mm", dpi=300)
+
+# Examine mortality data
+M1 <- intrasp_run$quantities$M1
+
+M_data <- M[[2]]  # natural mortality data from the model
+
+# Just mortality for age 1
+M_age1 <- M_data %>% filter(Age == 1)  
+max(M_age1$M)
+min(M_age1$M)
+
+# Mean natural mortality across the time-series for predated ages
+M_mean <- M_data %>%
+  filter(Age < 6) %>%
+  group_by(Year) %>%
+  summarize(mean_M = mean(M))
+max(M_mean$mean_M)
+min(M_mean$mean_M)
