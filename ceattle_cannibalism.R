@@ -280,6 +280,26 @@ ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot,
        bg = "white", width=160, height=80, units="mm", dpi=300)
 
 
+### Plot realized consuption --------------------------------------------------
+b_consumed <- extract_byage(intrasp_run$quantities$B_eaten_as_prey, "CEATTLE - cannibalism", "biomass")[, -4]
+b_consumed$age <- as.integer(b_consumed$age)
+
+# Filter to only ages below 6 (the ages of hake consumed)
+b_consumed <- b_consumed %>% filter(age < 6)
+b_consumed$age <- as.factor(b_consumed$age)
+
+b_consumed$biomass <- b_consumed$biomass / 1000000
+
+b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=biomass, fill = age)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  ylab("Biomass consumed (mt)")
+b_consumed_plot
+
+# TODO: FIGURE OUT HOW TO GET RATIO OF PREY BIOMASS : PREDATOR BIOMASS
+
+
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
 survey_biom <- function(run, name) {
   srv <- data.frame(year = 1995:2019,
