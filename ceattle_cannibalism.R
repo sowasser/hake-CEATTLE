@@ -297,6 +297,23 @@ b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=biomass, fill = age)) +
   ylab("Biomass consumed (mt)")
 b_consumed_plot
 
+yearly_consumed <- b_consumed %>%
+  group_by(year) %>%
+  summarize(total_biomass = sum(biomass)) %>%
+  ungroup()
+
+total_biomass <- biomass %>% filter(type == "Total Biomass")
+
+yearly_consumed$total_biomass <- (yearly_consumed$total_biomass / total_biomass$value) / 1000000
+yearly_consumed$year <- as.numeric(as.character(yearly_consumed$year))
+yearly_b_plot <- ggplot(yearly_consumed, aes(x = year, y = total_biomass)) +
+  geom_line() +
+  ylab("biomass of prey / total biomass")
+yearly_b_plot
+
+ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot,
+       bg = "white", width=140, height=80, units="mm", dpi=300)
+
 # TODO: FIGURE OUT HOW TO GET RATIO OF PREY BIOMASS : PREDATOR BIOMASS
 
 
