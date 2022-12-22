@@ -160,10 +160,10 @@ location_yearly <- ggplot(data = world) +
   geom_sf() +
   geom_point(data = location_all, aes(x = longitude, y = latitude, colour = prey_name, size = n)) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
-  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
+  scale_x_continuous(breaks = seq(-135, -120, by = 10)) + 
   scale_y_continuous(breaks = seq(35, 55, by = 10)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab(" ") + ylab(" ") +
+  xlab(" ") + ylab(" ") + labs(color = "stomach content") +
   facet_wrap(~year, ncol = 5)
 
 location_overall <- ggplot(data = world) +
@@ -173,7 +173,7 @@ location_overall <- ggplot(data = world) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab(" ") + ylab(" ") + labs(color = "prey species")
+  xlab(" ") + ylab(" ") + labs(color = "stomach content")
 location_overall
 
 ggsave(filename = "plots/diet/locations_overall.png", location_overall, 
@@ -185,8 +185,8 @@ get_inset <- function(df) {
   # Create plot for the inset 
   plot <- ggplot(df, aes(x = as.factor(month), y = n, fill = prey_name)) +
     geom_bar(position = "stack", stat = "identity") +
-    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12)) +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12), drop = FALSE) +
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, drop = FALSE) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
