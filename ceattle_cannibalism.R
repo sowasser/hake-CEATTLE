@@ -315,6 +315,23 @@ ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b
        bg = "white", width=140, height=80, units="mm", dpi=300)
 
 # TODO: FIGURE OUT HOW TO GET RATIO OF PREY BIOMASS : PREDATOR BIOMASS
+plot_b_eaten_prop(intrasp_run)
+
+#' @param file name of a file to identified the files exported by the
+#'   function.
+#' @param Rceattle Single or list of Rceattle model objects exported from Rceattle
+#' @param model_names Names of models to be used in legend
+#' @param line_col Colors of models to be used for line color
+#' @param spnames Species names for legend
+#' @param species Which species to plot e.g. c(1,4). Default = NULL plots them all
+#' @param lwd Line width as specified by user
+#' @param right_adj Multiplier for to add to the right side of the figure for fitting the legend.
+#' @param minyr first year to plot
+#' @param mohns data.frame of mohn's rows extracted from retrospective
+#' @param incl_proj TRUE/FALSE include projections years
+#' @param incl_mean TRUE/FALSE include horizontal long term mean
+#' @param add_ci TRUE/FALSE, includes 95 percent confidence interval
+
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
