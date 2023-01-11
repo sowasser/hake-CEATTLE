@@ -280,7 +280,7 @@ ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot,
        bg = "white", width=160, height=80, units="mm", dpi=300)
 
 
-### Plot realized consuption --------------------------------------------------
+### Plot realized consumption -------------------------------------------------
 b_consumed <- extract_byage(intrasp_run$quantities$B_eaten_as_prey, "CEATTLE - cannibalism", "biomass")[, -4]
 b_consumed$age <- as.integer(b_consumed$age)
 
@@ -288,50 +288,32 @@ b_consumed$age <- as.integer(b_consumed$age)
 b_consumed <- b_consumed %>% filter(age < 6)
 b_consumed$age <- as.factor(b_consumed$age)
 
-b_consumed$biomass <- b_consumed$biomass / 1000000
-
-b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=biomass, fill = age)) +
+# Plot yearly biomass consumed by age
+b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=(biomass / 1000000), fill = age)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   scale_x_discrete(breaks = seq(1988, 2019, 3)) +
   ylab("Biomass consumed (mt)")
 b_consumed_plot
 
+# Plot ratio of biomass consumed to approximation of predator biomass (SSB)
+# Add ages together
 yearly_consumed <- b_consumed %>%
   group_by(year) %>%
   summarize(total_biomass = sum(biomass)) %>%
   ungroup()
 
-total_biomass <- biomass %>% filter(type == "Total Biomass")
+ssb <- biomass %>% filter(type == "SSB")
 
-yearly_consumed$total_biomass <- (yearly_consumed$total_biomass / total_biomass$value) / 1000000
+yearly_consumed$total_biomass <- (yearly_consumed$total_biomass / (ssb$value))
 yearly_consumed$year <- as.numeric(as.character(yearly_consumed$year))
 yearly_b_plot <- ggplot(yearly_consumed, aes(x = year, y = total_biomass)) +
   geom_line() +
-  ylab("biomass of prey / total biomass")
+  ylab("biomass of prey / SSB")
 yearly_b_plot
 
 ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot,
        bg = "white", width=140, height=80, units="mm", dpi=300)
-
-# TODO: FIGURE OUT HOW TO GET RATIO OF PREY BIOMASS : PREDATOR BIOMASS
-plot_b_eaten_prop(intrasp_run)
-
-#' @param file name of a file to identified the files exported by the
-#'   function.
-#' @param Rceattle Single or list of Rceattle model objects exported from Rceattle
-#' @param model_names Names of models to be used in legend
-#' @param line_col Colors of models to be used for line color
-#' @param spnames Species names for legend
-#' @param species Which species to plot e.g. c(1,4). Default = NULL plots them all
-#' @param lwd Line width as specified by user
-#' @param right_adj Multiplier for to add to the right side of the figure for fitting the legend.
-#' @param minyr first year to plot
-#' @param mohns data.frame of mohn's rows extracted from retrospective
-#' @param incl_proj TRUE/FALSE include projections years
-#' @param incl_mean TRUE/FALSE include horizontal long term mean
-#' @param add_ci TRUE/FALSE, includes 95 percent confidence interval
-
 
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
