@@ -16,33 +16,34 @@ theme_set(theme_sleek())
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
 intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-                                 inits = NULL, # Initial parameters = 0
+                                 inits = NULL,
+                                 # inits = intrasp_run$estimated_params, # Initial parameters = 0
                                  file = NULL, # Don't save
                                  # debug = 1, # 1 = estimate, 0 = don't estimate
                                  random_rec = FALSE, # No random selectivity
-                                 # niter = 5, # number of iterations
                                  suitMode = 0, # empirical suitability based on diet data
                                  updateM1 = TRUE,
                                  msmMode = 1, # Multi-species mode
                                  phase = "default")
 
-# Check mismatch between objective function & JNLL
+# For Convergence Warning 8: Check mismatch between objective function & JNLL
 intrasp_run$opt$objective
 intrasp_run$quantities$jnll
 
 intrasp_run$opt$AIC
 
 hake_nodiet <- hake_intrasp
-hake_nodiet$est_M1 <- 0  # Use base M1
+# hake_nodiet$est_M1 <- 0  # Use base M1
 nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-                                inits = NULL, # Initial parameters = 0
+                                inits = NULL,
+                                # inits = nodiet_run$estimated_params, # Initial parameters = 0
                                 file = NULL, # Don't save
                                 # debug = 1, # 1 = estimate, 0 = don't estimate
                                 random_rec = FALSE, # No random recruitment
-                                updateM1 = TRUE,
                                 msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
-# plot_biomass(nodiet_run, add_ci = TRUE)
+# Rceattle::plot_biomass(nodiet_run, add_ci = TRUE)
+Rceattle::plot_selectivity(nodiet_run)
 
 nodiet_run$opt$AIC
 
@@ -533,7 +534,8 @@ M <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxag
 M[[1]]  # mortality plot
 
 # Examine mortality data
-M1 <- intrasp_run$quantities$M1
+intrasp_run$quantities$M1
+nodiet_run$quantities$M1
 
 M_data <- M[[2]]  # natural mortality data from the model
 
@@ -559,17 +561,10 @@ min(M_mean$mean_M)
 # write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 # 
 # # Plots
-# ggsave(filename="plots/CEATTLE/cannibalism/popdy.png", popdy[[1]],
-#        width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]],
-#        bg = "transparent", width=150, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
-#        bg = "white", width=160, height=120, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot,
-#        bg = "white", width=160, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot,
-#        bg = "white", width=140, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", survey_plot,
-#        bg = "white", width=200, height=120, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]],
-#        width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdy.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], bg = "transparent", width=150, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot, bg = "white", width=160, height=120, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot, bg = "white", width=160, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot, bg = "white", width=140, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", survey_plot, bg = "white", width=200, height=120, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]], width = 160, height = 70, units = "mm", dpi=300)
