@@ -1,8 +1,8 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
-# devtools::install_github("grantdadams/Rceattle@dev")
-library(Rceattle)
+devtools::install_github("grantdadams/Rceattle@dev")
+# library(Rceattle)
 library(reshape2)
 library(dplyr)
 library(ggplot2)
@@ -19,20 +19,32 @@ intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                  inits = NULL, # Initial parameters = 0
                                  file = NULL, # Don't save
                                  # debug = 1, # 1 = estimate, 0 = don't estimate
-                                 random_rec = FALSE, # No random recruitment
+                                 random_rec = FALSE, # No random selectivity
+                                 # niter = 5, # number of iterations
+                                 suitMode = 0, # empirical suitability based on diet data
+                                 updateM1 = TRUE,
                                  msmMode = 1, # Multi-species mode
                                  phase = "default")
 
+# Check mismatch between objective function & JNLL
+intrasp_run$opt$objective
+intrasp_run$quantities$jnll
+
+intrasp_run$opt$AIC
+
 hake_nodiet <- hake_intrasp
-# hake_nodiet$est_M1 <- 0  # Use base M1
+hake_nodiet$est_M1 <- 0  # Use base M1
 nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 inits = NULL, # Initial parameters = 0
                                 file = NULL, # Don't save
                                 # debug = 1, # 1 = estimate, 0 = don't estimate
                                 random_rec = FALSE, # No random recruitment
+                                updateM1 = TRUE,
                                 msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
 # plot_biomass(nodiet_run, add_ci = TRUE)
+
+nodiet_run$opt$AIC
 
 # ### Rceattle diagnostics ----------------------------------------------------
 # plot_biomass(intrasp_run, add_ci = TRUE)
@@ -294,6 +306,7 @@ yearly_b_plot <- ggplot(yearly_consumed, aes(x = year, y = total_biomass)) +
   ylab("biomass of prey / SSB")
 yearly_b_plot
 
+# plot_b_eaten(intrasp_run)
 
 ### Compare survey biomass estimate from CEATTLE to true values ---------------
 survey_biom <- function(run, name) {
