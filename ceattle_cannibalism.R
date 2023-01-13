@@ -47,16 +47,16 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 nodiet_run$opt$AIC
 
 # ### Rceattle diagnostics ----------------------------------------------------
-# plot_biomass(intrasp_run, add_ci = TRUE)
-# plot_index(intrasp_run)
-# plot_catch(intrasp_run)
-# plot_selectivity(intrasp_run)
-# plot_mortality(intrasp_run)
-# plot_indexresidual(intrasp_run)
-# plot_logindex(intrasp_run)
-# plot_recruitment(intrasp_run, add_ci = TRUE)
-# plot_comp(intrasp_run)
-# plot_srv_comp(intrasp_run)
+# Rceattle::plot_biomass(intrasp_run, add_ci = TRUE)
+# Rceattle::plot_index(intrasp_run)
+# Rceattle::plot_catch(intrasp_run)
+Rceattle::plot_selectivity(intrasp_run)
+# Rceattle::plot_mortality(intrasp_run)
+# Rceattle::plot_indexresidual(intrasp_run)
+# Rceattle::plot_logindex(intrasp_run)
+# Rceattle::plot_recruitment(intrasp_run, add_ci = TRUE)
+# Rceattle::plot_comp(intrasp_run)
+# Rceattle::plot_srv_comp(intrasp_run)
 
 
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
@@ -153,11 +153,17 @@ plot_popdy <- function() {
   all_popdy$model <- factor(all_popdy$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
   
+  # Add bounds for error & set 0 as minimum for plotting
+  all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
+  all_popdy$min[all_popdy$min < 0] <- 0
+  all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
+
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
-    geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
+    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
@@ -553,9 +559,9 @@ min(M_mean$mean_M)
 # write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 # 
 # # Plots
-# ggsave(filename="plots/CEATTLE/cannibalism/popdy.png", popdy[[1]], 
+# ggsave(filename="plots/CEATTLE/cannibalism/popdy.png", popdy[[1]],
 #        width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], 
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]],
 #        bg = "transparent", width=150, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot,
 #        bg = "white", width=160, height=120, units="mm", dpi=300)
@@ -565,5 +571,5 @@ min(M_mean$mean_M)
 #        bg = "white", width=140, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", survey_plot,
 #        bg = "white", width=200, height=120, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]], 
+# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]],
 #        width = 160, height = 70, units = "mm", dpi=300)
