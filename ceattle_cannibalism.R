@@ -1,7 +1,7 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
-devtools::install_github("grantdadams/Rceattle@dev")
+# devtools::install_github("grantdadams/Rceattle@dev")
 # library(Rceattle)
 library(reshape2)
 library(dplyr)
@@ -15,43 +15,50 @@ theme_set(theme_sleek())
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
-intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-                                 inits = NULL,
-                                 # inits = intrasp_run$estimated_params, # Initial parameters = 0
-                                 file = NULL, # Don't save
-                                 # debug = 1, # 1 = estimate, 0 = don't estimate
-                                 random_rec = FALSE, # No random selectivity
-                                 suitMode = 0, # empirical suitability based on diet data
-                                 updateM1 = TRUE,
-                                 msmMode = 1, # Multi-species mode
-                                 phase = "default")
+# Run and fit the CEATTLE model -----------------------------------------------
+run_CEATTLE <- function(data, init, msm) {
+  run <- Rceattle::fit_mod(data_list = data,
+                           inits = init,
+                           file = NULL, # Don't save
+                           # debug = 1, # 1 = estimate, 0 = don't estimate
+                           random_rec = FALSE, # No random selectivity
+                           msmMode = msm, # Single-species mode - no predation mortality
+                           phase = "default")
+  return(run)
+}
 
-# For Convergence Warning 8: Check mismatch between objective function & JNLL
-intrasp_run$opt$objective
-intrasp_run$quantities$jnll
+fit_CEATTLE <- function(run) {
+  objective <- run$opt$objective
+  jnll <- run$quantities$jnll
+  K <- run$opt$number_of_coefficients[1]
+  AIC <- run$opt$AIC
+  gradient <- run$opt$max_gradient
+  
+  fit <- cbind(objective, jnll, K, AIC, gradient)
+  return(fit)
+}
 
-intrasp_run$opt$AIC
+# Multi-species model using cannibalism data
+intrasp_run <- run_CEATTLE(hake_intrasp, init = NULL, msm = 1)
+intrasp_fit <- fit_CEATTLE(intrasp_run)
 
+# No diet (single-species run)
+nodiet_init <- run_CEATTLE(hake_intrasp, init = NULL, msm = 0)
+nodiet_run <- run_CEATTLE(hake_intrasp, init = nodiet_init$estimated_params, msm = 0)
 hake_nodiet <- hake_intrasp
-# hake_nodiet$est_M1 <- 0  # Use base M1
-nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-                                inits = NULL,
-                                # inits = nodiet_run$estimated_params, # Initial parameters = 0
-                                file = NULL, # Don't save
-                                # debug = 1, # 1 = estimate, 0 = don't estimate
-                                random_rec = FALSE, # No random recruitment
-                                msmMode = 0, # Single-species mode - no predation mortality
-                                phase = "default")
-# Rceattle::plot_biomass(nodiet_run, add_ci = TRUE)
-Rceattle::plot_selectivity(nodiet_run)
+hake_nodiet$est_M1 <- 0
+nodiet_fixedM <- run_CEATTLE(hake_nodiet, init = nodiet_init$estimated_params, msm = 0)
 
-nodiet_run$opt$AIC
+nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)),
+                    cbind(model = "init = est", fit_CEATTLE(nodiet_run)),
+                    cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)))
 
-# ### Rceattle diagnostics ----------------------------------------------------
+
+### Rceattle diagnostic plots -------------------------------------------------
 # Rceattle::plot_biomass(intrasp_run, add_ci = TRUE)
 # Rceattle::plot_index(intrasp_run)
 # Rceattle::plot_catch(intrasp_run)
-Rceattle::plot_selectivity(intrasp_run)
+# Rceattle::plot_selectivity(intrasp_run)
 # Rceattle::plot_mortality(intrasp_run)
 # Rceattle::plot_indexresidual(intrasp_run)
 # Rceattle::plot_logindex(intrasp_run)
@@ -534,8 +541,10 @@ M <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxag
 M[[1]]  # mortality plot
 
 # Examine mortality data
-intrasp_run$quantities$M1
-nodiet_run$quantities$M1
+intrasp_run$quantities$M1  # 0.3057267
+nodiet_run$quantities$M1  # 0.2559013
+
+# Plot just M1 data
 
 M_data <- M[[2]]  # natural mortality data from the model
 
