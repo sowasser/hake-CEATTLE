@@ -60,6 +60,7 @@ DirichletDietTool2020/
 data/diet/CCTD/
 data/diet/FEAT/
 data/diet/Dirichlet/plots
+old scripts/
 
 # Ignore specific file types
 *.docx
