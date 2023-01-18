@@ -2,7 +2,6 @@
 # intraspecies predation
 
 # devtools::install_github("grantdadams/Rceattle@dev")
-library(Rceattle)
 library(reshape2)
 library(dplyr)
 library(scales)
@@ -14,14 +13,12 @@ theme_set(theme_sleek())
 
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
-# # Run CEATTLE with the values as they are in the data file
-# intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                  inits = NULL, # Initial parameters = 0
-#                                  file = NULL, # Don't save
-#                                  # debug = 1, # 1 = estimate, 0 = don't estimate
-#                                  random_rec = FALSE, # No random recruitment
-#                                  msmMode = 1, # Multispecies mode
-#                                  phase = "default")
+# # Run CEATTLE with no predation (single-species)
+# nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
+#                                 inits = NULL, # Initial parameters = 0
+#                                 file = NULL, # Don't save
+#                                 msmMode = 0, # Multispecies mode
+#                                 phase = "default")
 
 
 # Run CEATTLE with differing diet weight proportions --------------------------
@@ -39,15 +36,15 @@ prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = w
 colnames(prop)[3] <- c("observed data")
 prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
-stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  ylab("stomach proportion") + xlab("prey age") +
-  facet_wrap(~Pred_age, ncol = 3)
-stomach_props
-
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
-       width=140, height=150, units="mm", dpi=300)
+# stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+#   ylab("stomach proportion") + xlab("prey age") +
+#   facet_wrap(~Pred_age, ncol = 3)
+# stomach_props
+# 
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
+#        width=140, height=150, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
@@ -487,6 +484,7 @@ m_test <- ggpubr::ggarrange(plot_mortality_custom(Rceattle = run_wt05, type = 0,
                             plot_mortality_custom(Rceattle = run_wt50, type = 0, title = "50% cannibalism", maxage = 15),
                             plot_mortality_custom(Rceattle = run_wt75, type = 0, title = "75% cannibalism", maxage = 15),
                             ncol = 2, nrow = 2)
+# m_test
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", m_test, 
        width=200, height = 100, units = "mm", dpi=300)
