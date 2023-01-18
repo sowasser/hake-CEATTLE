@@ -42,6 +42,7 @@ fit_CEATTLE <- function(run) {
 
 # Multi-species model using cannibalism data
 intrasp_run <- run_CEATTLE(hake_intrasp, init = NULL, msm = 1)
+# intrasp_run <- run_CEATTLE(hake_intrasp, init = nodiet_run$estimated_params, msm = 1)
 intrasp_fit <- fit_CEATTLE(intrasp_run)[[1]]
 intrasp_summary <- fit_CEATTLE(intrasp_run)[[2]]
 
@@ -114,10 +115,7 @@ mean_SEM <- function(df1, df2, title) {
   return(c(title, mean_out, SEM))
 }
 
-mean_SEM_all <- rbind(mean_SEM(biomass[1:32, 4], ss3_biom[1:32, 4], "cannibalism - SS3, SSB"),
-                      mean_SEM(biomass[33:64, 4], ss3_biom[33:64, 4], "cannibalism - SS3, Total"),
-                      mean_SEM(recruitment, ss3_R[1:32, 2], "cannibalism - SS3, R"),
-                      mean_SEM(biomass[1:32, 4], nodiet_biomass[1:32, 4], "cannibalism - no diet, SSB"),
+mean_SEM_all <- rbind(mean_SEM(biomass[1:32, 4], nodiet_biomass[1:32, 4], "cannibalism - no diet, SSB"),
                       mean_SEM(biomass[33:64, 4], nodiet_biomass[33:64, 4], "cannibalism - no diet, Total"),
                       mean_SEM(recruitment, nodiet_R, "cannibalism - no diet, R"),
                       mean_SEM(nodiet_biomass[1:32, 4], ss3_biom[1:32, 4], "no diet - SS3, SSB"),
@@ -545,8 +543,8 @@ M <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxag
 M[[1]]  # mortality plot
 
 # Examine mortality data
-intrasp_run$quantities$M1  # 0.3057267
-nodiet_run$quantities$M1  # 0.2559013
+intrasp_run$quantities$M1  # 0.317
+nodiet_run$quantities$M1  # 0.257
 
 # Plot just M1 data
 
