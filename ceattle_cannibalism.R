@@ -161,7 +161,7 @@ plot_popdy <- function() {
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
-  all_popdy$type <- factor(all_popdy$type, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
+  all_popdy$type <- factor(all_popdy$type, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -194,12 +194,35 @@ plot_popdy <- function() {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
   
-  return(list(popdy_plot, ratio_plot))
+  # Plot the difference between model runs
+  ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
+  ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
+  assessment <- all_popdy %>% filter(model == "Assessment")
+
+  diff_intrasp <- rbind(cbind.data.frame(year = years,
+                                         type = ceattle_intrasp$type,
+                                         difference = ceattle_intrasp$value - ceattle_nodiet$value,
+                                         models = "cannibalism - single-species"),
+                        cbind.data.frame(year = years,
+                                         type = ceattle_nodiet$type,
+                                         difference = ceattle_nodiet$value - assessment$value,
+                                         models = "single-species - assessment"))
+  
+  diff_plot <- ggplot(diff_intrasp, aes(x=year, y=difference, color=models)) +
+    geom_line() +
+    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+    facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
+    theme(strip.background = element_blank(), strip.placement = "outside")
+  
+  return(list(popdy_plot, ratio_plot, diff_plot))
+
+    
 }
 
 popdy <- plot_popdy()
 popdy[[1]]
 popdy[[2]]
+popdy[[3]]
 
 
 ### Numbers-at-age for each model run -----------------------------------------
