@@ -35,8 +35,8 @@ fit_CEATTLE <- function(run) {
   gradient <- run$opt$max_gradient
   
   fit <- cbind(objective, jnll, K, AIC, gradient)
-  jnll_summary <- as.data.frame(intrasp_run$quantities$jnll_comp)
-  jnll_summary$sum <- rowSums(intrasp_run$quantities$jnll_comp)
+  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
+  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
   return(list(fit, jnll_summary))
 }
 
