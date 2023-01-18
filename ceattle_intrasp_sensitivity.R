@@ -139,14 +139,20 @@ test_plot_popdy <- function() {
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
-  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
+  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+  
+  # Add bounds for error & set 0 as minimum for plotting
+  all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
+  all_popdy$min[all_popdy$min < 0] <- 0
+  all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
 
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-    geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
+    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
@@ -247,19 +253,21 @@ mean_nbyage_test <- nbyage_test_all %>%
 # Add extra columns, reorder, and combine with popdy dataframe
 mean_nbyage_test$variable <- rep("Mean Age")
 mean_nbyage_test$error <- rep(0)
-mean_nbyage_test <- mean_nbyage_test[, c(1, 4, 3, 5, 2)]
+mean_nbyage_test$min <- rep(0)
+mean_nbyage_test$max <- rep(0)
+mean_nbyage_test <- mean_nbyage_test[, c(1, 4, 3, 5, 2, 6, 7)]
 
-popdy_meanage <- rbind(test_popdy[[1]], mean_nbyage_test) %>%
-  filter(variable != "SSB (mt)")
+popdy_meanage <- rbind(test_popdy[[1]], mean_nbyage_test)
 popdy_meanage$year <- as.integer(popdy_meanage$year)
 popdy_meanage$model <- factor(popdy_meanage$model)
 
 meanage_popdy_plot <- ggplot(popdy_meanage, aes(x=year, y=value, color = model, fill = model)) +
   geom_line(aes(linetype = model)) +
   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-  geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
+  geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  ylim(0, NA) +
   ylab(" ") +
   labs(color = "model") +
   facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
@@ -267,7 +275,7 @@ meanage_popdy_plot <- ggplot(popdy_meanage, aes(x=year, y=value, color = model, 
 meanage_popdy_plot
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
-       width=140, height=150, units="mm", dpi=300)
+       width=140, height=170, units="mm", dpi=300)
 
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------

@@ -73,13 +73,11 @@ fit_CEATTLE <- function(run) {
   return(list(fit, jnll_summary))
 }
 
-dirichlet_fit <- rbind(cbind(model = "all", fit_CEATTLE(run_all)[[1]]),
-                       cbind(model = "90s", fit_CEATTLE(run_90s)[[1]]),
+dirichlet_fit <- rbind(cbind(model = "90s", fit_CEATTLE(run_90s)[[1]]),
                        cbind(model = "recent", fit_CEATTLE(run_recent)[[1]]))
-dirichlet_summary <- cbind(fit_CEATTLE(run_all)[[2]],
-                           fit_CEATTLE(run_90s)[[2]][, 3],
+dirichlet_summary <- cbind(fit_CEATTLE(run_90s)[[2]],
                            fit_CEATTLE(run_recent)[[2]][, 3])[, -c(1:2)]
-colnames(dirichlet_summary) <- c("all", "90s", "recent")
+colnames(dirichlet_summary) <- c("90s", "recent")
 
 
 ### Plot population dynamics --------------------------------------------------
@@ -143,14 +141,20 @@ timing_plot_popdy <- function() {
                         mean_SEM("2005-2019", "all years", "Recruitment", 2005:2019))
   
   # Plot population dynamics
-  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (mt)", "Total Biomass (mt)", "Recruitment (millions)"))
+  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+  
+  # Add bounds for error & set 0 as minimum for plotting
+  all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
+  all_popdy$min[all_popdy$min < 0] <- 0
+  all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-    geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
+    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+    ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
