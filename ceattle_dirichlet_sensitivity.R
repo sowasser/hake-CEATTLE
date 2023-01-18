@@ -11,7 +11,7 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221216.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -57,6 +57,29 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 random_rec = FALSE, # No random recruitment
                                 msmMode = 0, # Single-species mode
                                 phase = "default")
+
+
+# Check fit of CEATTLE model --------------------------------------------------
+fit_CEATTLE <- function(run) {
+  objective <- run$opt$objective
+  jnll <- run$quantities$jnll
+  K <- run$opt$number_of_coefficients[1]
+  AIC <- run$opt$AIC
+  gradient <- run$opt$max_gradient
+  
+  fit <- cbind(objective, jnll, K, AIC, gradient)
+  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
+  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
+  return(list(fit, jnll_summary))
+}
+
+dirichlet_fit <- rbind(cbind(model = "all", fit_CEATTLE(run_all)[[1]]),
+                       cbind(model = "90s", fit_CEATTLE(run_90s)[[1]]),
+                       cbind(model = "recent", fit_CEATTLE(run_recent)[[1]]))
+dirichlet_summary <- cbind(fit_CEATTLE(run_all)[[2]],
+                           fit_CEATTLE(run_90s)[[2]][, 3],
+                           fit_CEATTLE(run_recent)[[2]][, 3])[, -c(1:2)]
+colnames(dirichlet_summary) <- c("all", "90s", "recent")
 
 
 ### Plot population dynamics --------------------------------------------------
@@ -403,4 +426,3 @@ m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all,
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_M.png", 
        m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
-

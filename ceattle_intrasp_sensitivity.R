@@ -12,7 +12,7 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-hake_intrasp <- Rceattle::read_data( file = "data/hake_intrasp_221216.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
 # # Run CEATTLE with the values as they are in the data file
 # intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
@@ -69,6 +69,31 @@ run_wt05 <- run_ceattle(wt05, hake_intrasp)
 run_wt10 <- run_ceattle(wt10, hake_intrasp)
 run_wt50 <- run_ceattle(wt50, hake_intrasp)
 run_wt75 <- run_ceattle(wt75, hake_intrasp)
+
+
+# Check fit of CEATTLE model --------------------------------------------------
+fit_CEATTLE <- function(run) {
+  objective <- run$opt$objective
+  jnll <- run$quantities$jnll
+  K <- run$opt$number_of_coefficients[1]
+  AIC <- run$opt$AIC
+  gradient <- run$opt$max_gradient
+  
+  fit <- cbind(objective, jnll, K, AIC, gradient)
+  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
+  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
+  return(list(fit, jnll_summary))
+}
+
+sensitivity_fit <- rbind(cbind(model = "wt05", fit_CEATTLE(run_wt05)[[1]]),
+                         cbind(model = "wt10", fit_CEATTLE(run_wt10)[[1]]),
+                         cbind(model = "wt50", fit_CEATTLE(run_wt50)[[1]]),
+                         cbind(model = "wt75", fit_CEATTLE(run_wt75)[[1]]))
+sensitivity_summary <- cbind(fit_CEATTLE(run_wt05)[[2]],
+                             fit_CEATTLE(run_wt10)[[2]][, 3],
+                             fit_CEATTLE(run_wt50)[[2]][, 3],
+                             fit_CEATTLE(run_wt75)[[2]][, 3])[, -c(1:2)]
+colnames(sensitivity_summary) <- c("wt05", "wt10", "wt50", "wt75")
 
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
