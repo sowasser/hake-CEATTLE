@@ -35,12 +35,15 @@ fit_CEATTLE <- function(run) {
   gradient <- run$opt$max_gradient
   
   fit <- cbind(objective, jnll, K, AIC, gradient)
-  return(fit)
+  jnll_summary <- as.data.frame(intrasp_run$quantities$jnll_comp)
+  jnll_summary$sum <- rowSums(intrasp_run$quantities$jnll_comp)
+  return(list(fit, jnll_summary))
 }
 
 # Multi-species model using cannibalism data
 intrasp_run <- run_CEATTLE(hake_intrasp, init = NULL, msm = 1)
-intrasp_fit <- fit_CEATTLE(intrasp_run)
+intrasp_fit <- fit_CEATTLE(intrasp_run)[[1]]
+intrasp_summary <- fit_CEATTLE(intrasp_run)[[2]]
 
 # No diet (single-species run)
 nodiet_init <- run_CEATTLE(hake_intrasp, init = NULL, msm = 0)
@@ -49,9 +52,10 @@ hake_nodiet <- hake_intrasp
 hake_nodiet$est_M1 <- 0
 nodiet_fixedM <- run_CEATTLE(hake_nodiet, init = nodiet_init$estimated_params, msm = 0)
 
-nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)),
-                    cbind(model = "init = est", fit_CEATTLE(nodiet_run)),
-                    cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)))
+nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)[[1]]),
+                    cbind(model = "init = est", fit_CEATTLE(nodiet_run)[[1]]),
+                    cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)[[1]]))
+nodiet_summary <- fit_CEATTLE(nodiet_run)[[2]]
 
 
 ### Rceattle diagnostic plots -------------------------------------------------
