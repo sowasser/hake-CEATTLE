@@ -430,5 +430,12 @@ m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all,
                                        ncol = 2, nrow = 2, 
                                        layout_matrix = rbind(c(1,1), c(2,3)))
 
+# # Checking limits of the z-axis, sneakily.
+# no_zlim <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all, type = 0, title = "all years", maxage = 15),
+#                                    plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1988-1999", maxage = 15) +
+#                                      scale_x_continuous(expand = c(0, 0), breaks = c(1988, 1992, 1996)),
+#                                    plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15, zlim = c(0, 0.19)),
+#                                    ncol = 2, nrow = 2, layout_matrix = rbind(c(1,1), c(2,3)))
+
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_M.png", 
        m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
