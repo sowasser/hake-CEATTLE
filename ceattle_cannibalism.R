@@ -585,6 +585,19 @@ max(M_mean$mean_M)
 min(M_mean$mean_M)
 
 
+### Suitability ---------------------------------------------------------------
+suitability <- intrasp_run$quantities$suit_main
+
+
+### Reference points ----------------------------------------------------------
+DynamicSB0 <- intrasp_run$quantities$DynamicSB0
+DynamicB0 <- cbind.data.frame(year = years, B0 = intrasp_run$quantities$DynamicB0[1:32])
+
+ggplot(DynamicB0, aes(x = year, y = B0)) +
+  geom_line()
+  
+
+
 ### Save data & plots (when not experimenting) --------------------------------
 # # Data
 # write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)

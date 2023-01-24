@@ -13,6 +13,9 @@ survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
 summer_ROMS <- read.csv("data/temperature/ROMS_summer_mean.csv")
 ROMS <- read.csv("data/temperature/ROMS_mean.csv")
 
+min(ROMS$mean_temp)
+max(ROMS$mean_temp)
+
 missing_years <- c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
                    2014, 2016, 2018, 2020)
 
@@ -113,6 +116,7 @@ means <- cbind(means, c(rep("ROMS", length(9:40)),
                         rep("survey", 13), 
                         rep("kriged, biomass weighted", 12)))
 colnames(means)[3] <- "dataset"
+means$dataset <- factor(means$dataset, levels = c("ROMS", "survey", "kriged, biomass weighted"))
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
