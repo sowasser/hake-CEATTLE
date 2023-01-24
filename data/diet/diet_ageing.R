@@ -36,7 +36,7 @@ like <- function(logLinf,logK,a0,logSigma) {
   return(NegLogL)
 }  
 
-start <- list(logLinf=log(100),logK=log(0.2),a0=0,logSigma=5)
+start <- list(logLinf=log(100),logK=log(0.2),a0=1,logSigma=5)
 fixed <- NULL
 Ages <- age_length$Age
 Lengths <- age_length$Length
@@ -60,6 +60,48 @@ predicted_data <- data.frame(hake_lengths, predicted_ages)
 ggplot(predicted_data, aes(x = hake_lengths, y = predicted_ages)) +
   geom_line() +
   geom_point(data = age_length, aes(x = Lengths, y = Age))
+
+
+# Try different parameterization from Kiva in stock assess class --------------
+test <- FSA::vbStarts(Length_cm ~ Age, data = maturity, param = "Schnute", ages2use = c(1, 15))
+
+vbgf.nls2 <- nls(Length_cm ~ la1 + (la2 - la1) * (1-exp(-k*(Age-1))) / (1-exp(-k*14)), 
+                 data = maturity, 
+                 start = list(la1 = 24, 
+                              la2 = 56, 
+                              k = 0.3))
+summary(vbgf.nls2)
+
+plot(fitted(vbgf.nls2), resid(vbgf.nls2))
+abline(h=0)
+
+nls <- coef(vbgf.nls2)
+
+ggplot(maturity) +
+  geom_point(aes(y = Age, x = Length_cm), alpha = 0.25) +
+  geom_line(aes(y = Age, x = nls[1] + (nls[2] - nls[1]) * (1-exp(-nls[3] * (Age - 1))) /
+                  (1-exp(-nls[3]*14))))
+
+k <- nls[3]
+la1 <- nls[1]
+la2 <- nls[2]
+pred_a <- (log(((all_pred$FL_cm * (1 - exp(-k * 14))) / (la1 + (la2 - la1))) -1) / -k) + 1  # NOT WORKING
+
+vbgf.loglike <- function(log.pars, dat, a1, a2) {
+  pars <- exp(log.pars)
+  
+  l.pred <- pars["la1"] + (pars["la2"] - pars["la1"]) * 
+    (1-exp(-pars["k"]*(dat$Age - a1))) / 
+    (1-exp(-pars["k"]*(a2-a1)))
+  
+  nll <- -dlnorm(x = dat$Length_cm, meanlog = log(l.pred) - pars['cv']^2, sdlog = pars['cv'], log = TRUE) %>%
+    sum()
+  return(nll)
+}
+
+dat <- filter(maturity, !is.na(Age))
+pars.init <- log(c(la1 = 24, la2 = 56, k = 0.3, cv = 0.4))
+vgbf.optim <- optim(pars.init, vbgf.loglike, dat=maturity, a1=1, a2=10)  # NOT WORKING
 
 
 ### Calculate predator ages ---------------------------------------------------
