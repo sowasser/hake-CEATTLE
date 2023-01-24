@@ -29,13 +29,13 @@ dirichlet_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
 dirichlet_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
-run_ceattle <- function(df, start, end, proj) {
+run_ceattle <- function(df, start, end, proj, init) {
   hake_intrasp$UobsWtAge <- df
   hake_intrasp$styr <- start
   hake_intrasp$endyr <- end
   hake_intrasp$projyr <- proj
   ceattle <- Rceattle::fit_mod(data_list = hake_intrasp,
-                               inits = NULL, # Initial parameters = 0
+                               inits = init, # Initial parameters = 0
                                file = NULL, # Don't save
                                # debug = 1, # 1 = estimate, 0 = don't estimate
                                random_rec = FALSE, # No random recruitment
@@ -45,9 +45,9 @@ run_ceattle <- function(df, start, end, proj) {
 }
 
 # Run low-cannibalism models
-run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2019)
-run_90s <- run_ceattle(dirichlet_90s, 1988, 1999, 1999)
-run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019)
+run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2019, init = NULL)
+run_90s <- run_ceattle(dirichlet_90s, 1988, 1999, 1999, init = NULL)
+run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019, init = NULL)
 
 # # Run CEATTLE with no diet
 # nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,

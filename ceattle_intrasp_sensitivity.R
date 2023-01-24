@@ -48,10 +48,10 @@ prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE
-run_ceattle <- function(wt, df) {
+run_ceattle <- function(wt, df, init) {
   df$UobsWtAge$Stomach_proportion_by_weight <- wt
   ceattle <- Rceattle::fit_mod(data_list = df,
-                               inits = NULL, # Initial parameters = 0
+                               inits = init, # Initial parameters = 0
                                file = NULL, # Don't save
                                # debug = 1, # 1 = estimate, 0 = don't estimate
                                random_rec = FALSE, # No random recruitment
@@ -62,10 +62,10 @@ run_ceattle <- function(wt, df) {
 
 # Run low-cannibalism models
 run_intrasp <- run_ceattle(hake_intrasp$UobsWtAge$Stomach_proportion_by_weight, hake_intrasp)
-run_wt05 <- run_ceattle(wt05, hake_intrasp)
-run_wt10 <- run_ceattle(wt10, hake_intrasp)
-run_wt50 <- run_ceattle(wt50, hake_intrasp)
-run_wt75 <- run_ceattle(wt75, hake_intrasp)
+run_wt05 <- run_ceattle(wt05, hake_intrasp, init = NULL)
+run_wt10 <- run_ceattle(wt10, hake_intrasp, init = NULL)
+run_wt50 <- run_ceattle(wt50, hake_intrasp, init = NULL)
+run_wt75 <- run_ceattle(wt75, hake_intrasp, init = run_wt50$estimated_params)  # can help with convergence
 
 
 # Check fit of CEATTLE model --------------------------------------------------

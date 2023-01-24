@@ -569,8 +569,6 @@ M[[1]]  # mortality plot
 intrasp_run$quantities$M1  # 0.317
 nodiet_run$quantities$M1  # 0.257
 
-# Plot just M1 data
-
 M_data <- M[[2]]  # natural mortality data from the model
 
 # Just mortality for age 1
