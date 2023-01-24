@@ -307,6 +307,7 @@ ggsave(filename = "plots/diet/Non-hake/CSL_hake_yearly.png", sealion_hake[[7]],
 ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[8]], 
        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
+# Sea lion prey size
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
   ggdist::stat_slab(aes(thickness = after_stat(pdf*n)), scale = 0.7) +
   ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
@@ -315,6 +316,24 @@ CSL_hake_prey_size
 
 ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
        bg = "transparent", width=120, height=80, units="mm", dpi=300)
+
+# Sea lion - hake predation monthly
+CSL_hake_monthly <- sealion_hake[[4]] %>%
+  group_by(Year, Month, type) %>%
+  summarize(n = n()) %>%
+  filter(!is.na(Year))
+CSL_hake_monthly$Month <- factor(CSL_hake_monthly$Month)
+
+monthly_plot <- ggplot(CSL_hake_monthly, aes(x = Month, y = n, fill = type)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_x_discrete(breaks = c(1, 3, 5, 7, 9, 11)) +
+  ylab("prey items (n)") +
+  facet_wrap(~Year)
+monthly_plot
+
+ggsave(filename = "plots/diet/Non-hake/CSL_hake_monthly.png", monthly_plot, 
+       bg = "transparent", width=200, height=150, units="mm", dpi=300)
 
 # Subset of diet for CA sea lion predator & ATF prey 
 sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")
