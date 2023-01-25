@@ -49,7 +49,7 @@ run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2019, init = NULL)
 run_90s <- run_ceattle(dirichlet_90s, 1988, 1999, 1999, init = NULL)
 run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019, init = NULL)
 
-# # Run CEATTLE with no diet
+# # Run CEATTLE with no diet - for convergence issues
 # nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 #                                 inits = NULL, # Initial parameters = 0
 #                                 file = NULL, # Don't save
@@ -180,20 +180,26 @@ timing_plot_popdy <- function() {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     ylab("SSB/Biomass")
 
-  return(list(mean_SEM_all, popdy_plot, ratio_plot))
+  return(list(all_popdy, mean_SEM_all, popdy_plot, ratio_plot))
 }
 
 timing_popdy <- timing_plot_popdy()
-mean_SEM <- timing_popdy[[1]]
-
-timing_popdy[[2]]
-
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[2]], 
-       width=140, height=150, units="mm", dpi=300)
+mean_SEM <- timing_popdy[[2]]
 
 timing_popdy[[3]]
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", timing_popdy[[3]], 
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[3]], 
+       width=140, height=150, units="mm", dpi=300)
+
+timing_popdy[[4]]
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", timing_popdy[[4]], 
        width=150, height=80, units="mm", dpi=300)
+
+# Calculate reference points 
+DynamicB0_recent <- c(run_recent$quantities$DynamicB0[1:length(2005:2019)])
+SSB_recent <-  run_recent$quantities$biomassSSB * 2
+
+SSB_recent[15] / DynamicB0_recent[15] # 2019 value
 
 
 # Numbers-at-age for each model run -------------------------------------------

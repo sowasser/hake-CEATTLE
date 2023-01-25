@@ -225,6 +225,22 @@ popdy[[2]]
 popdy[[3]]
 
 
+### Suitability ---------------------------------------------------------------
+suitability <- intrasp_run$quantities$suit_main
+
+
+### Reference points ----------------------------------------------------------
+# Relative SSB
+DynamicB0 <- cbind.data.frame(year = years, B0 = intrasp_run$quantities$DynamicB0[1:32])
+SSB <- biomass %>% filter(type == "SSB")
+relativeSSB <- cbind.data.frame(year = years, 
+                                relativeSSB = SSB$value / intrasp_run$quantities$DynamicB0[1:32])
+relativeSSB[31,2]  # 2019 value
+
+# Probability of SSB above target
+intrasp_run$quantities$depletionSSB
+
+
 ### Numbers-at-age for each model run -----------------------------------------
 # Extract numbers at age for cannibalism model run
 extract_byage <- function(result, name, type) {
@@ -583,19 +599,6 @@ M_mean <- M_data %>%
   summarize(mean_M = mean(M))
 max(M_mean$mean_M)
 min(M_mean$mean_M)
-
-
-### Suitability ---------------------------------------------------------------
-suitability <- intrasp_run$quantities$suit_main
-
-
-### Reference points ----------------------------------------------------------
-DynamicSB0 <- intrasp_run$quantities$DynamicSB0
-DynamicB0 <- cbind.data.frame(year = years, B0 = intrasp_run$quantities$DynamicB0[1:32])
-
-ggplot(DynamicB0, aes(x = year, y = B0)) +
-  geom_line()
-  
 
 
 ### Save data & plots (when not experimenting) --------------------------------
