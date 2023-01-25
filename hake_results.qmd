@@ -1,8 +1,7 @@
 ---
-title: "hake results"
 format:
   docx:
-    reference-doc: custom_template_new.docx
+    reference-doc: custom_template.docx
 ---
 
 ![**Figure 1**: Frequency of hake stomachs collected from 1980-2020, containing Pacific hake (in green) or only other food items (in purple).](./plots/diet/hake_cannibalism.png)
@@ -11,14 +10,14 @@ format:
 
 ![**Figure 3**: Hake stomachs containing Pacific hake (in green) or only other food items (in purple) by location per year and by sampling month per year.](./plots/diet/locations_timing.png)
 
-![**Figure 4**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) for Pacific hake from CEATTLE model in single-species mode with no predation, from the CEATTLE model in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/popdyn.png)
+![**Figure 4**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from CEATTLE model in single-species mode with no predation, from the CEATTLE model in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/popdyn.png)
 
 ![**Figure 5**: Numbers-at-age from the CEATTLE model with the average cannibalism data for the entire period and from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/nbyage.png)
 
 ![**Figure 6**: Residual (M1) and predation (M2) mortality by age and year for the CEATTLE model with the cannibalism data for the entire period.](./plots/CEATTLE/cannibalism/M.png)
 
-![**Figure 7**: Spawning stock biomass (Mt), Total biomass (Mt), recruitment (millions), and mean age for the CEATTLE model using the mean observed cannibalism data and the observed data scaled to varying proportions (0.5% to 75%).](./plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png)
+![**Figure 7**: Spawning stock biomass (Mt), Total biomass (Mt), and recruitment (millions) with 95% confidence interval (shaded region), and mean age for the CEATTLE model using the mean observed cannibalism data and the observed data scaled to varying proportions (0.5% to 75%).](./plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png)
 
-![**Figure 8**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) for Pacific hake from the CEATTLE model with the estimate of mean cannibalism for the entire period, for 1988-1999 with the mean observed cannibalism data for that period, and for 2005-2019 with the with the mean observed cannibalism data for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
+![**Figure 8**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from the CEATTLE model with the estimate of mean cannibalism for the entire period, for 1988-1999 with the mean observed cannibalism data for that period, and for 2005-2019 with the with the mean observed cannibalism data for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png)
 
 ![**Figure 9**: Residual (M1) and predation (M2) mortality by age and year for the CEATTLE model with the estimate of mean cannibalism for the entire period, for 1988-1999 with the mean observed cannibalism data for that period, and for 2005-2019 with the with the mean observed cannibalism data for that period.](./plots/CEATTLE/cannibalism/Testing/dirichlet_M.png)
