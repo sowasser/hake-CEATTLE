@@ -609,7 +609,7 @@ min(M_mean$mean_M)
 # write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 # 
 # # Plots
-# ggsave(filename="plots/CEATTLE/cannibalism/popdy.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], bg = "transparent", width=150, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot, bg = "white", width=160, height=120, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot, bg = "white", width=160, height=80, units="mm", dpi=300)

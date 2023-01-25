@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
  &nbsp;
 
-![**Figure 4**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) for Pacific hake from CEATTLE model in single-species mode with no predation, from the CEATTLE model in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/popdy.png)
+![**Figure 4**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) for Pacific hake from CEATTLE model in single-species mode with no predation, from the CEATTLE model in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/popdyn.png)
 
  &nbsp;
 
