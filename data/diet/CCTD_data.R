@@ -244,26 +244,28 @@ hake_hake[[6]]  # top prey species overall
 hake_hake[[7]]  # yearly predation by type - something wrong here!
 # hake_hake[[8]]  # overall locations of predation by type
 
+prey_species <- "Pacific Hake"
 high_wt_yearly <- hake_hake[[5]] %>%
   group_by(Year, Prey_Com_Name) %>%
   summarize(highest = sum(Prey_Weight_g)) %>%
-  slice_max(n = 10, order_by = highest)
+  slice_max(n = 3, order_by = highest)
 
 prey_wt_yearly <- ggplot(high_wt_yearly, 
-                         aes(x = reorder(Prey_Com_Name, highest), y = highest, 
+                         aes(x = reorder(Prey_Com_Name, highest), y = highest/1000, 
                              fill = ifelse(Prey_Com_Name == prey_species, "highlighted", "normal"))) +
   geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
   coord_flip() +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
-  xlab(" ") + ylab("prey weight (g)") +
-  facet_wrap(~ Year, scales = "free", ncol = 3)
+  xlab(" ") + ylab("prey weight (kg)") +
+  scale_y_continuous(breaks = c(1, 3, 5)) +
+  facet_wrap(~ Year, ncol = 12)
 prey_wt_yearly
 
 
 ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[6]], 
        bg = "transparent", width=180, height=70, units="mm", dpi=300)
 ggsave(filename = "plots/diet/hake_prey_yearly.png", prey_wt_yearly, 
-       bg = "transparent", width=230, height=160, units="mm", dpi=300)
+       bg = "transparent", width=250, height=130, units="mm", dpi=300)
 # ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[7]], 
 #        bg = "transparent", width=160, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[8]], 

@@ -44,7 +44,7 @@ output:
 
  &nbsp;  
 
-![**Figure S.11**: Annual top hake prey by weight in hake stomachs within the CCTD by year of sampling.](./plots/diet/hake_prey_yearly.png)
+![**Figure S.11**: Annual hake prey by weight (top three species) in hake stomachs within the CCTD by year of sampling.](./plots/diet/hake_prey_yearly.png)
 
  &nbsp;  
 
