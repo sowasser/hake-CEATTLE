@@ -225,10 +225,6 @@ popdy[[2]]
 popdy[[3]]
 
 
-### Suitability ---------------------------------------------------------------
-suitability <- intrasp_run$quantities$suit_main
-
-
 ### Reference points ----------------------------------------------------------
 # Relative SSB
 DynamicB0 <- cbind.data.frame(year = years, B0 = intrasp_run$quantities$DynamicB0[1:32])
@@ -240,6 +236,29 @@ relativeSSB[31,2]  # 2019 value
 # Probability of SSB above target
 intrasp_run$quantities$depletionSSB
 
+
+### Suitability ---------------------------------------------------------------
+suitability <- as.data.frame(as.table(intrasp_run$quantities$suit_main)) %>%
+  filter(Var1 == "A" & Var2 == "A")
+
+suitability <- suitability[, 3:6]
+suitability$Var3 <- factor(suitability$Var3, labels = c(1:15))
+suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:15)))
+suitability$Var5 <- factor(suitability$Var5, labels = years)
+
+colnames(suitability) <- c("pred_age", "prey_age", "year", "value")
+suitability <- suitability %>% filter(prey_age < 6)
+suitability$prey_age <- factor(suitability$prey_age)
+suitability <- suitability %>% 
+  group_by(pred_age, prey_age) %>%
+  summarize(value = mean(value))
+
+suit_plot <- ggplot(suitability, aes(x = pred_age, y = value, fill = prey_age)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, name = "prey age") +
+  xlab("predator age") + ylab("suitability") 
+suit_plot
+                          
 
 ### Numbers-at-age for each model run -----------------------------------------
 # Extract numbers at age for cannibalism model run
@@ -609,8 +628,9 @@ min(M_mean$mean_M)
 # write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 # 
 # # Plots
-ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], bg = "transparent", width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", suit_plot, bg = "transparent", width=150, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot, bg = "white", width=160, height=120, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot, bg = "white", width=160, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot, bg = "white", width=140, height=80, units="mm", dpi=300)
