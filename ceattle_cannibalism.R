@@ -233,8 +233,19 @@ relativeSSB <- cbind.data.frame(year = years,
                                 relativeSSB = SSB$value / intrasp_run$quantities$DynamicB0[1:32])
 relativeSSB[31,2]  # 2019 value
 
-# Probability of SSB above target
-intrasp_run$quantities$depletionSSB
+# Run CEATTLE with an HCR to see reference points
+intrasp_run_Fspr <- Rceattle::fit_mod(data_list = intrasp_run$data_list,
+                                      inits = intrasp_run$estimated_params, 
+                                      estimateMode = 1,  # hindcast model only
+                                      HCR = Rceattle::build_hcr(HCR = 3, 
+                                                                FsprTarget = 0.4, # 0.75 * F40%
+                                                                # FsprLimit = 0.4,
+                                                                Plimit = 0.2))
+intrasp_run_Fspr$quantities$B0
+intrasp_run_Fspr$quantities$SB0
+intrasp_run_Fspr$quantities$Flimit # F that gives SPR40%
+intrasp_run_Fspr$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
+intrasp_run_Fspr$quantities$Ftarget
 
 
 ### Suitability ---------------------------------------------------------------
