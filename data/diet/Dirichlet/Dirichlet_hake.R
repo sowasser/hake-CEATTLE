@@ -597,10 +597,15 @@ comp2_plot
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
        bg = "transparent", width=170, height=50, units="mm", dpi=300)
 
-# Find maximum proportion for each period
-max_prop <- comp2 %>%
-  group_by(data, pred_age) %>%
-  summarize(max = sum(prop)) %>%
-  ungroup() %>%
+
+### Find mean and maximum proportion for each time period ---------------------
+means <- comp2 %>% group_by(data, pred_age) %>% 
+  summarize(total_prop = sum(prop)) %>%
+  ungroup %>%
   group_by(data) %>%
-  summarize(max = max(max))
+  summarize(mean = (mean(total_prop) * 100))
+maxs <- comp2 %>% group_by(data, pred_age) %>% 
+  summarize(total_prop = sum(prop)) %>%
+  ungroup %>%
+  group_by(data) %>%
+  summarize(max = (max(total_prop) * 100)) 
