@@ -337,6 +337,17 @@ monthly_plot
 ggsave(filename = "plots/diet/Non-hake/CSL_hake_monthly.png", monthly_plot, 
        bg = "transparent", width=150, height=170, units="mm", dpi=300)
 
+# Monthly predation overall
+overall_monthly <- ggplot(CSL_hake_monthly, aes(x = Month, y = n, fill = type)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("prey items (n)")
+overall_monthly
+
+ggsave(filename = "plots/diet/Non-hake/CSL_hake_monthly_overall.png", overall_monthly, 
+       bg = "transparent", width=120, height=80, units="mm", dpi=300)
+
+
 # Subset of diet for CA sea lion predator & ATF prey 
 sealion_ATF <- combine_diet(type = "scat", "California Sea Lion", "Arrowtooth Flounder", "ATF predation")
 CSL_prey_ATF <- sealion_ATF[[3]]  # no CA sea lion predation on ATF
