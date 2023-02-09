@@ -58,6 +58,8 @@ nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)[[1]]),
                     cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)[[1]]))
 nodiet_summary <- fit_CEATTLE(nodiet_run)[[2]]
 
+# nodiet_run <- nodiet_fixedM  # set up to look at no diet run w/o updating M1
+
 
 ### Rceattle diagnostic plots -------------------------------------------------
 # Rceattle::plot_biomass(intrasp_run, add_ci = TRUE)
@@ -372,7 +374,7 @@ b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=(biomass / 1000000), fill = 
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-  ylab("Biomass consumed (mt)")
+  ylab("Biomass consumed (Mt)")
 b_consumed_plot
 
 # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
@@ -644,6 +646,7 @@ min(M_mean$mean_M)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", suit_plot, bg = "transparent", width=150, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot, bg = "white", width=160, height=120, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot, bg = "white", width=160, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_consumed.png", b_consumed_plot, bg = "white", width=140, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot, bg = "white", width=140, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", survey_plot, bg = "white", width=200, height=120, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]], width = 160, height = 70, units = "mm", dpi=300)
