@@ -15,6 +15,9 @@ theme_set(theme_sleek())
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
+# Set up for M1 = 0.21
+hake_intrasp$est_M1 <- 0
+
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, init, msm) {
   run <- Rceattle::fit_mod(data_list = data,
@@ -49,16 +52,14 @@ intrasp_summary <- fit_CEATTLE(intrasp_run)[[2]]
 # No diet (single-species run)
 nodiet_init <- run_CEATTLE(hake_intrasp, init = NULL, msm = 0)
 nodiet_run <- run_CEATTLE(hake_intrasp, init = nodiet_init$estimated_params, msm = 0)
-hake_nodiet <- hake_intrasp
-hake_nodiet$est_M1 <- 0
-nodiet_fixedM <- run_CEATTLE(hake_nodiet, init = nodiet_init$estimated_params, msm = 0)
-
-nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)[[1]]),
-                    cbind(model = "init = est", fit_CEATTLE(nodiet_run)[[1]]),
-                    cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)[[1]]))
-nodiet_summary <- fit_CEATTLE(nodiet_run)[[2]]
-
-# nodiet_run <- nodiet_fixedM  # set up to look at no diet run w/o updating M1
+# hake_nodiet <- hake_intrasp
+# hake_nodiet$est_M1 <- 0
+# nodiet_fixedM <- run_CEATTLE(hake_nodiet, init = nodiet_init$estimated_params, msm = 0)
+# 
+# nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)[[1]]),
+#                     cbind(model = "init = est", fit_CEATTLE(nodiet_run)[[1]]),
+#                     cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)[[1]]))
+# nodiet_summary <- fit_CEATTLE(nodiet_run)[[2]]
 
 
 ### Rceattle diagnostic plots -------------------------------------------------
@@ -225,6 +226,11 @@ popdy <- plot_popdy()
 popdy[[1]]
 popdy[[2]]
 popdy[[3]]
+
+
+### Look at M1 ----------------------------------------------------------------
+intrasp_run$quantities$M1  # 0.317
+nodiet_run$quantities$M1  # 0.257
 
 
 ### Reference points ----------------------------------------------------------
@@ -613,10 +619,6 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
 M <- plot_mortality_custom(Rceattle = intrasp_run, type = 0, title = NULL, maxage = 15, zlim = c(0,1.5)) 
 M[[1]]  # mortality plot
 
-# Examine mortality data
-intrasp_run$quantities$M1  # 0.317
-nodiet_run$quantities$M1  # 0.257
-
 M_data <- M[[2]]  # natural mortality data from the model
 
 # Just mortality for age 1
@@ -641,7 +643,7 @@ min(M_mean$mean_M)
 # write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
 # 
 # # Plots
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_fixedM1.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], bg = "transparent", width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", suit_plot, bg = "transparent", width=150, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot, bg = "white", width=160, height=120, units="mm", dpi=300)
