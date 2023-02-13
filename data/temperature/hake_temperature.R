@@ -16,8 +16,10 @@ ROMS <- read.csv("data/temperature/ROMS_mean.csv")
 min(ROMS$mean_temp)
 max(ROMS$mean_temp)
 
-missing_years <- c(1996, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
+missing_years <- c(1996, 1997, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
                    2014, 2016, 2018, 2020)
+
+
 
 # Combine summer ROMS mean with survey mean -----------------------------------
 # Only keep years that don't overlap with the survey
@@ -35,6 +37,12 @@ colnames(summer_ROMS) <- c("year", "mean_temp", "source")
 
 ROMS <- cbind(ROMS, rep("ROMS", length(ROMS$mean_temp)))
 colnames(ROMS) <- c("year", "mean_temp", "source")
+
+# Find difference between ROMS and survey
+ROMS_surveyyears <- ROMS %>% 
+  filter(!(year %in% missing_years) & year >= 1995) %>%
+  mutate(ROMS_survey = survey_mean$mean_temp - mean_temp)
+mean(ROMS_surveyyears$ROMS_survey)
 
 
 # Combine together and sort by year
@@ -74,9 +82,9 @@ temp_hake <- temp_kriged %>%
   filter(hake_biomass > 0)
 
 # Mean temp for hake presence
-temp_hake_mean <- mean(temp_hake$temp_100_kriged)
-temp_hake_max <- max(temp_hake$temp_100_kriged)
-temp_hake_min <- min(temp_hake$temp_100_kriged)
+mean(temp_hake$temp_100_kriged)
+max(temp_hake$temp_100_kriged)
+min(temp_hake$temp_100_kriged)
 
 # Mean, weighted by hake biomass
 weighted_mean <- weighted.mean(temp_hake$temp_100_kriged, temp_hake$hake_biomass)
