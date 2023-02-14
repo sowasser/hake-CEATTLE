@@ -18,6 +18,9 @@ hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 # # Set up for M1 = 0.21
 hake_intrasp$est_M1 <- 0
 
+# # Set age-varying M1
+# hake_intrasp$est_M1 <- 3
+
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, init, msm) {
   run <- Rceattle::fit_mod(data_list = data,
