@@ -1,8 +1,8 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
-# devtools::install_github("grantdadams/Rceattle@dev")
-# library(Rceattle)
+# devtools::install_github("grantdadams/Rceattle")
+library(Rceattle)
 library(reshape2)
 library(dplyr)
 library(ggplot2)
@@ -15,11 +15,12 @@ theme_set(theme_sleek())
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
-# # Set up for M1 = 0.21
-hake_intrasp$est_M1 <- 0
+# Set up for M1 = 0.21
+# hake_intrasp$est_M1 <- 0
 
-# # Set age-varying M1
-# hake_intrasp$est_M1 <- 3
+# Set age-varying M1
+hake_intrasp$est_M1 <- 3
+
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, init, msm) {
@@ -51,6 +52,20 @@ intrasp_run <- run_CEATTLE(hake_intrasp, init = NULL, msm = 1)
 # intrasp_run <- run_CEATTLE(hake_intrasp, init = nodiet_run$estimated_params, msm = 1)
 intrasp_fit <- fit_CEATTLE(intrasp_run)[[1]]
 intrasp_summary <- fit_CEATTLE(intrasp_run)[[2]]
+
+# # Trying age-varying M1 with 3 age blocks: 1, 2, and 3+
+# map <- intrasp_run$map
+# orig <- intrasp_run$map$mapList$ln_M1
+# orig[orig > 2] <- 3
+# map$mapList$ln_M1 <- orig
+# map$mapFactor$ln_M1 = as.factor(map$mapList$ln_M1)
+# 
+# intrasp_run2 <- Rceattle::fit_mod(data_list = hake_intrasp,
+#                                   inits = NULL,
+#                                   file = NULL, # Don't save
+#                                   map = map,
+#                                   msmMode = 1, # Single-species mode - no predation mortality
+#                                   phase = "default")
 
 # No diet (single-species run)
 nodiet_init <- run_CEATTLE(hake_intrasp, init = NULL, msm = 0)
@@ -435,9 +450,10 @@ survey_plot
 
 ### Compare total natural mortality (M1 + M2) ---------------------------------
 M2 <- extract_byage(intrasp_run$quantities$M2, "CEATTLE - cannibalism", "M2")
+M1 <- intrasp_run$quantities$M1[1, 1, 1:15]
 
 total_mortality <- M2 %>%
-  mutate(M1_M2 = M2 + intrasp_run$quantities$M1[1, 1, 1])
+  mutate(M1_M2 = M2 + rep(M1, length(years)))
 total_mortality$age <- as.integer(total_mortality$age)
 total_mortality$year <- as.integer(as.character(total_mortality$year))
 
@@ -445,7 +461,8 @@ mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax 
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) + 
   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), breaks = c(0.21, 1.5)) +
+  # scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), breaks = c(0.21, 1.5)) +
+  scale_fill_viridis(name = "M1 + M2") +
   coord_equal() +
   ylab("Age") + xlab("Year")
   # theme(panel.border = element_rect(colour = "black", fill=NA, size=1))
