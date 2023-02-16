@@ -15,15 +15,9 @@ theme_set(theme_sleek())
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
 
-# Set up for M1 = 0.21
-# hake_intrasp$est_M1 <- 0
-
-# Set age-varying M1
-hake_intrasp$est_M1 <- 3
-
-
 # Run and fit the CEATTLE model -----------------------------------------------
-run_CEATTLE <- function(data, init, msm) {
+run_CEATTLE <- function(data, M1, init, msm) {
+  data$est_M1 <- M1  # Set M1 to fixed (0), estimated (1), age-varying estimate (3)
   run <- Rceattle::fit_mod(data_list = data,
                            inits = init,
                            file = NULL, # Don't save
@@ -31,10 +25,7 @@ run_CEATTLE <- function(data, init, msm) {
                            random_rec = FALSE, # No random selectivity
                            msmMode = msm, # Single-species mode - no predation mortality
                            phase = "default")
-  return(run)
-}
-
-fit_CEATTLE <- function(run) {
+  
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
   K <- run$opt$number_of_coefficients[1]
@@ -44,14 +35,28 @@ fit_CEATTLE <- function(run) {
   fit <- cbind(objective, jnll, K, AIC, gradient)
   jnll_summary <- as.data.frame(run$quantities$jnll_comp)
   jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
-  return(list(fit, jnll_summary))
+  return(list(run, fit, jnll_summary))
 }
 
-# Multi-species model using cannibalism data
-intrasp_run <- run_CEATTLE(hake_intrasp, init = NULL, msm = 1)
-# intrasp_run <- run_CEATTLE(hake_intrasp, init = nodiet_run$estimated_params, msm = 1)
-intrasp_fit <- fit_CEATTLE(intrasp_run)[[1]]
-intrasp_summary <- fit_CEATTLE(intrasp_run)[[2]]
+# Run with cannibalism, estimated M1
+intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 1)
+intrasp_fit <- intrasp[[2]]
+intrasp_summary <- as.data.frame(intrasp[[3]][, -(1:2)])
+
+# Run with cannibalism, fixed M1
+intrasp_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 1)
+
+# Run with canniibalism, age-varying M1
+intrasp_M1update <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 1)
+
+# Compare fits
+intrasp_fit <- rbind(cbind(model = "est M1", intrasp[[2]]),
+                     cbind(model = "fix M1", intrasp_M1fixed[[2]]),
+                     cbind(model = "age M1", intrasp_M1update[[2]]))
+intrasp_summary <- cbind(intrasp[[3]], 
+                         intrasp_M1fixed[[3]][, 3], 
+                         intrasp_M1update[[3]][, 3])[, -(1:2)]
+colnames(intrasp_summary) <- c("est M1", "fix M1", "age M1")
 
 # # Trying age-varying M1 with 3 age blocks: 1, 2, and 3+
 # map <- intrasp_run$map
@@ -68,29 +73,27 @@ intrasp_summary <- fit_CEATTLE(intrasp_run)[[2]]
 #                                   phase = "default")
 
 # No diet (single-species run)
-nodiet_init <- run_CEATTLE(hake_intrasp, init = NULL, msm = 0)
-nodiet_run <- run_CEATTLE(hake_intrasp, init = nodiet_init$estimated_params, msm = 0)
-# hake_nodiet <- hake_intrasp
-# hake_nodiet$est_M1 <- 0
-# nodiet_fixedM <- run_CEATTLE(hake_nodiet, init = nodiet_init$estimated_params, msm = 0)
-# 
-# nodiet_fit <- rbind(cbind(model = "init = NULL", fit_CEATTLE(nodiet_init)[[1]]),
-#                     cbind(model = "init = est", fit_CEATTLE(nodiet_run)[[1]]),
-#                     cbind(model = "fixed M1", fit_CEATTLE(nodiet_fixedM)[[1]]))
-# nodiet_summary <- fit_CEATTLE(nodiet_run)[[2]]
+nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
+nodiet_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
+
+nodiet_fit <- rbind(cbind(model = "est M1", nodiet[[2]]),
+                    cbind(model = "fix M1", nodiet_M1fixed[[2]]))
+
+nodiet_summary <- cbind(nodiet[[3]], 
+                        nodiet_M1fixed[[3]][, 3])[, -(1:2)]
 
 
 ### Rceattle diagnostic plots -------------------------------------------------
-# Rceattle::plot_biomass(intrasp_run, add_ci = TRUE)
-# Rceattle::plot_index(intrasp_run)
-# Rceattle::plot_catch(intrasp_run)
-# Rceattle::plot_selectivity(intrasp_run)
-# Rceattle::plot_mortality(intrasp_run, type=3)
-# Rceattle::plot_indexresidual(intrasp_run)
-# Rceattle::plot_logindex(intrasp_run)
-# Rceattle::plot_recruitment(intrasp_run, add_ci = TRUE)
-# Rceattle::plot_comp(intrasp_run)
-# Rceattle::plot_srv_comp(intrasp_run)
+# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
+# Rceattle::plot_index(intrasp[[1]])
+# Rceattle::plot_catch(intrasp[[1]])
+# Rceattle::plot_selectivity(intrasp[[1]])
+# Rceattle::plot_mortality(intrasp[[1]], type=3)
+# Rceattle::plot_indexresidual(intrasp[[1]])
+# Rceattle::plot_logindex(intrasp[[1]])
+# Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE)
+# Rceattle::plot_comp(intrasp[[1]])
+# Rceattle::plot_srv_comp(intrasp[[1]])
 
 
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
