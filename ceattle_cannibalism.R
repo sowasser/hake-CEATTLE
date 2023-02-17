@@ -40,14 +40,15 @@ run_CEATTLE <- function(data, M1, init, msm) {
 
 # Run with cannibalism, estimated M1
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 1)
-intrasp_fit <- intrasp[[2]]
-intrasp_summary <- as.data.frame(intrasp[[3]][, -(1:2)])
+intrasp[[2]]  # check convergence
 
 # Run with cannibalism, fixed M1
 intrasp_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 1)
+intrasp_M1fixed[[2]]  # check convergence
 
 # Run with cannibalism, age-varying M1
 intrasp_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 1)
+intrasp_M1aged[[2]]  # check convergence
 
 # Compare fits
 intrasp_fit <- rbind(cbind(model = "est M1", intrasp[[2]]),
@@ -120,7 +121,7 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run) {
+plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   # Pull out SSB & overall biomass from CEATTLE runs
   ceattle_biomass <- function(run, name) {
@@ -213,8 +214,10 @@ plot_models <- function(ms_run, ss_run) {
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
-  all_popdy$model <- factor(all_popdy$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
-  all_popdy$type <- factor(all_popdy$type, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+  all_popdy$model <- factor(all_popdy$model, 
+                            levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+  all_popdy$type <- factor(all_popdy$type, 
+                           labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -288,7 +291,8 @@ plot_models <- function(ms_run, ss_run) {
     summarize_at(vars("0":"20"), mean)
   
   nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
-  nbyage_ss3 <- cbind(nbyage_ss3, rep("Stock Assessment", length(nbyage_ss3$year)))
+  nbyage_ss3 <- cbind(nbyage_ss3, 
+                      rep("Stock Assessment", length(nbyage_ss3$year)))
   colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
   
   # Combine with nbyage from intrasp run
@@ -319,9 +323,9 @@ plot_models <- function(ms_run, ss_run) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-    xlab(" ") + ylab("Age") + labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
+    xlab(" ") + ylab("Age") + 
+    labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
-  nbyage_plot
   
   # Plot comparison to survey index -------------------------------------------
   survey_biom <- function(run, name) {
@@ -347,8 +351,6 @@ plot_models <- function(ms_run, ss_run) {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     xlab("year") + ylab("survey biomass")
-  survey_plot
-  
   
   # Suitability ---------------------------------------------------------------
   suitability <- as.data.frame(as.table(ms_run$quantities$suit_main)) %>%
@@ -370,10 +372,10 @@ plot_models <- function(ms_run, ss_run) {
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, name = "prey age") +
     xlab("predator age") + ylab("suitability") 
-  suit_plot
   
   # Biomass-at-age for each model run -----------------------------------------
-  biombyage <- extract_byage(ms_run$quantities$biomassByage, "CEATTLE - cannibalism", "biomass")
+  biombyage <- extract_byage(ms_run$quantities$biomassByage, 
+                             "CEATTLE - cannibalism", "biomass")
   
   # Set 15 as accumulation age
   biombyage$age[as.numeric(biombyage$age) > 15] <- 15
@@ -387,7 +389,6 @@ plot_models <- function(ms_run, ss_run) {
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(1988, 2019, 3)) +
     xlab(" ") + ylab("Age") 
-  biombyage_plot
   
   ### Plot realized consumption -------------------------------------------------
   # Extract biomass consumed as prey
@@ -405,7 +406,6 @@ plot_models <- function(ms_run, ss_run) {
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     scale_x_discrete(breaks = seq(1988, 2019, 3)) +
     ylab("Biomass consumed (Mt)")
-  b_consumed_plot
   
   # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
   # Add ages together
@@ -421,7 +421,13 @@ plot_models <- function(ms_run, ss_run) {
   yearly_b_plot <- ggplot(yearly_consumed, aes(x = year, y = total_biomass)) +
     geom_line() +
     ylab("biomass of prey / SSB")
-  yearly_b_plot
+  
+  if(save_data == TRUE) {
+    write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
+    write.csv(nodiet_biomass, "data/ceattle_nodiet_biomass.csv", row.names = FALSE)
+    write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
+    write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
+  }
   
   return(list(mean_SEM_all, popdy_plot, ratio_plot, diff_plot, nbyage_plot, 
               survey_plot, suit_plot, biombyage_plot, b_consumed_plot, 
@@ -520,21 +526,14 @@ intrasp_Fspr$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no sto
 intrasp_Fspr$quantities$Ftarget
 
 
-### Save data & plots (when not experimenting) --------------------------------
-# TODO: update this to work with new functions
-# # Data
-# write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
-# write.csv(nodiet_biomass, "data/ceattle_nodiet_biomass.csv", row.names = FALSE)
-# write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
-# write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
-# 
-# # Plots
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_fixedM1.png", popdy[[1]], width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", popdy[[2]], bg = "transparent", width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", suit_plot, bg = "transparent", width=150, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", nbyage_plot, bg = "white", width=160, height=120, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", biombyage_plot, bg = "white", width=160, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_consumed.png", b_consumed_plot, bg = "white", width=140, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", yearly_b_plot, bg = "white", width=140, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", survey_plot, bg = "white", width=200, height=120, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", M[[1]], width = 160, height = 70, units = "mm", dpi=300)
+### Save plots (when not experimenting) ---------------------------------------
+# Plots
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots[[2]], width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots[[3]], width=150, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", plots[[5]], width=160, height=120, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", plots[[6]], width=200, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots[[7]], width=150, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", plots[[8]], width=160, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_consumed.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", plots[[10]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", intrasp_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
