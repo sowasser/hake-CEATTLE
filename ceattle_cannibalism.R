@@ -13,7 +13,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230217.xlsx")
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, init, msm) {
@@ -103,7 +103,7 @@ colnames(nodiet_summary) <- c("est M1", "fix M1", "age M1")
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
 start_yr <- 1988
-end_yr <- 2019
+end_yr <- 2022
 years <- start_yr:end_yr
 
 # Helper function for extracting -by-age data from CEATTLE
@@ -121,9 +121,9 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
+# TODO: step through and see where this is falling apart
 plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
-  # Pull out SSB & overall biomass from CEATTLE runs
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
     biom <- c(run$quantities$biomass)
@@ -144,9 +144,11 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   recruitment <- c(ms_run$quantities$R)
   
   # Pull out biomass from stock synthesis & combine, remove pre-1988
-  ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[23:54, 2:3], 
+  start <- 1966  # start year of SS3 analysis
+  end <- 2022  # end year of SS3 analysis
+  ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[-(1:(start_yr-start)), 2:3], 
                    type = rep("SSB"))
-  ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[23:54, 2:3], 
+  ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[-(1:(start_yr-start)), 2:3], 
                        type = rep("Total Biomass"))
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
@@ -156,7 +158,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   # Pull out recruitment
   nodiet_R <- c(ss_run$quantities$R)
-  ss3_R <- read.table("data/assessment/recruitment.txt")[23:57,]
+  ss3_R <- read.table("data/assessment/recruitment.txt")[-(1:(start_yr-start)), ]
   
   # Find mean difference between the model runs -------------------------------
   mean_SEM <- function(df1, df2, title) {
@@ -165,17 +167,22 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     return(c(title, mean_out, SEM))
   }
   
-  mean_SEM_all <- rbind(mean_SEM(biomass[1:32, 4], nodiet_biomass[1:32, 4], 
+  mean_SEM_all <- rbind(mean_SEM(biomass[1:(end_yr-start_yr), 4], 
+                                 nodiet_biomass[1:(end_yr-start_yr), 4], 
                                  "cannibalism - no diet, SSB"),
-                        mean_SEM(biomass[33:64, 4], nodiet_biomass[33:64, 4], 
+                        mean_SEM(biomass[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
+                                 nodiet_biomass[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
                                  "cannibalism - no diet, Total"),
                         mean_SEM(recruitment, nodiet_R, 
                                  "cannibalism - no diet, R"),
-                        mean_SEM(nodiet_biomass[1:32, 4], ss3_biom[1:32, 4], 
+                        mean_SEM(nodiet_biomass[1:(end_yr-start_yr), 4], 
+                                 ss3_biom[1:(end_yr-start_yr), 4], 
                                  "no diet - SS3, SSB"),
-                        mean_SEM(nodiet_biomass[33:64, 4], ss3_biom[33:64, 4], 
+                        mean_SEM(nodiet_biomass[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
+                                 ss3_biom[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
                                  "no diet - SS3, Total"),
-                        mean_SEM(nodiet_R, ss3_R[1:32, 2], 
+                        mean_SEM(nodiet_R, 
+                                 ss3_R[1:(end_yr-start_yr), 2], 
                                  "no diet - SS3, R"))
   
   # Plot biomass & recruitment ------------------------------------------------
@@ -192,10 +199,10 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
   R <- melt(R_wide, id.vars = "year")
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
-  ss3_1 <- as.data.frame(cbind(year = 1989:2019, 
+  ss3_1 <- as.data.frame(cbind(year = ((start_yr+1):end_yr), 
                                variable = rep("Assessment"), 
-                               value = ss3_R[1:length(1989:2019), 2],
-                               error = ss3_R[1:length(1989:2019), 3]))
+                               value = ss3_R[1:length((start_yr+1):end_yr), 2],
+                               error = ss3_R[1:length((start_yr+1):end_yr), 3]))
   R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")], 
                                     ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")])), 
                  ss3_1)
@@ -283,7 +290,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # nbyage_nodiet <- extract_nbyage(ss_run, "CEATTLE - single species")
   
   # Read in data from SS3 & average beginning & middle of the year
-  nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv")[c(9:40, 52:83), ]
+  nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv") %>%
+    filter(Yr >= start_yr & Yr <= end_yr)
   colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
   
   nbyage_ss3_wide <- nbyage_ss3_all %>%
@@ -322,7 +330,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-    scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     xlab(" ") + ylab("Age") + 
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
@@ -387,7 +395,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-    scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     xlab(" ") + ylab("Age") 
   
   ### Plot realized consumption -------------------------------------------------
@@ -404,7 +412,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=(biomass / 1000000), fill = age)) +
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     ylab("Biomass consumed (Mt)")
   
   # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
