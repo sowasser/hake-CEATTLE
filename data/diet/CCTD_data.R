@@ -363,7 +363,7 @@ seasonal_prop$Season <- factor(seasonal_prop$Season,
 
 seasonal_prop_plot <- ggplot(seasonal_prop, aes(y = Season, x = Year)) +
   geom_tile(aes(fill = prop)) +
-  scale_fill_viridis(name = "Stomachs containing hake") + 
+  scale_fill_viridis(name = "Proportion w/ hake") + 
   ylab(" ")
 seasonal_prop_plot
 
