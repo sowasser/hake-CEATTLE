@@ -323,29 +323,52 @@ ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_si
 CSL_hake_monthly <- sealion_hake[[4]] %>%
   group_by(Year, Month, type) %>%
   summarize(n = n()) %>%
-  filter(Year > 1987 & Year < 2019) 
+  filter(Year > 1987 & Year < 2020) %>%
+  ungroup()
 CSL_hake_monthly$Month <- factor(CSL_hake_monthly$Month)
 
-monthly_plot <- ggplot(CSL_hake_monthly, aes(x = Month, y = n, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  scale_x_discrete(limits = factor(1:12), breaks = c(1, 3, 6, 9, 12)) +
-  ylab("prey items (n)") +
-  facet_wrap(~Year, ncol = 4)
-monthly_plot
 
-ggsave(filename = "plots/diet/Non-hake/CSL_hake_monthly.png", monthly_plot, 
-       bg = "transparent", width=150, height=170, units="mm", dpi=300)
+# Seasonal proportion heatmap ------------------------------------------------
+# Get seasonal observations for hake & not hake
+seasonal_hake <- CSL_hake_monthly %>%
+  filter(type == "Pacific Hake")
+seasonal_hake$Season <- as.numeric(seasonal_hake$Month)
+seasonal_hake$Season[seasonal_hake$Season %in% 1:3] <- "Winter"
+seasonal_hake$Season[seasonal_hake$Season %in% 4:6] <- "Spring"
+seasonal_hake$Season[seasonal_hake$Season %in% 7:9] <- "Summer"
+seasonal_hake$Season[seasonal_hake$Season %in% 10:12] <- "Fall"
+seasonal_hake <- seasonal_hake %>%
+  group_by(Year, Season) %>%
+  summarize(n_hake = sum(n))
 
-# Monthly predation overall
-overall_monthly <- ggplot(CSL_hake_monthly, aes(x = Month, y = n, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  ylab("prey items (n)")
-overall_monthly
+seasonal_other <- CSL_hake_monthly %>%
+  filter(type != "Pacific Hake") 
+seasonal_other$Season <- as.numeric(seasonal_other$Month)
+seasonal_other$Season[seasonal_other$Season %in% 1:3] <- "Winter"
+seasonal_other$Season[seasonal_other$Season %in% 4:6] <- "Spring"
+seasonal_other$Season[seasonal_other$Season %in% 7:9] <- "Summer"
+seasonal_other$Season[seasonal_other$Season %in% 10:12] <- "Fall"
+seasonal_other <- seasonal_other %>%
+  group_by(Year, Season) %>%
+  summarize(n_other = sum(n))
 
-ggsave(filename = "plots/diet/Non-hake/CSL_hake_monthly_overall.png", overall_monthly, 
-       bg = "transparent", width=120, height=80, units="mm", dpi=300)
+# Combine together, find proportion, and plot
+seasonal_prop <- merge(seasonal_other, seasonal_hake, all.x = TRUE)
+seasonal_prop$n_hake[is.na(seasonal_prop$n_hake)] <- 0
+seasonal_prop <- seasonal_prop %>%
+  group_by(Year, Season) %>%
+  summarize(prop = n_hake / n_other)
+seasonal_prop$Season <- factor(seasonal_prop$Season, 
+                               levels = c("Winter", "Spring", "Summer", "Fall"))
+
+seasonal_prop_plot <- ggplot(seasonal_prop, aes(y = Season, x = Year)) +
+  geom_tile(aes(fill = prop)) +
+  scale_fill_viridis(name = "Stomachs containing hake") + 
+  ylab(" ")
+seasonal_prop_plot
+
+ggsave(filename = "plots/diet/Non-hake/seasonal_prop.png", seasonal_prop_plot, 
+       bg = "transparent", width=200, height=90, units="mm", dpi=300)
 
 
 # Subset of diet for CA sea lion predator & ATF prey 
