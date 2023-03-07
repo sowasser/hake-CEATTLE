@@ -145,7 +145,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   # Pull out biomass from stock synthesis & combine, remove pre-1988
   start <- 1966  # start year of SS3 analysis
-  end <- 2022  # end year of SS3 analysis
   ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[-(1:(start_yr-start)), 2:3], 
                    type = rep("SSB"))
   ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[-(1:(start_yr-start)), 2:3], 
@@ -167,24 +166,25 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     return(c(title, mean_out, SEM))
   }
   
-  mean_SEM_all <- rbind(mean_SEM(biomass[1:(end_yr-start_yr), 4], 
-                                 nodiet_biomass[1:(end_yr-start_yr), 4], 
+  n_row <- length(start_yr:end_yr)
+  mean_SEM_all <- rbind(mean_SEM(biomass[1:n_row, 3],
+                                 nodiet_biomass[1:n_row, 3],
                                  "cannibalism - no diet, SSB"),
-                        mean_SEM(biomass[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
-                                 nodiet_biomass[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
+                        mean_SEM(biomass[(n_row+1):(2*(n_row)), 3],
+                                 nodiet_biomass[(n_row+1):(2*(n_row)), 3],
                                  "cannibalism - no diet, Total"),
-                        mean_SEM(recruitment, nodiet_R, 
+                        mean_SEM(recruitment, nodiet_R,
                                  "cannibalism - no diet, R"),
-                        mean_SEM(nodiet_biomass[1:(end_yr-start_yr), 4], 
-                                 ss3_biom[1:(end_yr-start_yr), 4], 
+                        mean_SEM(nodiet_biomass[1:n_row, 3],
+                                 ss3_biom[1:n_row, 3],
                                  "no diet - SS3, SSB"),
-                        mean_SEM(nodiet_biomass[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
-                                 ss3_biom[(end_yr-start_yr+1):(2*(end_yr-start_yr)), 4], 
+                        mean_SEM(nodiet_biomass[(n_row+1):(2*(n_row)), 3],
+                                 ss3_biom[(n_row+1):(2*(n_row)), 3],
                                  "no diet - SS3, Total"),
-                        mean_SEM(nodiet_R, 
-                                 ss3_R[1:(end_yr-start_yr), 2], 
+                        mean_SEM(nodiet_R,
+                                 ss3_R[1:(n_row), 2],
                                  "no diet - SS3, R"))
-  
+
   # Plot biomass & recruitment ------------------------------------------------
   # Put biomass together
   nodiet_biom <- ceattle_biomass(ss_run, "CEATTLE - single-species")
@@ -262,25 +262,26 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
   
-  # Plot the difference between model runs
-  ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
-  ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
-  assessment <- all_popdy %>% filter(model == "Assessment")
-  
-  diff_intrasp <- rbind(cbind.data.frame(year = years,
-                                         type = ceattle_intrasp$type,
-                                         difference = ceattle_intrasp$value - ceattle_nodiet$value,
-                                         models = "cannibalism - single-species"),
-                        cbind.data.frame(year = years,
-                                         type = ceattle_nodiet$type,
-                                         difference = ceattle_nodiet$value - assessment$value,
-                                         models = "single-species - assessment"))
-  
-  diff_plot <- ggplot(diff_intrasp, aes(x=year, y=difference, color=models)) +
-    geom_line() +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+  # TODO: fix this bit!
+  # # Plot the difference between model runs
+  # ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
+  # ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
+  # assessment <- all_popdy %>% filter(model == "Assessment")
+  # 
+  # diff_intrasp <- rbind(cbind.data.frame(year = years,
+  #                                        type = ceattle_intrasp$type,
+  #                                        difference = ceattle_intrasp$value - ceattle_nodiet$value,
+  #                                        models = "cannibalism - single-species"),
+  #                       cbind.data.frame(year = years,
+  #                                        type = ceattle_nodiet$type,
+  #                                        difference = ceattle_nodiet$value - assessment$value,
+  #                                        models = "single-species - assessment"))
+  # 
+  # diff_plot <- ggplot(diff_intrasp, aes(x=year, y=difference, color=models)) +
+  #   geom_line() +
+  #   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  #   facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
+  #   theme(strip.background = element_blank(), strip.placement = "outside")
   
   
   # Plot numbers-at-age -------------------------------------------------------
@@ -437,9 +438,9 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
   }
   
-  return(list(mean_SEM_all, popdy_plot, ratio_plot, diff_plot, nbyage_plot, 
+  return(list(mean_SEM_all, popdy_plot, ratio_plot, nbyage_plot, 
               survey_plot, suit_plot, biombyage_plot, b_consumed_plot, 
-              yearly_b_plot))
+              yearly_b_plot))  # diff_plot
 }
 
 plots <- plot_models(intrasp[[1]], nodiet[[1]])
@@ -452,7 +453,7 @@ plots[[6]]
 plots[[7]]
 plots[[8]]
 plots[[9]]
-plots[[10]]
+# plots[[10]]
 
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
@@ -513,10 +514,12 @@ nodiet_aged_M1 <- mortality(nodiet_M1aged[[1]], type = "single-species")
 
 # Reference points ----------------------------------------------------------
 # Relative SSB
-DynamicB0 <- cbind.data.frame(year = years, B0 = intrasp[[1]]$quantities$DynamicB0[1:32])
+DynamicB0 <- cbind.data.frame(year = years, 
+                              B0 = intrasp[[1]]$quantities$DynamicB0[1:length(years)])
 SSB <- biomass %>% filter(type == "SSB")
 relativeSSB <- cbind.data.frame(year = years, 
-                                relativeSSB = SSB$value / intrasp[[1]]$quantities$DynamicB0[1:32])
+                                relativeSSB = SSB$value / 
+                                  intrasp[[1]]$quantities$DynamicB0[1:length(years)])
 relativeSSB[31,2]  # 2019 value
 
 # Run CEATTLE with an HCR to see reference points
