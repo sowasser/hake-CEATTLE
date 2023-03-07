@@ -24,6 +24,7 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            random_rec = FALSE, # No random selectivity
                            msmMode = msm, # Single-species mode - no predation mortality
+                           proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            phase = "default")
   
   objective <- run$opt$objective
@@ -121,7 +122,6 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-# TODO: step through and see where this is falling apart
 plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
@@ -541,10 +541,10 @@ intrasp_Fspr$quantities$Ftarget
 # Plots
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots[[2]], width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots[[3]], width=150, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/nbyage.png", plots[[5]], width=160, height=120, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/survey_biomass.png", plots[[6]], width=200, height=120, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots[[7]], width=150, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_byage.png", plots[[8]], width=160, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/biomass_consumed.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/realized_consumption.png", plots[[10]], width=140, height=80, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/M.png", intrasp_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots[[4]], width=160, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots[[5]], width=200, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots[[6]], width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots[[7]], width=160, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots[[8]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/M.png", intrasp_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
