@@ -18,13 +18,14 @@ hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230217.xlsx")
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, init, msm) {
   data$est_M1 <- M1  # Set M1 to fixed (0), estimated (1), age-varying estimate (3)
+  # data$endyr <- 2019
   run <- Rceattle::fit_mod(data_list = data,
                            inits = init,
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
-                           random_rec = TRUE, # No random selectivity
                            msmMode = msm, # Single-species mode - no predation mortality
-                           proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
+                           # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
+                           estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
                            phase = "default")
   
   objective <- run$opt$objective
@@ -42,6 +43,18 @@ run_CEATTLE <- function(data, M1, init, msm) {
 # Run with cannibalism, estimated M1
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 1)
 intrasp[[2]]  # check convergence
+
+# Rceattle diagnostic plots 
+# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
+# Rceattle::plot_index(intrasp[[1]])
+# Rceattle::plot_catch(intrasp[[1]])
+# Rceattle::plot_selectivity(intrasp[[1]])
+# Rceattle::plot_mortality(intrasp[[1]], type=3)
+# Rceattle::plot_indexresidual(intrasp[[1]])
+# Rceattle::plot_logindex(intrasp[[1]])
+Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
+# Rceattle::plot_comp(intrasp[[1]])
+# Rceattle::plot_srv_comp(intrasp[[1]])
 
 # Run with cannibalism, fixed M1
 intrasp_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 1)
@@ -89,18 +102,6 @@ nodiet_summary <- cbind(nodiet[[3]],
 colnames(nodiet_summary) <- c("est M1", "fix M1", "age M1")
 
 
-### Rceattle diagnostic plots -------------------------------------------------
-# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
-# Rceattle::plot_index(intrasp[[1]])
-# Rceattle::plot_catch(intrasp[[1]])
-# Rceattle::plot_selectivity(intrasp[[1]])
-# Rceattle::plot_mortality(intrasp[[1]], type=3)
-# Rceattle::plot_indexresidual(intrasp[[1]])
-# Rceattle::plot_logindex(intrasp[[1]])
-# Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE)
-# Rceattle::plot_comp(intrasp[[1]])
-# Rceattle::plot_srv_comp(intrasp[[1]])
-
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
 start_yr <- 1988
@@ -122,7 +123,7 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run, save_data = FALSE) {
+plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -236,12 +237,12 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+    theme(strip.background = element_blank(), strip.placement = "outside") 
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition
   ratio <- as.data.frame(cbind(year = years,
@@ -261,7 +262,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
     geom_line() +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("SSB/Biomass")
   
   # TODO: fix this bit!
@@ -334,17 +335,17 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
   
   # Plot comparison to survey index -------------------------------------------
   survey_biom <- function(run, name) {
-    srv <- data.frame(year = 1995:2019,
+    srv <- data.frame(year = 1995:hind_end,
                       biomass = run$quantities$srv_bio_hat,
                       log_sd = run$quantities$srv_log_sd_hat,
-                      model = rep(name, length(1995:2019)))
+                      model = rep(name, length(1995:hind_end)))
     return(srv)
   }
   
@@ -400,7 +401,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") 
   
   ### Plot realized consumption -------------------------------------------------
@@ -418,7 +419,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("Biomass consumed (Mt)")
   
   # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
@@ -480,6 +481,7 @@ mortality <- function(run, type) {
       scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) + 
       scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
       scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.0), breaks = c(0.21, 2.0)) +
+      geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +
       theme(panel.border = element_rect(colour = NA, fill = NA))
@@ -517,7 +519,20 @@ nodiet_M1 <- mortality(nodiet[[1]], type = "single-species")
 # Single-species with age-varying M1
 nodiet_aged_M1 <- mortality(nodiet_M1aged[[1]], type = "single-species")
 
-# Reference points ----------------------------------------------------------
+### Reference points ----------------------------------------------------------
+# TODO: fix this bit! Get specific HCR to work.
+# proj_intrasp <- Rceattle::fit_mod(data_list = hake_intrasp,
+#                                   inits = intrasp[[1]]$estimated_params, 
+#                                   estimateMode = 0,  
+#                                   HCR = Rceattle::build_hcr(HCR = 3, 
+#                                                             FsprTarget = 0.4, # 0.75 * F40%
+#                                                             # FsprLimit = 0.4,
+#                                                             Plimit = 0.2))
+
+test <- Rceattle::fit_mod(data_list = hake_intrasp,
+                          estimateMode = 0)
+Rceattle::plot_recruitment(test, add_ci = TRUE, incl_proj = TRUE)
+
 # Relative SSB
 DynamicB0 <- cbind.data.frame(year = years, 
                               B0 = intrasp[[1]]$quantities$DynamicB0[1:length(years)])
@@ -543,7 +558,6 @@ intrasp_Fspr$quantities$Ftarget
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# Plots
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots[[2]], width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots[[3]], width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots[[4]], width=160, height=120, units="mm", dpi=300)
