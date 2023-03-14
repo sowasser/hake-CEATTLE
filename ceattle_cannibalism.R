@@ -335,7 +335,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
@@ -363,6 +363,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
     # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab("year") + ylab("survey biomass")
   
   # Suitability ---------------------------------------------------------------
@@ -401,7 +402,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") 
   
   ### Plot realized consumption -------------------------------------------------
@@ -419,7 +420,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("Biomass consumed (Mt)")
   
   # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
@@ -435,6 +436,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   yearly_consumed$year <- as.numeric(as.character(yearly_consumed$year))
   yearly_b_plot <- ggplot(yearly_consumed, aes(x = year, y = total_biomass)) +
     geom_line() +
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("biomass of prey / SSB")
   
   if(save_data == TRUE) {
