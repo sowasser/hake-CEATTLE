@@ -52,17 +52,13 @@ intrasp[[2]]  # check convergence
 # Rceattle::plot_mortality(intrasp[[1]], type=3)
 # Rceattle::plot_indexresidual(intrasp[[1]])
 # Rceattle::plot_logindex(intrasp[[1]])
-Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
+# Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
 # Rceattle::plot_comp(intrasp[[1]])
 # Rceattle::plot_srv_comp(intrasp[[1]])
 
-# Run with cannibalism, fixed M1
+# Run with cannibalism, fixed M1 & time-varying M1
 intrasp_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 1)
-intrasp_M1fixed[[2]]  # check convergence
-
-# Run with cannibalism, age-varying M1
 intrasp_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 1)
-intrasp_M1aged[[2]]  # check convergence
 
 # Compare fits
 intrasp_fit <- rbind(cbind(model = "est M1", intrasp[[2]]),
@@ -89,6 +85,7 @@ colnames(intrasp_summary) <- c("est M1", "fix M1", "age M1")
 
 # No diet (single-species run)
 nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
+nodiet[[2]]  # check convergence
 nodiet_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
 nodiet_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 0)
 
@@ -123,7 +120,7 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
+plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -146,9 +143,9 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   
   # Pull out biomass from stock synthesis & combine, remove pre-1988
   start <- 1966  # start year of SS3 analysis
-  ss3_ssb <- cbind(read.table("data/assessment/ssb.txt")[-(1:(start_yr-start)), 2:3], 
+  ss3_ssb <- cbind(read.table(paste0("data/assessment/", assess_yr, "/ssb.txt"))[-(1:(start_yr-start)), 2:3], 
                    type = rep("SSB"))
-  ss3_biomass <- cbind(read.table("data/assessment/biomass.txt")[-(1:(start_yr-start)), 2:3], 
+  ss3_biomass <- cbind(read.table(paste0("data/assessment/", assess_yr, "/biomass.txt"))[-(1:(start_yr-start)), 2:3], 
                        type = rep("Total Biomass"))
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
@@ -158,7 +155,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   
   # Pull out recruitment
   nodiet_R <- c(ss_run$quantities$R)
-  ss3_R <- read.table("data/assessment/recruitment.txt")[-(1:(start_yr-start)), ]
+  ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:(start_yr-start)), ]
   
   # Find mean difference between the model runs -------------------------------
   mean_SEM <- function(df1, df2, title) {
@@ -294,7 +291,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   # nbyage_nodiet <- extract_nbyage(ss_run, "CEATTLE - single species")
   
   # Read in data from SS3 & average beginning & middle of the year
-  nbyage_ss3_all <- read.csv("data/assessment/nbyage.csv") %>%
+  nbyage_ss3_all <- read.csv(paste0("data/assessment/", assess_yr, "/nbyage.csv")) %>%
     filter(Yr >= start_yr & Yr <= end_yr)
   colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
   
@@ -320,7 +317,6 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   mean_nbyage_plot <- ggplot(nbyage_mean, aes(x = year, y = mean)) +
     geom_line(aes(color = model)) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) 
-  mean_nbyage_plot
   
   # Set 15 as accumulation age
   nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
@@ -352,7 +348,7 @@ plot_models <- function(ms_run, ss_run, hind_end = 2019, save_data = FALSE) {
   intrasp_srv <- survey_biom(ms_run, "CEATTLE - cannibalism")
   nodiet_srv <- survey_biom(ss_run, "CEATTLE - no diet")
   
-  survey <- read.csv("data/assessment/survey_data.csv")
+  survey <- read.csv(paste0("data/assessment/", assess_yr, "/survey_data.csv"))
   survey <- cbind(survey, model = rep("Stock Synthesis", length(survey$year)))
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
@@ -462,7 +458,6 @@ plots[[7]]
 plots[[8]]
 plots[[9]]
 # plots[[10]]
-
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
