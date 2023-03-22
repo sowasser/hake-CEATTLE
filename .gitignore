@@ -20,6 +20,9 @@
 # RStudio files
 .Rproj.user/
 
+# VScode files
+*.code-workspace
+
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
@@ -61,6 +64,7 @@ data/diet/CCTD/
 data/diet/FEAT/
 data/diet/Dirichlet/plots
 old scripts/
+hake-2022-model-files/
 
 # Ignore specific file types
 *.docx
