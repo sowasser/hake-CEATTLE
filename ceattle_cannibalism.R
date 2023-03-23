@@ -101,7 +101,7 @@ colnames(nodiet_summary) <- c("est M1", "fix M1", "age M1")
 
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
-start_yr <- 1988
+start_yr <- intrasp[[1]]$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
 
@@ -459,6 +459,11 @@ plots[[8]]
 plots[[9]]
 # plots[[10]]
 
+# Plot with fixed M1
+plots_M1fixed <- plot_models(intrasp_M1fixed[[1]], nodiet_M1fixed[[1]])
+plots_M1fixed[[2]]
+
+
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
   M1 <- run$quantities$M1[1, 1, 1:15]
@@ -564,3 +569,4 @@ intrasp_Fspr$quantities$Ftarget
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots[[8]], width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", intrasp_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed[[2]], width=140, height=150, units="mm", dpi=300)
