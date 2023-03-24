@@ -16,6 +16,7 @@ theme_set(theme_sleek())
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230217.xlsx")
 
 # Run and fit the CEATTLE model -----------------------------------------------
+HCR <- build_hcr(HCR = 2)  # An HCR based on the PFMC category 1 40-10 HCR
 run_CEATTLE <- function(data, M1, init, msm) {
   data$est_M1 <- M1  # Set M1 to fixed (0), estimated (1), age-varying estimate (3)
   # data$endyr <- 2019
@@ -26,6 +27,7 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            msmMode = msm, # Single-species mode - no predation mortality
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+                           HCR = HCR,
                            phase = "default")
   
   objective <- run$opt$objective
