@@ -7,7 +7,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230217.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230324.xlsx")
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, init, msm) {
@@ -18,9 +18,9 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            msmMode = msm, # Single-species mode - no predation mortality
-                           proj_mean_rec = 1,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
+                           proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            # estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           # HCR = Rceattle::build_hcr(HCR = 0),
+                           HCR = Rceattle::build_hcr(HCR = 2),
                            phase = "default")
   
   objective <- run$opt$objective
@@ -40,6 +40,19 @@ nodiet[[2]]  # check convergence
 # Run with cannibalism, estimated M1
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 0, init = nodiet[[1]]$estimated_params, msm = 1)
 intrasp[[2]]  # check convergence
+
+# Rceattle diagnostic plots 
+# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
+# Rceattle::plot_index(intrasp[[1]])
+# Rceattle::plot_catch(intrasp[[1]])
+# Rceattle::plot_selectivity(intrasp[[1]])
+# Rceattle::plot_mortality(intrasp[[1]], type=3)
+# Rceattle::plot_indexresidual(intrasp[[1]])
+# Rceattle::plot_logindex(intrasp[[1]])
+# Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
+# Rceattle::plot_comp(intrasp[[1]])
+# Rceattle::plot_srv_comp(intrasp[[1]])
+Rceattle::plot_f(intrasp[[1]])
 
 # Plot population dynamics
 start_yr <- intrasp[[1]]$data_list$styr
@@ -149,5 +162,5 @@ plot_models(intrasp[[1]], nodiet[[1]])
 
 # Save plots to specific testing/sensitivity folder
 path <- "plots/CEATTLE/cannibalism/Testing/HCR/"
-name <- "popdyn_M1fixed.png"
+name <- "popdyn_M1fixed_HCR2.png"
 ggsave(filename=paste0(path, name), plot_models(intrasp[[1]], nodiet[[1]]), width=140, height=150, units="mm", dpi=300)
