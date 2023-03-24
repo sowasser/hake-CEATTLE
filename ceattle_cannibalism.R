@@ -16,7 +16,6 @@ theme_set(theme_sleek())
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230217.xlsx")
 
 # Run and fit the CEATTLE model -----------------------------------------------
-HCR <- build_hcr(HCR = 2)  # An HCR based on the PFMC category 1 40-10 HCR
 run_CEATTLE <- function(data, M1, init, msm) {
   data$est_M1 <- M1  # Set M1 to fixed (0), estimated (1), age-varying estimate (3)
   # data$endyr <- 2019
@@ -27,7 +26,7 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            msmMode = msm, # Single-species mode - no predation mortality
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           HCR = HCR,
+                           HCR = build_hcr(HCR = 2),
                            phase = "default")
   
   objective <- run$opt$objective
@@ -42,8 +41,13 @@ run_CEATTLE <- function(data, M1, init, msm) {
   return(list(run, fit, jnll_summary))
 }
 
+# No diet (single-species run)
+nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
+nodiet[[2]]  # check convergence
+
 # Run with cannibalism, estimated M1
-intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 1)
+# This uses estimated parameters from the single-species run to help convergence
+intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = nodiet[[1]]$estimated_params, msm = 1)
 intrasp[[2]]  # check convergence
 
 # Rceattle diagnostic plots 
@@ -85,9 +89,7 @@ colnames(intrasp_summary) <- c("est M1", "fix M1", "age M1")
 #                                   msmMode = 1, # Single-species mode - no predation mortality
 #                                   phase = "default")
 
-# No diet (single-species run)
-nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
-nodiet[[2]]  # check convergence
+# Run single-species model with fixed & time-varying M1
 nodiet_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
 nodiet_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 0)
 
