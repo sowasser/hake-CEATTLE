@@ -1,8 +1,7 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
-# devtools::install_github("grantdadams/Rceattle")
-library(Rceattle)
+devtools::install_github("grantdadams/Rceattle", ref = "dev")
 library(reshape2)
 library(dplyr)
 library(ggplot2)
@@ -24,10 +23,11 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            msmMode = msm, # Single-species mode - no predation mortality
-                           proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
+                           # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           HCR = build_hcr(HCR = 0),
-                           phase = "default")
+                           HCR = Rceattle::build_hcr(HCR = 6),
+                           phase = "default",
+                           initMode = 1)
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -53,7 +53,7 @@ intrasp[[2]]  # check convergence
 # Rceattle diagnostic plots 
 # Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
 # Rceattle::plot_index(intrasp[[1]])
-Rceattle::plot_catch(intrasp[[1]])
+# Rceattle::plot_catch(intrasp[[1]])
 # Rceattle::plot_selectivity(intrasp[[1]])
 # Rceattle::plot_mortality(intrasp[[1]], type=3)
 # Rceattle::plot_indexresidual(intrasp[[1]])
