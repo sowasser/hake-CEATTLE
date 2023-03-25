@@ -6,6 +6,8 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
+devtools::install_github("grantdadams/Rceattle", ref = "dev")
+
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230324.xlsx")
 
@@ -18,6 +20,12 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            msmMode = msm, # Single-species mode - no predation mortality
+                          #  M1Fun = Rceattle::build_M1(updateM1 = TRUE,
+                          #                             M1_use_prior = TRUE,
+                          #                             M1_prior_mean = 0.2,
+                          #                             M1_prior_sd = .1),
+                           M1Fun = Rceattle::build_M1(updateM1 = TRUE,
+                                                      M1_use_prior = FALSE),
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
                            HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
@@ -26,6 +34,7 @@ run_CEATTLE <- function(data, M1, init, msm) {
                                                      Plimit = 0.1, # No fishing when SB<SB10
                                                      Pstar = 0.45,
                                                      Sigma = 0.5),
+                           # HCR = 0
                            phase = "default",
                            initMode = 1)
   
@@ -40,12 +49,35 @@ run_CEATTLE <- function(data, M1, init, msm) {
 }
 
 # Run in single-species mode
-nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
-nodiet[[2]]  # check convergence
+nodiet_fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
+nodiet_fixed[[2]]  # check convergence
+
+nodiet_est <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
+nodiet_est[[2]]  # check convergence
+
+inits <- nodiet_fixed[[1]]$estimated_params
+inits$rec_pars <- matrix(1, nrow = nodiet_fixed$data_list$nspp, ncol = 2)
+inits$rec_pars[,1] <- inits$ln_mean_rec
+
+inits$ln_mean_rec <- NULL
+
+##########################################
+ss_run <- Rceattle::fit_mod(data_list = hake_intrasp,
+                            file = NULL,
+                            inits = inits, # Initial parameters = 0
+                            estimateMode = 4, # Estimate
+                            random_rec = FALSE, # No random recruitment
+                            msmMode = 0, # Single species mode
+                            verbose = 1,
+                            phase = "default")
+
+
 
 # Run with cannibalism, estimated M1
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = nodiet[[1]]$estimated_params, msm = 1)
 intrasp[[2]]  # check convergence
+
+
 
 # Rceattle diagnostic plots 
 # Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
@@ -165,10 +197,9 @@ plot_models <- function(ms_run, ss_run, assess_yr = as.character(hind_end + 1)) 
 
 plot_models(intrasp[[1]], nodiet[[1]])
 
-
 # Save plots to specific testing/sensitivity folder
 path <- "plots/CEATTLE/cannibalism/Testing/HCR/"
-name <- "popdyn_M1fixed_HCR6.png"
+name <- "popdyn_M1prior_HCR6.png"
 ggsave(filename=paste0(path, name), 
        plot_models(intrasp[[1]], nodiet[[1]]), 
        width=140, height=150, units="mm", dpi=300)
