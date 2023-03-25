@@ -20,7 +20,7 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            msmMode = msm, # Single-species mode - no predation mortality
                            proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            # estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           HCR = Rceattle::build_hcr(HCR = 2),
+                           HCR = Rceattle::build_hcr(HCR = 0),
                            phase = "default")
   
   objective <- run$opt$objective
@@ -34,8 +34,11 @@ run_CEATTLE <- function(data, M1, init, msm) {
 }
 
 # Run in single-species mode
-nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
+nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
 nodiet[[2]]  # check convergence
+
+main_model <- nodiet[[1]]
+save(main_model, file = "main_model.Rdata")
 
 # Run with cannibalism, estimated M1
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 0, init = nodiet[[1]]$estimated_params, msm = 1)
