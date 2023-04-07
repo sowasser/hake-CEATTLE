@@ -33,7 +33,6 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                                                      Plimit = 0.1, # No fishing when SB<SB10
                                                      Pstar = 0.45,
                                                      Sigma = 0.5),
-                          #  HCR = Rceattle::build_hcr(HCR = 0),
                           #  phase = "default",
                            phase = list(
                               dummy = 1,
@@ -109,7 +108,7 @@ intrasp[[2]]  # check convergence
 test <- intrasp[[1]]$quantities$biomass
 
 # Rceattle diagnostic plots 
-Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
+# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
 # Rceattle::plot_index(intrasp[[1]])
 # Rceattle::plot_catch(intrasp[[1]])
 # Rceattle::plot_selectivity(intrasp[[1]])
