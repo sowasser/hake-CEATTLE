@@ -18,14 +18,25 @@ hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230324.xlsx")
 run_CEATTLE <- function(data, M1, init, msm) {
   data$est_M1 <- M1  # Set M1 to fixed (0), estimated (1), age-varying estimate (3)
   # data$endyr <- 2019
+  prior = FALSE
   run <- Rceattle::fit_mod(data_list = data,
                            inits = init,
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            msmMode = msm, # Single-species mode - no predation mortality
+                           M1Fun = Rceattle::build_M1(M1_model = M1, 
+                                                      updateM1 = TRUE,
+                                                      M1_use_prior = prior,
+                                                      M1_prior_mean = 0.2,
+                                                      M1_prior_sd = .1),
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           HCR = Rceattle::build_hcr(HCR = 6),
+                           HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
+                                                     FsprLimit = 0.4, # F40%
+                                                     Ptarget = 0.4, # Target is 40% B0
+                                                     Plimit = 0.1, # No fishing when SB<SB10
+                                                     Pstar = 0.45,
+                                                     Sigma = 0.5),
                            phase = "default",
                            initMode = 1)
   
@@ -61,7 +72,7 @@ intrasp[[2]]  # check convergence
 # Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
 # Rceattle::plot_comp(intrasp[[1]])
 # Rceattle::plot_srv_comp(intrasp[[1]])
-Rceattle::plot_f(intrasp[[1]])
+# Rceattle::plot_f(intrasp[[1]])
 
 # Run with cannibalism, fixed M1 & time-varying M1
 intrasp_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 1)
