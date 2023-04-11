@@ -91,17 +91,17 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
 nodiet_fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, prior = FALSE, init = NULL, msm = 0, M_phase = 4)
 nodiet_fixed[[2]]  # check convergence
 
-nodiet_est <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = NULL, msm = 0, M_phase = 3)
+nodiet_est <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = nodiet_fixed[[1]]$estimated_params, msm = 0, M_phase = 1)
 nodiet_est[[2]]  # check convergence
 nodiet_est[[1]]$quantities$M1
 
-nodiet_prior <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = TRUE, init = NULL, msm = 0)
+nodiet_prior <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = TRUE, init = NULL, msm = 0, M_phase = 1)
 nodiet_prior[[2]]  # check convergence
 nodiet_prior[[1]]$quantities$M1
 
 
 # Run with cannibalism, estimated M1
-nodiet <- nodiet_est[[1]]
+nodiet <- nodiet_fixed[[1]]
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = nodiet$estimated_params, msm = 1, M_phase = 6)
 intrasp[[2]]  # check convergence
 
@@ -115,7 +115,7 @@ test <- intrasp[[1]]$quantities$biomass
 # Rceattle::plot_mortality(intrasp[[1]], type=3)
 # Rceattle::plot_indexresidual(intrasp[[1]])
 # Rceattle::plot_logindex(intrasp[[1]])
-# Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
+Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
 # Rceattle::plot_comp(intrasp[[1]])
 # Rceattle::plot_srv_comp(intrasp[[1]])
 # Rceattle::plot_f(intrasp[[1]])
