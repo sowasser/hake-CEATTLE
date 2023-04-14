@@ -6,8 +6,9 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-# remove.packages("Rceattle")
-# devtools::install_github("grantdadams/Rceattle", ref = "dev")
+remove.packages("Rceattle")
+pak::pkg_install("grantdadams/Rceattle")
+
 
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230324.xlsx")
@@ -20,11 +21,11 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                            inits = init,
                            file = NULL, # Don't save
                            msmMode = msm, # Single-species mode - no predation mortality
-                           M1Fun = Rceattle::build_M1(M1_model = M1, 
-                                                      updateM1 = TRUE,
-                                                      M1_use_prior = prior,
-                                                      M1_prior_mean = 0.2,
-                                                      M1_prior_sd = .1),
+                           # M1Fun = Rceattle::build_M1(M1_model = M1, 
+                           #                            updateM1 = TRUE,
+                           #                            M1_use_prior = prior,
+                           #                            M1_prior_mean = 0.2,
+                           #                            M1_prior_sd = .1),
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
                            HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
@@ -34,48 +35,48 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                                                      Pstar = 0.45,
                                                      Sigma = 0.5),
                           #  phase = "default",
-                           phase = list(
-                              dummy = 1,
-                              ln_pop_scalar = 4, # Scalar for input numbers-at-age
-                              rec_pars = 1, # Stock-recruit parameters or log(mean rec) if no stock-recruit relationship
-                              ln_rec_sigma = 2, # Variance for annual recruitment deviats
-                              rec_dev = 2, # Annual recruitment deviats
-                              init_dev = 2, # Age specific initial age-structure deviates or parameters
-                              ln_sex_ratio_sigma = 3, # Variance of sex ratio (usually fixed)
-                              ln_M1 = M_phase, #  Estimated natural or residual mortality
-                              ln_mean_F = 1, # Mean fleet-specific fishing mortality
-                              ln_Flimit = 3, # Estimated F limit
-                              ln_Ftarget = 3, # Estimated F target
-                              ln_Finit = 3, # Estimated fishing mortality for non-equilibrium initial age-structure
-                              proj_F_prop = 1, # Fixed fleet-specific proportion of Flimit and Ftarget apportioned within each species
-                              F_dev = 1, # Annual fleet specific fishing mortality deviates
-                              ln_srv_q = 3, # Survey catchability
-                              ln_srv_q_dev = 5, # Annual survey catchability deviates (if time-varying)
-                              ln_sigma_srv_q = 4, # Prior SD for survey catchability deviates
-                              ln_sigma_time_varying_srv_q = 4, # SD for annual survey catchability deviates (if time-varying)
-                              sel_coff = 3, # Non-parametric selectivity coefficients
-                              sel_coff_dev = 4, # Annual deviates for non-parametric selectivity coefficients
-                              ln_sel_slp = 3, # Slope parameters for logistic forms of selectivity
-                              sel_inf = 3, # Asymptote parameters for logistic forms of selectivity
-                              ln_sel_slp_dev = 5, # Annual deviates for slope parameters for logistic forms of selectivity (if time-varying)
-                              sel_inf_dev = 5, # Annual deviates for asymptote parameters for logistic forms of selectivity (if time-varying)
-                              ln_sigma_sel = 4, # SD for annual selectivity deviates (if time-varying)
-                              sel_curve_pen = 4, # Penalty for non-parametric selectivity
-                              ln_sigma_srv_index = 2, # Log SD for survey lognormal index likelihood (usually input)
-                              ln_sigma_fsh_catch = 2, # Log SD for lognormal catch likelihood (usually input)
-                              comp_weights = 4, # Weights for multinomial comp likelihood
-                              logH_1 = 6,  # Functional form parameter (not used in MSVPA functional form)
-                              logH_1a = 6, # Functional form parameter (not used in MSVPA functional form)
-                              logH_1b = 6, # Functional form parameter (not used in MSVPA functional form)
-                              logH_2 = 6, # Functional form parameter (not used in MSVPA functional form)
-                              logH_3 = 6, # Functional form parameter (not used in MSVPA functional form)
-                              H_4 = 6, # Functional form parameter (not used in MSVPA functional form)
-                              log_gam_a = 5, # Suitability parameter (not used in MSVPA style)
-                              log_gam_b = 5, # Suitability parameter (not used in MSVPA style)
-                              log_phi = 5 # Suitability parameter (not used in MSVPA style)
-                            ),
-                           initMode = 1,
-                           verbose = TRUE)
+                          phase = list(
+                            dummy = 1,
+                            ln_pop_scalar = 4,
+                            ln_mean_rec = 1,
+                            ln_rec_sigma = 2,
+                            rec_dev = 2,
+                            init_dev = 2,
+                            ln_sex_ratio_sigma = 3,
+                            ln_M1 = M_phase,
+                            ln_mean_F = 1,
+                            ln_Flimit = 3,
+                            ln_Ftarget = 3,
+                            proj_F_prop = 1,
+                            F_dev = 1,
+                            ln_srv_q = 3,
+                            # srv_q_pow = 4,
+                            ln_srv_q_dev = 5,
+                            ln_sigma_srv_q = 4,
+                            ln_sigma_time_varying_srv_q = 4,
+                            sel_coff = 3,
+                            sel_coff_dev = 4,
+                            ln_sel_slp = 3,
+                            sel_inf = 3,
+                            ln_sel_slp_dev = 5,
+                            sel_inf_dev = 5,
+                            ln_sigma_sel = 4,
+                            sel_curve_pen = 4,
+                            ln_sigma_srv_index = 2,
+                            ln_sigma_fsh_catch = 2,
+                            comp_weights = 4,
+                            logH_1 = 6,
+                            logH_1a = 6,
+                            logH_1b = 6,
+                            logH_2 = 6,
+                            logH_3 = 6,
+                            H_4 = 6,
+                            log_gam_a = 5,
+                            log_gam_b = 5,
+                            log_phi = 5
+                          ),
+                           # initMode = 1,
+                           verbose = 1)
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -88,27 +89,25 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
 }
 
 # Run in single-species mode
-nodiet_fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, prior = FALSE, init = NULL, msm = 0, M_phase = 4)
+nodiet_fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, prior = FALSE, init = NULL, msm = 0, M_phase = 6)
 nodiet_fixed[[2]]  # check convergence
 
 nodiet_est <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = nodiet_fixed[[1]]$estimated_params, msm = 0, M_phase = 1)
 nodiet_est[[2]]  # check convergence
 nodiet_est[[1]]$quantities$M1
 
-nodiet_prior <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = TRUE, init = NULL, msm = 0, M_phase = 1)
-nodiet_prior[[2]]  # check convergence
-nodiet_prior[[1]]$quantities$M1
+# nodiet_prior <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = TRUE, init = NULL, msm = 0, M_phase = 1)
+# nodiet_prior[[2]]  # check convergence
+# nodiet_prior[[1]]$quantities$M1
 
 
 # Run with cannibalism, estimated M1
-nodiet <- nodiet_fixed[[1]]
-intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = nodiet$estimated_params, msm = 1, M_phase = 6)
+nodiet <- nodiet_est[[1]]
+intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = nodiet$estimated_params, msm = 1, M_phase = 4)
 intrasp[[2]]  # check convergence
 
-test <- intrasp[[1]]$quantities$biomass
-
 # Rceattle diagnostic plots 
-# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
+Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
 # Rceattle::plot_index(intrasp[[1]])
 # Rceattle::plot_catch(intrasp[[1]])
 # Rceattle::plot_selectivity(intrasp[[1]])

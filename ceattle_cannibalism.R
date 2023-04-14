@@ -1,7 +1,7 @@
 # Run CEATTLE with intraspecies-predation proportions calculated from diet 
 # database going back to 1980.
 
-devtools::install_github("grantdadams/Rceattle", ref = "dev")
+# devtools::install_github("grantdadams/Rceattle", ref = "dev")
 library(reshape2)
 library(dplyr)
 library(ggplot2)
@@ -24,11 +24,11 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            msmMode = msm, # Single-species mode - no predation mortality
-                           M1Fun = Rceattle::build_M1(M1_model = M1, 
-                                                      updateM1 = TRUE,
-                                                      M1_use_prior = prior,
-                                                      M1_prior_mean = 0.2,
-                                                      M1_prior_sd = .1),
+                           # M1Fun = Rceattle::build_M1(M1_model = M1, 
+                           #                            updateM1 = TRUE,
+                           #                            M1_use_prior = prior,
+                           #                            M1_prior_mean = 0.2,
+                           #                            M1_prior_sd = .1),
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
                            HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
@@ -38,7 +38,8 @@ run_CEATTLE <- function(data, M1, init, msm) {
                                                      Pstar = 0.45,
                                                      Sigma = 0.5),
                            phase = "default",
-                           initMode = 1)
+                           # initMode = 1,
+                           verbose = 1)
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
