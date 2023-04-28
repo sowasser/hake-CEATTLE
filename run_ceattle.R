@@ -74,8 +74,8 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                   log_gam_b = 5,
                   log_phi = 5
                 ),
-                 # initMode = 1,
-                verbose = 1,
+                # initMode = 1,
+                # verbose = 1,
                 projection_uncertainty = TRUE)
   
   objective <- run$opt$objective
@@ -85,7 +85,11 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
   gradient <- run$opt$max_gradient
   
   fit <- cbind(objective, jnll, K, AIC, gradient)
-  return(list(model = run, fit = fit))
+  
+  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
+  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
+  
+  return(list(model = run, fit = fit, summary = jnll_summary))
 }
 
 # Run in single-species mode --------------------------------------------------
