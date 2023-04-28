@@ -65,6 +65,7 @@ data/diet/FEAT/
 data/diet/Dirichlet/plots
 old scripts/
 hake-2022-model-files/
+models/
 
 # Ignore specific file types
 *.docx
