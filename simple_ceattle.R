@@ -8,6 +8,7 @@ theme_set(theme_sleek())
 
 remove.packages("Rceattle")
 pak::pkg_install("grantdadams/Rceattle")
+remotes::install_github("grantdadams/Rceattle")
 
 
 # Read in CEATTLE data from the excel file
@@ -34,7 +35,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                                                      Plimit = 0.1, # No fishing when SB<SB10
                                                      Pstar = 0.45,
                                                      Sigma = 0.5),
-                          #  phase = "default",
+                           # phase = "default",
                           phase = list(
                             dummy = 1,
                             ln_pop_scalar = 4,
@@ -76,7 +77,8 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                             log_phi = 5
                           ),
                            # initMode = 1,
-                           verbose = 1)
+                          verbose = 1,
+                          projection_uncertainty = TRUE)
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -95,6 +97,7 @@ nodiet_fixed[[2]]  # check convergence
 nodiet_est <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = FALSE, init = nodiet_fixed[[1]]$estimated_params, msm = 0, M_phase = 1)
 nodiet_est[[2]]  # check convergence
 nodiet_est[[1]]$quantities$M1
+Rceattle::plot_biomass(nodiet_est[[1]], add_ci = TRUE)
 
 # nodiet_prior <- run_CEATTLE(data = hake_intrasp, M1 = 1, prior = TRUE, init = NULL, msm = 0, M_phase = 1)
 # nodiet_prior[[2]]  # check convergence
@@ -225,8 +228,8 @@ plot_models <- function(ms_run, ss_run, assess_yr = as.character(hind_end + 1)) 
 plot_models(intrasp[[1]], nodiet)
 
 # Save plots to specific testing/sensitivity folder
-path <- "plots/CEATTLE/cannibalism/Testing/HCR/"
-name <- "popdyn_M1prior_HCR6.png"
-ggsave(filename=paste0(path, name), 
-       plot_models(intrasp[[1]], nodiet[[1]]), 
-       width=140, height=150, units="mm", dpi=300)
+# path <- "plots/CEATTLE/cannibalism/Testing/HCR/"
+# name <- "popdyn_M1prior_HCR6.png"
+# ggsave(filename=paste0(path, name), 
+#        plot_models(intrasp[[1]], nodiet[[1]]), 
+#        width=140, height=150, units="mm", dpi=300)

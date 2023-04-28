@@ -39,7 +39,8 @@ run_CEATTLE <- function(data, M1, init, msm) {
                                                      Sigma = 0.5),
                            phase = "default",
                            # initMode = 1,
-                           verbose = 1)
+                           verbose = 1,
+                           projection_uncertainty = TRUE)
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
