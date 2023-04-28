@@ -11,7 +11,7 @@ pak::pkg_install("grantdadams/Rceattle")
 
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230324.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230427.xlsx")
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
