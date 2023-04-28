@@ -1,5 +1,8 @@
-# Run CEATTLE with intraspecies-predation proportions calculated from diet 
-# database going back to 1980.
+#' Plot results of CEATTLE runs (from run_ceattle.R), comparing the single-
+#' species model and the multispecies model (cannibalism), which uses 
+#' proportion of cannibalism calculated from diet database going back to 1988. 
+#' Different specifications of M1 (fixed, estimated, or with a prior) are also 
+#' explored.
 
 # devtools::install_github("grantdadams/Rceattle", ref = "dev")
 library(reshape2)
@@ -11,115 +14,26 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-# Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230324.xlsx")
-
-# Run and fit the CEATTLE model -----------------------------------------------
-run_CEATTLE <- function(data, M1, init, msm) {
-  data$est_M1 <- M1  # Set M1 to fixed (0), estimated (1), age-varying estimate (3)
-  # data$endyr <- 2019
-  prior = FALSE
-  run <- Rceattle::fit_mod(data_list = data,
-                           inits = init,
-                           file = NULL, # Don't save
-                           # debug = 1, # 1 = estimate, 0 = don't estimate
-                           msmMode = msm, # Single-species mode - no predation mortality
-                           # M1Fun = Rceattle::build_M1(M1_model = M1, 
-                           #                            updateM1 = TRUE,
-                           #                            M1_use_prior = prior,
-                           #                            M1_prior_mean = 0.2,
-                           #                            M1_prior_sd = .1),
-                           # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
-                           estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
-                                                     FsprLimit = 0.4, # F40%
-                                                     Ptarget = 0.4, # Target is 40% B0
-                                                     Plimit = 0.1, # No fishing when SB<SB10
-                                                     Pstar = 0.45,
-                                                     Sigma = 0.5),
-                           phase = "default",
-                           # initMode = 1,
-                           verbose = 1,
-                           projection_uncertainty = TRUE)
-  
-  objective <- run$opt$objective
-  jnll <- run$quantities$jnll
-  K <- run$opt$number_of_coefficients[1]
-  AIC <- run$opt$AIC
-  gradient <- run$opt$max_gradient
-  
-  fit <- cbind(objective, jnll, K, AIC, gradient)
-  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
-  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
-  return(list(run, fit, jnll_summary))
-}
-
-# No diet (single-species run)
-nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
-nodiet[[2]]  # check convergence
-
-# Run with cannibalism, estimated M1
-# This uses estimated parameters from the single-species run to help convergence
-intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = nodiet[[1]]$estimated_params, msm = 1)
-intrasp[[2]]  # check convergence
-
-# Rceattle diagnostic plots 
-# Rceattle::plot_biomass(intrasp[[1]], add_ci = TRUE)
-# Rceattle::plot_index(intrasp[[1]])
-# Rceattle::plot_catch(intrasp[[1]])
-# Rceattle::plot_selectivity(intrasp[[1]])
-# Rceattle::plot_mortality(intrasp[[1]], type=3)
-# Rceattle::plot_indexresidual(intrasp[[1]])
-# Rceattle::plot_logindex(intrasp[[1]])
-# Rceattle::plot_recruitment(intrasp[[1]], add_ci = TRUE, incl_proj = TRUE)
-# Rceattle::plot_comp(intrasp[[1]])
-# Rceattle::plot_srv_comp(intrasp[[1]])
-# Rceattle::plot_f(intrasp[[1]])
-
-# Run with cannibalism, fixed M1 & time-varying M1
-intrasp_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 1)
-intrasp_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 1)
+### Load in models - Rdata objects --------------------------------------------
+load("models/ss_fixM1.Rdata")
+load("models/ss_estM1.Rdata")
+load("models/ms_estM1.Rdata")
+load("models/ms_fixM1.Rdata")
 
 # Compare fits
-intrasp_fit <- rbind(cbind(model = "est M1", intrasp[[2]]),
-                     cbind(model = "fix M1", intrasp_M1fixed[[2]]),
-                     cbind(model = "age M1", intrasp_M1aged[[2]]))
-intrasp_summary <- cbind(intrasp[[3]], 
-                         intrasp_M1fixed[[3]][, 3], 
-                         intrasp_M1aged[[3]][, 3])[, -(1:2)]
-colnames(intrasp_summary) <- c("est M1", "fix M1", "age M1")
-
-# # Trying age-varying M1 with 3 age blocks: 1, 2, and 3+
-# map <- intrasp_run$map
-# orig <- intrasp_run$map$mapList$ln_M1
-# orig[orig > 2] <- 3
-# map$mapList$ln_M1 <- orig
-# map$mapFactor$ln_M1 = as.factor(map$mapList$ln_M1)
-# 
-# intrasp_run2 <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                   inits = NULL,
-#                                   file = NULL, # Don't save
-#                                   map = map,
-#                                   msmMode = 1, # Single-species mode - no predation mortality
-#                                   phase = "default")
-
-# Run single-species model with fixed & time-varying M1
-nodiet_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
-nodiet_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 0)
-
-nodiet_fit <- rbind(cbind(model = "est M1", nodiet[[2]]),
-                    cbind(model = "fix M1", nodiet_M1fixed[[2]]),
-                    cbind(model = "age M1", nodiet_M1aged[[2]]))
-
-nodiet_summary <- cbind(nodiet[[3]], 
-                        nodiet_M1fixed[[3]][, 3],
-                        nodiet_M1aged[[3]][, 3])[, -(1:2)]
-colnames(nodiet_summary) <- c("est M1", "fix M1", "age M1")
-
+model_fits <- rbind(cbind(model = "SS est M1", ss_estM1$fit),
+                    cbind(model = "SS fix M1", ss_fixM1$fit),
+                    cbind(model = "MS est M1", ms_estM1$fit),
+                    cbind(model = "MS fix M1", ms_fixM1$fit))
+model_summary <- cbind(ss_estM1$summary,
+                       ss_fixM1$summary[, 3],
+                       ms_estM1$summary[, 3],
+                       ms_fixM1$summary[, 3])[, -(1:2)]
+colnames(model_summary) <- c("SS est M1", "SS fix M1", "MS est M1", "MS fix M1")
 
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
-start_yr <- intrasp[[1]]$data_list$styr
+start_yr <- ms_estM1$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
 
@@ -465,7 +379,7 @@ plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, sav
               yearly_b_plot))  # diff_plot
 }
 
-plots <- plot_models(intrasp[[1]], nodiet[[1]])
+plots <- plot_models(ms_estM1$model, ss_estM1$model)
 mean_SEM <- plots[[1]]
 plots[[2]]
 plots[[3]]
@@ -478,7 +392,7 @@ plots[[9]]
 # plots[[10]]
 
 # Plot with fixed M1
-plots_M1fixed <- plot_models(intrasp_M1fixed[[1]], nodiet_M1fixed[[1]])
+plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
 plots_M1fixed[[2]]
 
 
@@ -517,64 +431,47 @@ mortality <- function(run, type) {
 }
 
 # Cannibalism with estimated M1
-intrasp_mort <- mortality(intrasp[[1]], type = "multi-species")
+intrasp_mort <- mortality(ms_estM1$model, type = "multi-species")
 intrasp_mort[[1]]
 intrasp_mort[[2]]
 intrasp_M1 <- intrasp_mort[[3]]
 
 # Cannibalism with fixed M1
-intrasp_fixed_mort <- mortality(intrasp_M1fixed[[1]], type = "multi-species")
+intrasp_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
 intrasp_fixed_mort[[1]]
 intrasp_fixed_mort[[2]]
 
-# Cannibalism with age-varying M1
-intrasp_aged_mort <- mortality(intrasp_M1aged[[1]], type = "multi-species")
-intrasp_aged_mort[[1]]
-intrasp_aged_mort[[2]]
-intrasp_aged_M1 <- intrasp_aged_mort[[3]]
-
 # Single-species with estimated M1
-nodiet_M1 <- mortality(nodiet[[1]], type = "single-species")
-
-# Single-species with age-varying M1
-nodiet_aged_M1 <- mortality(nodiet_M1aged[[1]], type = "single-species")
+nodiet_M1 <- mortality(ss_estM1$model, type = "single-species")
 
 ### Reference points ----------------------------------------------------------
-# TODO: fix this bit! Get specific HCR to work.
-# proj_intrasp <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                   inits = intrasp[[1]]$estimated_params, 
-#                                   estimateMode = 0,  
+# # TODO: fix this bit! Get specific HCR to work.
+# test <- Rceattle::fit_mod(data_list = hake_intrasp,
+#                           estimateMode = 0)
+# Rceattle::plot_recruitment(test, add_ci = TRUE, incl_proj = TRUE)
+# 
+# # Relative SSB
+# DynamicB0 <- cbind.data.frame(year = years, 
+#                               B0 = ms_estM1$model$quantities$DynamicB0[1:length(years)])
+# SSB <- biomass %>% filter(type == "SSB")
+# relativeSSB <- cbind.data.frame(year = years, 
+#                                 relativeSSB = SSB$value / 
+#                                   ms_estM1$model$quantities$DynamicB0[1:length(years)])
+# relativeSSB[31,2]  # 2019 value
+# 
+# # Run CEATTLE with an HCR to see reference points
+# intrasp_Fspr <- Rceattle::fit_mod(data_list = ms_estM1$model$data_list,
+#                                   inits = ms_estM1$model$estimated_params, 
+#                                   estimateMode = 1,  # hindcast model only
 #                                   HCR = Rceattle::build_hcr(HCR = 3, 
 #                                                             FsprTarget = 0.4, # 0.75 * F40%
 #                                                             # FsprLimit = 0.4,
 #                                                             Plimit = 0.2))
-
-test <- Rceattle::fit_mod(data_list = hake_intrasp,
-                          estimateMode = 0)
-Rceattle::plot_recruitment(test, add_ci = TRUE, incl_proj = TRUE)
-
-# Relative SSB
-DynamicB0 <- cbind.data.frame(year = years, 
-                              B0 = intrasp[[1]]$quantities$DynamicB0[1:length(years)])
-SSB <- biomass %>% filter(type == "SSB")
-relativeSSB <- cbind.data.frame(year = years, 
-                                relativeSSB = SSB$value / 
-                                  intrasp[[1]]$quantities$DynamicB0[1:length(years)])
-relativeSSB[31,2]  # 2019 value
-
-# Run CEATTLE with an HCR to see reference points
-intrasp_Fspr <- Rceattle::fit_mod(data_list = intrasp[[1]]$data_list,
-                                  inits = intrasp[[1]]$estimated_params, 
-                                  estimateMode = 1,  # hindcast model only
-                                  HCR = Rceattle::build_hcr(HCR = 3, 
-                                                            FsprTarget = 0.4, # 0.75 * F40%
-                                                            # FsprLimit = 0.4,
-                                                            Plimit = 0.2))
-intrasp_Fspr$quantities$B0
-intrasp_Fspr$quantities$SB0
-intrasp_Fspr$quantities$Flimit # F that gives SPR40%
-intrasp_Fspr$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
-intrasp_Fspr$quantities$Ftarget
+# intrasp_Fspr$quantities$B0
+# intrasp_Fspr$quantities$SB0
+# intrasp_Fspr$quantities$Flimit # F that gives SPR40%
+# intrasp_Fspr$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
+# intrasp_Fspr$quantities$Ftarget
 
 
 ### Save plots (when not experimenting) ---------------------------------------
