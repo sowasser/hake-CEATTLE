@@ -262,10 +262,10 @@ prey_wt_yearly <- ggplot(high_wt_yearly,
 prey_wt_yearly
 
 
-ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[6]], 
-       bg = "transparent", width=180, height=70, units="mm", dpi=300)
-ggsave(filename = "plots/diet/hake_prey_yearly.png", prey_wt_yearly, 
-       bg = "transparent", width=250, height=130, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_prey_species.png", hake_hake[[6]], 
+#        bg = "transparent", width=180, height=70, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_prey_yearly.png", prey_wt_yearly, 
+#        bg = "transparent", width=250, height=130, units="mm", dpi=300)
 # ggsave(filename = "plots/diet/hake_cannibalism.png", hake_hake[[7]], 
 #        bg = "transparent", width=160, height=80, units="mm", dpi=300)
 # ggsave(filename = "plots/diet/hake_locations_overall.png", hake_hake[[8]], 
@@ -304,10 +304,10 @@ sealion_hake[[6]]  # top prey species
 sealion_hake[[7]]  # yearly predation by type
 sealion_hake[[8]]  # overall locations of predation by type
 
-ggsave(filename = "plots/diet/Non-hake/CSL_hake_yearly.png", sealion_hake[[7]], 
-       bg = "transparent", width=150, height=80, units="mm", dpi=300)
-ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[8]], 
-       bg = "transparent", width=100, height=100, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/Non-hake/CSL_hake_yearly.png", sealion_hake[[7]], 
+#        bg = "transparent", width=150, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[8]], 
+#        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
 # Sea lion prey size
 CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
@@ -316,8 +316,8 @@ CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
   xlab("prey hake length (cm)") + ylab(" ")
 CSL_hake_prey_size
 
-ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
-       bg = "transparent", width=120, height=80, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
+#        bg = "transparent", width=120, height=80, units="mm", dpi=300)
 
 # Sea lion - hake predation monthly
 CSL_hake_monthly <- sealion_hake[[4]] %>%
@@ -369,6 +369,10 @@ seasonal_prop_plot
 
 ggsave(filename = "plots/diet/Non-hake/seasonal_prop.png", seasonal_prop_plot, 
        bg = "transparent", width=200, height=90, units="mm", dpi=300)
+
+# Monthly prop
+monthly_prop_hake <- CSL_hake_monthly %>% filter(type == "Pacific Hake")
+monthly_prop_other <- CSL_hake_monthly %>% filter(type != "Pacific Hake")
 
 
 # Subset of diet for CA sea lion predator & ATF prey 
