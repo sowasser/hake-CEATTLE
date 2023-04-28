@@ -146,3 +146,18 @@ save(ss_fixM1, file = "models/ss_fixM1.Rdata")
 save(ss_estM1, file = "models/ss_estM1.Rdata")
 save(ms_estM1, file = "models/ms_estM1.Rdata")
 save(ms_fixM1, file = "models/ms_fixM1.Rdata")
+
+
+# For future reference: age-blocked mortality at 1, 3, and 3+
+# map <- intrasp_run$map
+# orig <- intrasp_run$map$mapList$ln_M1
+# orig[orig > 2] <- 3
+# map$mapList$ln_M1 <- orig
+# map$mapFactor$ln_M1 = as.factor(map$mapList$ln_M1)
+# 
+# intrasp_run2 <- Rceattle::fit_mod(data_list = hake_intrasp,
+#                                   inits = NULL,
+#                                   file = NULL, # Don't save
+#                                   map = map,
+#                                   msmMode = 1, # Single-species mode - no predation mortality
+#                                   phase = "default")
