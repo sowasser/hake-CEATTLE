@@ -20,11 +20,11 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                  inits = init,
                  file = NULL, # Don't save
                  msmMode = msm, # Single-species mode - no predation mortality
-                 # M1Fun = Rceattle::build_M1(M1_model = M1, 
-                 #                            updateM1 = TRUE,
-                 #                            M1_use_prior = prior,
-                 #                            M1_prior_mean = 0.2,
-                 #                            M1_prior_sd = .1),
+                 M1Fun = Rceattle::build_M1(M1_model = M1,
+                                            updateM1 = TRUE,
+                                            M1_use_prior = prior,
+                                            M1_prior_mean = 0.2,
+                                            M1_prior_sd = .1),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
@@ -33,8 +33,6 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                                            Plimit = 0.1, # No fishing when SB<SB10
                                            Pstar = 0.45,
                                            Sigma = 0.5),
-                 M1Fun = Rceattle::build_M1(M1_model = M1, # Set M1 to fixed (0) or estimated (1)
-                                            updateM1 = TRUE),
                  phase = "default",
                 # # Update phase to help convergence --------------------------
                 # phase = list(
@@ -115,14 +113,15 @@ ss_estM1$fit  # check convergence
 ss_estM1$model$quantities$M1
 save(ss_estM1, file = "models/ss_estM1.Rdata")
 
-# ss_priorM1 <- run_CEATTLE(data = hake_intrasp, 
-#                           M1 = 1, 
-#                           prior = TRUE, 
-#                           init = NULL, 
-#                           msm = 0, 
-#                           M_phase = 1)
-# ss_priorM1$fit  # check convergence
-# ss_priorM1$model$quantities$M1
+ss_priorM1 <- run_CEATTLE(data = hake_intrasp,
+                          M1 = 1,
+                          prior = TRUE,
+                          init = NULL,
+                          msm = 0,
+                          M_phase = 1)
+ss_priorM1$fit  # check convergence
+ss_priorM1$model$quantities$M1
+save(ss_priorM1, file = "models/ss_priorM1.Rdata")
 
 # Run with cannibalism (multi-species mode) -----------------------------------
 ms_estM1 <- run_CEATTLE(data = hake_intrasp, 
@@ -145,6 +144,16 @@ ms_fixM1 <- run_CEATTLE(data = hake_intrasp,
                         M_phase = 6)
 ms_fixM1$fit  # check convergence
 save(ms_fixM1, file = "models/ms_fixM1.Rdata")
+
+ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
+                          M1 = 1,
+                          prior = TRUE,
+                          init = NULL,
+                          msm = 1,
+                          M_phase = 1)
+ms_priorM1$fit  # check convergence
+ms_priorM1$model$quantities$M1
+save(ms_priorM1, file = "models/ms_priorM1.Rdata")
 
 
 # For future reference: age-blocked mortality at 1, 3, and 3+ -----------------

@@ -17,19 +17,26 @@ theme_set(theme_sleek())
 ### Load in models - Rdata objects --------------------------------------------
 load("models/ss_fixM1.Rdata")
 load("models/ss_estM1.Rdata")
+load("models/ss_priorM1.Rdata")
 load("models/ms_estM1.Rdata")
 load("models/ms_fixM1.Rdata")
+load("models/ms_priorM1.Rdata")
 
 # Compare fits
 model_fits <- rbind(cbind(model = "SS est M1", ss_estM1$fit),
                     cbind(model = "SS fix M1", ss_fixM1$fit),
+                    cbind(model = "SS prior M1", ss_priorM1$fit),
                     cbind(model = "MS est M1", ms_estM1$fit),
-                    cbind(model = "MS fix M1", ms_fixM1$fit))
+                    cbind(model = "MS fix M1", ms_fixM1$fit),
+                    cbind(model = "MS prior M1", ms_priorM1$fit))
 model_summary <- cbind(ss_estM1$summary,
                        ss_fixM1$summary[, 3],
+                       ss_priorM1$summary[, 3],
                        ms_estM1$summary[, 3],
-                       ms_fixM1$summary[, 3])[, -(1:2)]
-colnames(model_summary) <- c("SS est M1", "SS fix M1", "MS est M1", "MS fix M1")
+                       ms_fixM1$summary[, 3],
+                       ms_priorM1$summary[, 3])[, -(1:2)]
+colnames(model_summary) <- c("SS est M1", "SS fix M1", "SS prior M1",
+                             "MS est M1", "MS fix M1", "MS prior M1")
 
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
@@ -395,6 +402,9 @@ plots[[9]]
 plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
 plots_M1fixed[[2]]
 
+# Plot with a prior on M1
+plots_M1prior <- plot_models(ms_priorM1$model, ss_priorM1$model)
+plots_M1prior[[2]]
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
@@ -431,18 +441,25 @@ mortality <- function(run, type) {
 }
 
 # Cannibalism with estimated M1
-intrasp_mort <- mortality(ms_estM1$model, type = "multi-species")
-intrasp_mort[[1]]
-intrasp_mort[[2]]
-intrasp_M1 <- intrasp_mort[[3]]
+ms_mort <- mortality(ms_estM1$model, type = "multi-species")
+ms_mort[[1]]
+ms_mort[[2]]
+ms_M1 <- ms_mort[[3]]
 
 # Cannibalism with fixed M1
-intrasp_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
-intrasp_fixed_mort[[1]]
-intrasp_fixed_mort[[2]]
+ms_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
+ms_fixed_mort[[1]]
+ms_fixed_mort[[2]]
+
+# Cannibalism with prior on M1
+ms_prior_mort <- mortality(ms_priorM1$model, type = "multi-species")
+ms_prior_mort[[1]]
+ms_prior_mort[[2]]
+ms_prior_M1 <- ms_prior_mort[[3]]
 
 # Single-species with estimated M1
-nodiet_M1 <- mortality(ss_estM1$model, type = "single-species")
+ss_M1 <- mortality(ss_estM1$model, type = "single-species")
+ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
 ### Reference points ----------------------------------------------------------
 # # TODO: fix this bit! Get specific HCR to work.
