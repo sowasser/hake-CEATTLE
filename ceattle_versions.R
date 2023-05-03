@@ -31,7 +31,7 @@ main_run <- Rceattle::fit_mod(data_list = main_data,
                               phase = "default",
                               projection_uncertainty = TRUE)
 fit(main_run)
-save(main_run, file = "main_run.Rdata")
+save(main_run, file = "models/main_run.Rdata")
 
 ###############
 ## RESTART R ##
@@ -60,12 +60,12 @@ dev_run <- Rceattle::fit_mod(data_list = dev_data,
 
 fit(dev_run)
 
-save(dev_run, file = "dev_run.Rdata")
+save(dev_run, file = "models/dev_run.Rdata")
 
 
 # Compare models across Rceattle verisons -------------------------------------
-load("main_run.Rdata")
-load("dev_run.Rdata")
+load("models/main_run.Rdata")
+load("models/dev_run.Rdata")
 
 # We can plot all runs
 mod_list <- list(main_run, dev_run)
