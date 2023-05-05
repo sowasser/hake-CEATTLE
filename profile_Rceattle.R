@@ -6,16 +6,16 @@ library(ggplot2)
 data <- read_data(file = "data/hake_intrasp_230427.xlsx")  # Read in data
 
 ### Run profile over M1 in single-species model -------------------------------
-M_vec <- seq(0.18, 0.35, 0.01)  # Initial vector of M values to test
+M_vec <- seq(0.15, 0.35, 0.01)  # Initial vector of M values to test
 
 # Function updating M1 for each run of the model
-get_profile <- function(M1_change) {
+get_profile <- function(M1_change, msm) {
   data$M1_base[, 3:17] <- M1_change
   run <- fit_mod(
     data_list = data,
     inits = NULL,
     file = NULL, # Don't save
-    msmMode = 1, # Single-species mode - no predation mortality
+    msmMode = msm, 
     M1Fun = Rceattle::build_M1(M1_model = 0,
                                updateM1 = FALSE,
                                M1_use_prior = FALSE),
@@ -38,12 +38,17 @@ get_profile <- function(M1_change) {
 
 # Run the function for all values in M_vec
 for(i in 1:length(M_vec)) {
-  get_profile(M_vec[i])
+  get_profile(M_vec[i], msm = 0)
 }
 
-# Update M_vec as needed if function/R crashes, or for more values
-M_vec <- c(0.16, 0.19, 0.22, 0.24, 0.28, 0.32)
 
+# Update M_vec as needed if function/R crashes, or for more values
+M_vec_new <- c(0.33)
+
+# Run the function for all values in M_vec
+for(i in 1:length(M_vec_new)) {
+  get_profile(M_vec_new[i])
+}
 
 # Compare likelihoods & plot --------------------------------------------------
 runs <- list.files(path = "models/profile")  # List of all model runs
@@ -57,14 +62,14 @@ for(i in 1:length(runs)) {
   jnll_sums[i] <- sum(rowSums(run$quantities$jnll_comp))
 }
 
+# Combine with M1 input for each run
+profile <- cbind.data.frame(M1 = M_vec,
+                            JNLL = jnll_sums)
+
 # Convert to range from 0-1
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
-# Combine with M1 input for each run
-profile <- cbind.data.frame(M1 = seq(0.15, 0.35, 0.01),
-                            JNLL = jnll_sums)
-
 ggplot(profile, aes(x = M1, y = range01(JNLL))) +
-  geom_point() +
+  geom_line() +
   ylab("JNLL") +
   ggsidekick::theme_sleek()
