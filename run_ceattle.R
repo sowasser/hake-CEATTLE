@@ -3,11 +3,13 @@
 #' while to run (especially with convergence issues), so output is saved for 
 #' use in ceattle_cannibalism.R
 
-library(Rceattle)
 # Reinstall Rceattle if needed
 # remove.packages("Rceattle")
+# remove.packages("00LOCK-Rceattle")
 # pak::pkg_install("grantdadams/Rceattle")
 # remotes::install_github("grantdadams/Rceattle")
+# devtools::install_github("grantdadams/Rceattle", ref = "dev")
+library(Rceattle)
 
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230427.xlsx")
