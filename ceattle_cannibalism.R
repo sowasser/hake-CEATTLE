@@ -462,33 +462,46 @@ ss_M1 <- mortality(ss_estM1$model, type = "single-species")
 ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
 ### Reference points ----------------------------------------------------------
-# # TODO: fix this bit! Get specific HCR to work.
-# test <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                           estimateMode = 0)
-# Rceattle::plot_recruitment(test, add_ci = TRUE, incl_proj = TRUE)
-# 
-# # Relative SSB
-# DynamicB0 <- cbind.data.frame(year = years, 
-#                               B0 = ms_estM1$model$quantities$DynamicB0[1:length(years)])
-# SSB <- biomass %>% filter(type == "SSB")
-# relativeSSB <- cbind.data.frame(year = years, 
-#                                 relativeSSB = SSB$value / 
-#                                   ms_estM1$model$quantities$DynamicB0[1:length(years)])
-# relativeSSB[31,2]  # 2019 value
-# 
-# # Run CEATTLE with an HCR to see reference points
-# intrasp_Fspr <- Rceattle::fit_mod(data_list = ms_estM1$model$data_list,
-#                                   inits = ms_estM1$model$estimated_params, 
-#                                   estimateMode = 1,  # hindcast model only
-#                                   HCR = Rceattle::build_hcr(HCR = 3, 
-#                                                             FsprTarget = 0.4, # 0.75 * F40%
-#                                                             # FsprLimit = 0.4,
-#                                                             Plimit = 0.2))
-# intrasp_Fspr$quantities$B0
-# intrasp_Fspr$quantities$SB0
-# intrasp_Fspr$quantities$Flimit # F that gives SPR40%
-# intrasp_Fspr$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
-# intrasp_Fspr$quantities$Ftarget
+ms_estM1$model$quantities$SB0
+ms_estM1$model$quantities$Flimit # F that gives SPR40%
+ms_estM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
+ms_estM1$model$quantities$Ftarget
+relativeSSB_estM1 <- data.frame(t(ms_estM1$model$quantities$biomassSSB / ms_estM1$model$quantities$DynamicB0))
+relativeSSB_estM1$year <- rownames(relativeSSB_estM1)
+rownames(relativeSSB_estM1) <- NULL
+relativeSSB_estM1$model <- "estimated M1"
+
+ms_fixM1$model$quantities$B0
+ms_fixM1$model$quantities$SB0
+ms_fixM1$model$quantities$Flimit # F that gives SPR40%
+ms_fixM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
+ms_fixM1$model$quantities$Ftarget
+relativeSSB_fixM1 <- data.frame(t(ms_fixM1$model$quantities$biomassSSB / ms_fixM1$model$quantities$DynamicB0))
+relativeSSB_fixM1$year <- rownames(relativeSSB_fixM1)
+rownames(relativeSSB_fixM1) <- NULL
+relativeSSB_fixM1$model <- "fixed M1"
+
+ms_priorM1$model$quantities$B0
+ms_priorM1$model$quantities$SB0
+ms_priorM1$model$quantities$Flimit # F that gives SPR40%
+ms_priorM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
+ms_priorM1$model$quantities$Ftarget
+relativeSSB_priorM1 <- data.frame(t(ms_priorM1$model$quantities$biomassSSB / ms_priorM1$model$quantities$DynamicB0))
+relativeSSB_priorM1$year <- rownames(relativeSSB_priorM1)
+rownames(relativeSSB_priorM1) <- NULL
+relativeSSB_priorM1$model <- "prior M1"
+
+relativeSSB <- rbind(relativeSSB_estM1, relativeSSB_fixM1, relativeSSB_priorM1)
+colnames(relativeSSB)[1] <- "relativeSSB"
+relativeSSB$year <- as.numeric(relativeSSB$year)
+relativeSSB$model <- factor(relativeSSB$model)
+
+ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
+  geom_line() +
+  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  ylab("Relative SSB")
+  
 
 
 ### Save plots (when not experimenting) ---------------------------------------
