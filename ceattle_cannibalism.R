@@ -128,8 +128,8 @@ plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, sav
   
   # Combine all biomass sources together
   biom_all <- rbind(biomass, nodiet_biom, ss3_biom)
-  biom_all$value <- biom_all$value / 1000000  # to mt
-  biom_all$error <- biom_all$error / 1000000  # to mt
+  biom_all$value <- biom_all$value / 1000000  # to Mt
+  biom_all$error <- biom_all$error / 1000000  # to Mt
   
   # Put recruitment together
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
@@ -495,13 +495,11 @@ relativeSSB <- rbind(relativeSSB_estM1, relativeSSB_fixM1, relativeSSB_priorM1)
 colnames(relativeSSB)[1] <- "relativeSSB"
 relativeSSB$year <- as.numeric(relativeSSB$year)
 relativeSSB$model <- factor(relativeSSB$model)
-
 ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
   geom_line() +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   ylab("Relative SSB")
-  
 
 
 ### Save plots (when not experimenting) ---------------------------------------
