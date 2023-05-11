@@ -2,6 +2,7 @@
 
 library(Rceattle)
 library(ggplot2)
+library(viridis)
 library(dplyr)
 
 data <- read_data(file = "data/hake_intrasp_230427.xlsx")  # Read in data
@@ -37,7 +38,8 @@ get_profile <- function(M1_change, msm) {
   if (msm == 1) {save(run, file = paste0("models/profile/ms/run", as.character(M1_change), ".Rdata"))}
 }
 
-### Run profile over M1 in single-species model -------------------------------
+### Run profile over M1 -------------------------------------------------------
+# SINGLE SPECIES 
 # Run the function for all values in M_vec
 for(i in 1:length(M_vec)) {
   get_profile(M_vec[i], msm = 0)
@@ -51,7 +53,7 @@ for(i in 1:length(M_vec_new)) {
   get_profile(M_vec_new[i], msm = 0)
 }
 
-# Get JNLL for each run 
+# CANNIBALISM
 runs <- list.files(path = "models/profile/ss")  # List of all model runs
 
 # Get sum of joint negative log likelihood for each run
@@ -83,21 +85,36 @@ for(i in 1:length(M_vec_new)) {
   get_profile(M_vec_new[i], msm = 1)
 }
 
-# Get JNLL for each run & plot with M1 value
-runs <- list.files(path = "models/profile/ms")  # List of all model runs
+
+### Get JNLL for each run and plot --------------------------------------------
+# Single species
+runs_ss <- list.files(path = "models/profile/ss")  # List of all model runs
 
 # Get sum of joint negative log likelihood for each run
-jnll_sums_ms <- c() 
-for(i in 1:length(runs)) {
-  load(paste0("models/profile/ms/", runs[i]))
-  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
-  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
-  jnll_sums_ms[i] <- sum(rowSums(run$quantities$jnll_comp))
+jnll_all_ss <- c() 
+for(i in 1:length(runs_ss)) {
+  load(paste0("models/profile/ss/", runs_ss[i]))
+  jnll_all_ss[i] <- run$quantities$jnll
+}
+
+# Combine with M1 input for each run
+profile_ss <- cbind.data.frame(M1 = M_vec,
+                               JNLL = jnll_all_ss - nll_ss,
+                               model = "single-species")
+
+# Cannibalism
+runs_ms <- list.files(path = "models/profile/ms")  # List of all model runs
+
+# Get sum of joint negative log likelihood for each run
+jnll_all_ms <- c() 
+for(i in 1:length(runs_ms)) {
+  load(paste0("models/profile/ms/", runs_ms[i]))
+  jnll_all_ms[i] <- run$quantities$jnll
 }
 
 # Combine with M1 input for each run
 profile_ms <- cbind.data.frame(M1 = M_vec,
-                               JNLL = jnll_sums_ms,
+                               JNLL = jnll_sums_ms - nll_ms,
                                model = "cannibalism")
 
 
@@ -121,3 +138,50 @@ profile_plot
 ggsave(filename="plots/CEATTLE/cannibalism/M1_profile.png", 
        profile_plot, 
        width=180, height=80, units="mm", dpi=300)
+
+
+### Plot effect on spawning output --------------------------------------------
+ssb_all_ss <- data.frame()
+for(i in 1:length(runs_ss)) {
+  load(paste0("models/profile/ss/", runs_ss[i]))
+  ssb <- data.frame(t(run$quantities$biomassSSB))
+  ssb$error <- (run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")] * 2)
+  ssb$year <-rownames(ssb)
+  rownames(ssb) <- NULL
+  ssb$M1 <- round(run$quantities$M1[1, 1, 1], digits = 2)
+  ssb_all_ss <- rbind(ssb_all_ss, ssb)
+}
+colnames(ssb_all_ss)[1] <- "SSB"
+ssb_all_ss$model <- "single-species"
+
+ssb_all_ms <- data.frame()
+for(i in 1:length(runs_ms)) {
+  load(paste0("models/profile/ms/", runs_ms[i]))
+  ssb <- data.frame(t(run$quantities$biomassSSB))
+  ssb$error <- (run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")] * 2)
+  ssb$year <-rownames(ssb)
+  rownames(ssb) <- NULL
+  ssb$M1 <- round(run$quantities$M1[1, 1, 1], digits = 2)
+  ssb_all_ms <- rbind(ssb_all_ms, ssb)
+}
+colnames(ssb_all_ms)[1] <- "SSB"
+ssb_all_ms$model <- "cannibalism"
+
+ssb_all <- rbind(ssb_all_ss, ssb_all_ms)
+ssb_all$SSB <- ssb_all$SSB / 1000000  # to Mt
+ssb_all$error <- ssb_all$error / 1000000  # to Mt
+ssb_all$year <- as.numeric(ssb_all$year)
+ssb_all$model <- factor(ssb_all$model, levels = c("single-species", "cannibalism"))
+ssb_all$M1 <- factor(as.character(ssb_all$M1))
+
+ssb_profile_plot <- ggplot(ssb_all, aes(x = year, y = SSB, color = M1, fill = M1)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=(SSB - error), ymax=(SSB + error)), alpha = 0.2, color = NA) + 
+  ylab("Spawning Stock Biomass (Mt)") + labs(color = "M1") +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+  ggsidekick::theme_sleek() +
+  facet_wrap(~model)
+ssb_profile_plot
+
+test <- run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")]
