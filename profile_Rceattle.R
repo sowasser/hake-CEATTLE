@@ -1,5 +1,4 @@
 # Profile over M1 
-
 library(Rceattle)
 library(ggplot2)
 library(viridis)
@@ -13,16 +12,6 @@ startM_ss <- round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2)
 startM_ms <- round(ms_estM1$model$quantities$M1[1, 1, 1], digits = 2)
 nll_ss <- ss_estM1$model$quantities$jnll
 nll_ms <- ms_estM1$model$quantities$jnll
-
-delta <- seq(0.01,0.10, 0.01)
-
-M_ss <- rep(round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2), 10)
-
-M_vec_ss <- c(c(M_ss - delta), 
-              round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2),
-              c(M_ss + delta))
-
-
 
 # Function updating M1 for each run of the model
 get_profile <- function(M1_change, init, msm) {
@@ -51,36 +40,63 @@ get_profile <- function(M1_change, init, msm) {
   # Save the resulting run to losing progress to R bombs!
   if (msm == 0) {save(run, file = paste0("models/profile/ss/run", as.character(M1_change), ".Rdata"))}
   if (msm == 1) {save(run, file = paste0("models/profile/ms/run", as.character(M1_change), ".Rdata"))}
+  
+  message(run$quantities$jnll)
+  return(run)
 }
 
 ### Run profile over M1 -------------------------------------------------------
-# SINGLE SPECIES 
-# Run the function for all values in M_vec
-for(i in 1:length(M_vec)) {
-  get_profile(M_vec[i], msm = 0)
-}
+# SS down
+run <- get_profile(0.26, ss_estM1$model$estimated_params, 0)
+run1 <- get_profile(0.25, run$estimated_params, 0)
+run2 <- get_profile(0.24, run1$estimated_params, 0)
+run3 <- get_profile(0.23, run2$estimated_params, 0)
+run4 <- get_profile(0.22, run3$estimated_params, 0)
+run5 <- get_profile(0.21, run4$estimated_params, 0)
+run6 <- get_profile(0.20, run5$estimated_params, 0)
+run7 <- get_profile(0.19, run6$estimated_params, 0)
+run8 <- get_profile(0.18, run7$estimated_params, 0)
+run9 <- get_profile(0.17, run8$estimated_params, 0)
+run10 <- get_profile(0.16, run9$estimated_params, 0)
+run11 <- get_profile(0.15, run10$estimated_params, 0)
 
-# Update M_vec as needed if function/R crashes, or for more values
-M_vec_new <- c(0.33)
+# SS up
+run12 <- get_profile(0.27, run$estimated_params, 0)
+run13 <- get_profile(0.28, run12$estimated_params, 0)
+run14 <- get_profile(0.29, run13$estimated_params, 0)
+run15 <- get_profile(0.30, run14$estimated_params, 0)
+run16 <- get_profile(0.31, run15$estimated_params, 0)
+run17 <- get_profile(0.32, run16$estimated_params, 0)
+run18 <- get_profile(0.33, run17$estimated_params, 0)
+run19 <- get_profile(0.34, run18$estimated_params, 0)
+run20 <- get_profile(0.35, run19$estimated_params, 0)
 
-# Run the function for all values in M_vec
-for(i in 1:length(M_vec_new)) {
-  get_profile(M_vec_new[i], msm = 0)
-}
+rm(list = ls())  # clear environment to re-set runs
 
-# CANNIBALISM
-# Run the function for all values in M_vec
-for(i in 1:length(M_vec)) {
-  get_profile(M_vec[i], msm = 1)
-}
+# MS down
+run <- get_profile(0.32, ms_estM1$model$estimated_params, 1)
+run1 <- get_profile(0.31, run$estimated_params, 1)
+run2 <- get_profile(0.30, run1$estimated_params, 1)
+run3 <- get_profile(0.29, run2$estimated_params, 1)
+run4 <- get_profile(0.28, run3$estimated_params, 1)
+run5 <- get_profile(0.27, run4$estimated_params, 1)
+run6 <- get_profile(0.26, run5$estimated_params, 1)
+run7 <- get_profile(0.25, run6$estimated_params, 1)
+run8 <- get_profile(0.24, run7$estimated_params, 1)
+run9 <- get_profile(0.23, run8$estimated_params, 1)
+run10 <- get_profile(0.22, run9$estimated_params, 1)
+run11 <- get_profile(0.21, run10$estimated_params, 1)
+run12 <- get_profile(0.20, run11$estimated_params, 1)
+run13 <- get_profile(0.19, run12$estimated_params, 1)
+run14 <- get_profile(0.18, run13$estimated_params, 1)
+run15 <- get_profile(0.17, run14$estimated_params, 1)
+run16 <- get_profile(0.16, run15$estimated_params, 1)
+run17 <- get_profile(0.15, run16$estimated_params, 1)
 
-# Update M_vec as needed if function/R crashes, or for more values
-M_vec_new <- c(0.24)
-
-# Run the function for all values in M_vec
-for(i in 1:length(M_vec_new)) {
-  get_profile(M_vec_new[i], msm = 1)
-}
+# MS up
+run18 <- get_profile(0.33, run$estimated_params, 1)
+run19 <- get_profile(0.34, run18$estimated_params, 1)
+run20 <- get_profile(0.35, run19$estimated_params, 1)
 
 
 ### Get JNLL for each run and plot --------------------------------------------
