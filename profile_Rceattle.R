@@ -1,17 +1,16 @@
 # Profile over M1 
+
+# Re-install Rceattle if needed
+# remove.packages("Rceattle")
+# remove.packages("00LOCK-Rceattle")
+# devtools::install_github("grantdadams/Rceattle", ref = "dev")
+
 library(Rceattle)
 library(ggplot2)
 library(viridis)
 library(dplyr)
 
 data <- read_data(file = "data/hake_intrasp_230427.xlsx")  # Read in data
-load("models/ss_estM1.Rdata")
-load("models/ms_estM1.Rdata")
-
-startM_ss <- round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2)
-startM_ms <- round(ms_estM1$model$quantities$M1[1, 1, 1], digits = 2)
-nll_ss <- ss_estM1$model$quantities$jnll
-nll_ms <- ms_estM1$model$quantities$jnll
 
 # Function updating M1 for each run of the model
 get_profile <- function(M1_change, init, msm) {
@@ -20,9 +19,9 @@ get_profile <- function(M1_change, init, msm) {
     data_list = data,
     inits = init,
     file = NULL, # Don't save
-    msmMode = msm, 
+    msmMode = 0, 
     M1Fun = Rceattle::build_M1(M1_model = 0,
-                               updateM1 = FALSE,
+                               updateM1 = TRUE,
                                M1_use_prior = FALSE),
     estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
     HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
@@ -41,14 +40,18 @@ get_profile <- function(M1_change, init, msm) {
   if (msm == 0) {save(run, file = paste0("models/profile/ss/run", as.character(M1_change), ".Rdata"))}
   if (msm == 1) {save(run, file = paste0("models/profile/ms/run", as.character(M1_change), ".Rdata"))}
   
-  message(run$quantities$jnll)
+  message(run$quantities$jnll)  # print JNLL to console
   return(run)
 }
 
 ### Run profile over M1 -------------------------------------------------------
+# Load model with estimated M1 & check starting value
+load("models/ss_estM1.Rdata")
+startM_ss <- round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2)
+
 # SS down
-run <- get_profile(0.26, ss_estM1$model$estimated_params, 0)
-run1 <- get_profile(0.25, run$estimated_params, 0)
+run0 <- get_profile(0.26, ss_estM1$model$estimated_params, 0)
+run1 <- get_profile(0.25, run0$estimated_params, 0)
 run2 <- get_profile(0.24, run1$estimated_params, 0)
 run3 <- get_profile(0.23, run2$estimated_params, 0)
 run4 <- get_profile(0.22, run3$estimated_params, 0)
@@ -73,9 +76,13 @@ run20 <- get_profile(0.35, run19$estimated_params, 0)
 
 rm(list = ls())  # clear environment to re-set runs
 
+# Load model with estimated M1 & check starting value
+load("models/ms_estM1.Rdata")
+startM_ms <- round(ms_estM1$model$quantities$M1[1, 1, 1], digits = 2)
+
 # MS down
-run <- get_profile(0.32, ms_estM1$model$estimated_params, 1)
-run1 <- get_profile(0.31, run$estimated_params, 1)
+run0 <- get_profile(0.32, ms_estM1$model$estimated_params, 1)
+run1 <- get_profile(0.31, run0$estimated_params, 1)
 run2 <- get_profile(0.30, run1$estimated_params, 1)
 run3 <- get_profile(0.29, run2$estimated_params, 1)
 run4 <- get_profile(0.28, run3$estimated_params, 1)
@@ -94,27 +101,32 @@ run16 <- get_profile(0.16, run15$estimated_params, 1)
 run17 <- get_profile(0.15, run16$estimated_params, 1)
 
 # MS up
-run18 <- get_profile(0.33, run$estimated_params, 1)
+run18 <- get_profile(0.33, run0$estimated_params, 1)
 run19 <- get_profile(0.34, run18$estimated_params, 1)
 run20 <- get_profile(0.35, run19$estimated_params, 1)
 
 
 ### Get JNLL for each run and plot --------------------------------------------
-M_vec <- M_vec <- seq(0.15, 0.35, 0.01) 
+# Clear environment and load models back in
+rm(list = ls())  
+load("models/ss_estM1.Rdata")
+load("models/ms_estM1.Rdata")
 
 # Single species
 runs_ss <- list.files(path = "models/profile/ss")  # List of all model runs
 
 # Get sum of joint negative log likelihood for each run
 jnll_all_ss <- c() 
+m1_all_ss <- c()
 for(i in 1:length(runs_ss)) {
   load(paste0("models/profile/ss/", runs_ss[i]))
   jnll_all_ss[i] <- run$quantities$jnll
+  m1_all_ss[i] <- round(run$quantities$M1[1, 1, 1], digits = 2)
 }
 
 # Combine with M1 input for each run
-profile_ss <- cbind.data.frame(M1 = M_vec,
-                               JNLL = jnll_all_ss - nll_ss,
+profile_ss <- cbind.data.frame(M1 = m1_all_ss,
+                               JNLL = jnll_all_ss - ss_estM1$model$quantities$jnll,
                                model = "single-species")
 
 # Cannibalism
@@ -122,14 +134,16 @@ runs_ms <- list.files(path = "models/profile/ms")  # List of all model runs
 
 # Get sum of joint negative log likelihood for each run
 jnll_all_ms <- c() 
+m1_all_ms <- c()
 for(i in 1:length(runs_ms)) {
   load(paste0("models/profile/ms/", runs_ms[i]))
   jnll_all_ms[i] <- run$quantities$jnll
+  m1_all_ms[i] <- round(run$quantities$M1[1, 1, 1], digits = 2)
 }
 
 # Combine with M1 input for each run
 profile_ms <- cbind.data.frame(M1 = M_vec,
-                               JNLL = jnll_all_ms - nll_ms,
+                               JNLL = jnll_all_ms - ms_estM1$model$quantities$jnll,
                                model = "cannibalism")
 
 est_M1 <- cbind.data.frame(value = c(0.257, 0.318),
@@ -144,6 +158,7 @@ profile_plot <- rbind(profile_ss, profile_ms) %>%
   geom_vline(xintercept = 0.21, linetype = "dotted") +
   geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model), linetype = "dashed") +
   ylab("JNLL") + labs(color = "M1 estimate") +
+  scale_x_continuous(breaks = seq(0.15, 0.35, 0.01) ) +
   ggsidekick::theme_sleek() +
   facet_wrap(~model)
 profile_plot
