@@ -462,6 +462,22 @@ ss_M1 <- mortality(ss_estM1$model, type = "single-species")
 ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
 ### Reference points ----------------------------------------------------------
+# Catch / Fishing effort
+eff <- rbind(data.frame(year = years,
+                        eff = t(ms_fixM1$model$quantities$F_spp),
+                        model = "cannibalism"),
+             data.frame(year = years,
+                        eff = t(ss_fixM1$model$quantities$F_spp),
+                        model = "single-species"))
+
+eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
+  geom_line() +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  xlab("year") + ylab("F")
+eff_plot
+
 ms_estM1$model$quantities$SB0
 ms_estM1$model$quantities$Flimit # F that gives SPR40%
 ms_estM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
