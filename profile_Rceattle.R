@@ -158,7 +158,7 @@ profile_plot <- rbind(profile_ss, profile_ms) %>%
   geom_vline(xintercept = 0.21, linetype = "dotted") +
   geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model), linetype = "dashed") +
   ylab("JNLL") + labs(color = "M1 estimate") +
-  scale_x_continuous(breaks = seq(0.15, 0.35, 0.01) ) +
+  # scale_x_continuous(breaks = seq(0.15, 0.35, 0.01)) +  # all scale markers for investigating
   ggsidekick::theme_sleek() +
   facet_wrap(~model)
 profile_plot
@@ -167,6 +167,60 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_profile.png",
        profile_plot, 
        width=180, height=80, units="mm", dpi=300)
 
+### Plot JNLL components ------------------------------------------------------
+comp_out <- function(run) {
+  comp <- data.frame(run$quantities$jnll_comp)
+  comp$component <- rownames(comp)
+  comp$NLL <- comp$Sp.Srv.Fsh_1 + comp$Sp.Srv.Fsh_2  # combine species together
+  rownames(comp) <- NULL
+  comp <- comp[, c("component", "NLL")]
+  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
+  comp[nrow(comp) + 1, ] <- c("Total NLL", sum(comp$NLL))
+  comp$NLL <- as.numeric(comp$NLL)
+  # Select components for easier plotting.
+  comp <- comp %>% filter(component %in% c("Age/length composition data",
+                                           "Recruitment deviates",
+                                           "Selectivity deviates",
+                                           "Survey biomass",
+                                           "Total NLL"))
+  return(comp)
+}
+
+est_comp_ss <- comp_out(ss_estM1$model)
+comp_all_ss <- data.frame()
+for(i in 1:length(runs_ss)) {
+  load(paste0("models/profile/ss/", runs_ss[i]))
+  comp <- comp_out(run)
+  comp$NLL <- comp$NLL - est_comp_ss$NLL
+  comp$M1 <- round(run$quantities$M1[1, 1, 1], digits = 2)
+  comp_all_ss <- rbind(comp_all_ss, comp)
+}
+comp_all_ss$model <- "single-species"
+
+est_comp_ms <- comp_out(ms_estM1$model)
+comp_all_ms <- data.frame()
+for(i in 1:length(runs_ms)) {
+  load(paste0("models/profile/ms/", runs_ms[i]))
+  comp <- comp_out(run)
+  comp$NLL <- comp$NLL - est_comp_ms$NLL
+  comp$M1 <- round(run$quantities$M1[1, 1, 1], digits = 2)
+  comp_all_ms <- rbind(comp_all_ms, comp)
+}
+comp_all_ms$model <- "cannibalism"
+
+comp_all <- rbind(comp_all_ss, comp_all_ms)
+comp_profile_plot <- ggplot(comp_all, aes(x = M1, y = NLL, color = component)) +
+  geom_line() +
+  geom_point(aes(shape = component)) +
+  geom_vline(data = est_M1, mapping = aes(xintercept = value), linetype = "dashed") +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  ggsidekick::theme_sleek() +
+  facet_wrap(~model)
+comp_profile_plot
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_comp_profile.png", 
+       comp_profile_plot, 
+       width=180, height=80, units="mm", dpi=300)
 
 ### Plot effect on spawning output --------------------------------------------
 ssb_all_ss <- data.frame()
