@@ -142,7 +142,7 @@ for(i in 1:length(runs_ms)) {
 }
 
 # Combine with M1 input for each run
-profile_ms <- cbind.data.frame(M1 = M_vec,
+profile_ms <- cbind.data.frame(M1 = seq(0.15, 0.35, 0.01),
                                JNLL = jnll_all_ms - ms_estM1$model$quantities$jnll,
                                model = "cannibalism")
 
@@ -171,14 +171,18 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_profile.png",
 comp_out <- function(run) {
   comp <- data.frame(run$quantities$jnll_comp)
   comp$component <- rownames(comp)
-  comp$NLL <- comp$Sp.Srv.Fsh_1 + comp$Sp.Srv.Fsh_2  # combine species together
+  # Separate comps for fishery & survey (in different columns originally)
+  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
+  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
+  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
   rownames(comp) <- NULL
   comp <- comp[, c("component", "NLL")]
   comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
   comp[nrow(comp) + 1, ] <- c("Total NLL", sum(comp$NLL))
   comp$NLL <- as.numeric(comp$NLL)
   # Select components for easier plotting.
-  comp <- comp %>% filter(component %in% c("Age/length composition data",
+  comp <- comp %>% filter(component %in% c("Fishery age composition",
+                                           "Survey age composition",
                                            "Recruitment deviates",
                                            "Selectivity deviates",
                                            "Survey biomass",
@@ -218,7 +222,7 @@ comp_profile_plot <- ggplot(comp_all, aes(x = M1, y = NLL, color = component)) +
   facet_wrap(~model)
 comp_profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_comp_profile.png", 
+oggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_comp_profile.png", 
        comp_profile_plot, 
        width=180, height=80, units="mm", dpi=300)
 
