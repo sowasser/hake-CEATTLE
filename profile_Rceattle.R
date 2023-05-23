@@ -222,7 +222,7 @@ comp_profile_plot <- ggplot(comp_all, aes(x = M1, y = NLL, color = component)) +
   facet_wrap(~model)
 comp_profile_plot
 
-oggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_comp_profile.png", 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_comp_profile.png", 
        comp_profile_plot, 
        width=180, height=80, units="mm", dpi=300)
 
