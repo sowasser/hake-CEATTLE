@@ -104,7 +104,6 @@ popdy_plot
 ### Plot comparison to survey index -------------------------------------------
 init_surv <- ms_estM1$model$data_list$srv_biom %>%
   filter(Year > 1)
-init_surv$Year <- 
 
 survey_biom <- function(run, name) {
   srv <- data.frame(year = 1995:hind_end,
@@ -120,10 +119,18 @@ survey_all <- rbind.data.frame(survey_biom(ms_estM1$model, "estimated"),
   filter(year %in% init_surv$Year)
 
 survey_plot <- ggplot() +
-  # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
-  geom_point(data=init_surv, aes(x=Year, y=Observation), color = "black") +
-  geom_line(data=init_surv, aes(x=Year, y=Observation), color = "black") +
-  geom_line(data=survey_all, aes(x=year, y=biomass, color=model), linetype = "dashed") +
+  geom_point(data = init_surv, aes(x = Year, y = Observation)) +
+  geom_pointrange(data = init_surv, 
+                  aes(x = Year, y = Observation,
+                      ymin = exp(log(Observation) - 1.96*Log_sd),
+                      ymax = exp(log(Observation) + 1.96*Log_sd))) +
+  geom_line(data = survey_all, 
+            aes(x = year, y = biomass, color = model), linetype = "dashed") +
+  # geom_ribbon(data = survey_all, 
+  #             aes(x = year, y = biomass,
+  #                 ymin = exp(log(biomass) - 1.96*log_sd),
+  #                 ymax = exp(log(biomass) + 1.96*log_sd), 
+  #                 fill=model), alpha = 0.1) +  
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
