@@ -23,10 +23,11 @@ model_summary <- cbind(ms_estM1$summary,
                        ms_priorM1$summary[, 3])[, -(1:2)]
 colnames(model_summary) <- c("MS est M1", "MS fix M1", "MS prior M1")
 
-### Plot  -----------------------------------------------------------
+### Plot population dynamics --------------------------------------------------
 start_yr <- ms_estM1$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
+hind_end <- 2019
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -99,3 +100,32 @@ popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model
   facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
   theme(strip.background = element_blank(), strip.placement = "outside") 
 popdy_plot
+
+### Plot comparison to survey index -------------------------------------------
+init_surv <- ms_estM1$model$data_list$srv_biom %>%
+  filter(Year > 1)
+init_surv$Year <- 
+
+survey_biom <- function(run, name) {
+  srv <- data.frame(year = 1995:hind_end,
+                    biomass = run$quantities$srv_bio_hat,
+                    log_sd = run$quantities$srv_log_sd_hat,
+                    model = rep(name, length(1995:hind_end)))
+  return(srv)
+}
+
+survey_all <- rbind.data.frame(survey_biom(ms_estM1$model, "estimated"),
+                               survey_biom(ms_fixM1$model, "fixed"),
+                               survey_biom(ms_priorM1$model, "prior")) %>%
+  filter(year %in% init_surv$Year)
+
+survey_plot <- ggplot() +
+  # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
+  geom_point(data=init_surv, aes(x=Year, y=Observation), color = "black") +
+  geom_line(data=init_surv, aes(x=Year, y=Observation), color = "black") +
+  geom_line(data=survey_all, aes(x=year, y=biomass, color=model), linetype = "dashed") +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  xlab("year") + ylab("survey biomass")
+survey_plot
