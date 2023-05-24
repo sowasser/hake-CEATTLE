@@ -171,14 +171,14 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_profile.png",
 comp_out <- function(run) {
   comp <- data.frame(run$quantities$jnll_comp)
   comp$component <- rownames(comp)
+  rownames(comp) <- NULL
+  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
   # Separate comps for fishery & survey (in different columns originally)
   comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
   comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
   comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
-  rownames(comp) <- NULL
   comp <- comp[, c("component", "NLL")]
   comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
-  comp[nrow(comp) + 1, ] <- c("Total NLL", sum(comp$NLL))
   comp$NLL <- as.numeric(comp$NLL)
   # Select components for easier plotting.
   comp <- comp %>% filter(component %in% c("Fishery age composition",
@@ -213,6 +213,7 @@ for(i in 1:length(runs_ms)) {
 comp_all_ms$model <- "cannibalism"
 
 comp_all <- rbind(comp_all_ss, comp_all_ms)
+comp_all$model <- factor(comp_all$model, levels = c("single-species", "cannibalism"))
 comp_profile_plot <- ggplot(comp_all, aes(x = M1, y = NLL, color = component)) +
   geom_line() +
   geom_point(aes(shape = component)) +
