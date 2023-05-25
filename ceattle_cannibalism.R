@@ -43,6 +43,8 @@ colnames(model_summary) <- c("SS est M1", "SS fix M1", "SS prior M1",
 start_yr <- ms_estM1$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
+hind_end <- 2019
+assess_yr = "2020"
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -59,7 +61,7 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, save_data = FALSE) {
+plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -276,6 +278,8 @@ plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, sav
     facet_wrap(~model, ncol=1)
   
   # Plot comparison to survey index -------------------------------------------
+  init_surv <- ms_estM1$model$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
+  
   survey_biom <- function(run, name) {
     srv <- data.frame(year = 1995:hind_end,
                       biomass = run$quantities$srv_bio_hat,
@@ -285,23 +289,28 @@ plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, sav
   }
   
   intrasp_srv <- survey_biom(ms_run, "CEATTLE - cannibalism")
-  nodiet_srv <- survey_biom(ss_run, "CEATTLE - no diet")
+  nodiet_srv <- survey_biom(ss_run, "CEATTLE - single-species")
   
-  survey <- read.csv(paste0("data/assessment/", assess_yr, "/survey_data.csv"))
-  survey <- cbind(survey, model = rep("Stock Synthesis", length(survey$year)))
+  survey <- read.csv(paste0("data/assessment/", assess_yr, "/survey_out.csv"))
+  colnames(survey) <- c("year", "biomass", "log_sd")
+  survey <- cbind(survey, model = rep("Assessment", length(survey$year)))
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
+  survey_all$model <- factor(survey_all$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
   
-  survey_plot <- ggplot(survey_all, aes(x=year, y=biomass, color=model)) +
-    geom_line(alpha = 0.3) +
-    geom_point() +
-    # geom_ribbon(aes(ymin=(biomass-log_sd), ymax=(biomass+log_sd), fill=model)) +  # Including log sd, but values are really small!
+  survey_plot <- ggplot() +
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_pointrange(data = init_surv, 
+                    aes(x = Year, y = Observation,
+                        ymin = exp(log(Observation) - 1.96*Log_sd),
+                        ymax = exp(log(Observation) + 1.96*Log_sd)),
+                    fatten = 5) +
+    geom_line(data = survey_all, aes(x = year, y = biomass, color = model), alpha = 0.8) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab("year") + ylab("survey biomass")
+    xlab("year") + ylab("Index of Abundance")
   
-  # Suitability ---------------------------------------------------------------
+# Suitability ---------------------------------------------------------------
   suitability <- as.data.frame(as.table(ms_run$quantities$suit_main)) %>%
     filter(Var1 == "A" & Var2 == "A")
   

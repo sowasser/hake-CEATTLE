@@ -119,20 +119,13 @@ survey_all <- rbind.data.frame(survey_biom(ms_estM1$model, "estimated"),
   filter(year %in% init_surv$Year)
 
 survey_plot <- ggplot() +
-  geom_point(data = init_surv, aes(x = Year, y = Observation)) +
   geom_pointrange(data = init_surv, 
                   aes(x = Year, y = Observation,
                       ymin = exp(log(Observation) - 1.96*Log_sd),
-                      ymax = exp(log(Observation) + 1.96*Log_sd))) +
-  geom_line(data = survey_all, 
-            aes(x = year, y = biomass, color = model), linetype = "dashed") +
-  # geom_ribbon(data = survey_all, 
-  #             aes(x = year, y = biomass,
-  #                 ymin = exp(log(biomass) - 1.96*log_sd),
-  #                 ymax = exp(log(biomass) + 1.96*log_sd), 
-  #                 fill=model), alpha = 0.1) +  
+                      ymax = exp(log(Observation) + 1.96*Log_sd)),
+                  fatten = 5) +
+  geom_line(data = survey_all, aes(x = year, y = biomass, color = model), alpha = 0.8) +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   xlab("year") + ylab("survey biomass")
 survey_plot
