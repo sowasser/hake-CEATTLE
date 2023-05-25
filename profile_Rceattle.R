@@ -163,7 +163,7 @@ profile_plot <- rbind(profile_ss, profile_ms) %>%
   facet_wrap(~model)
 profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_profile.png", 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile.png", 
        profile_plot, 
        width=180, height=80, units="mm", dpi=300)
 
@@ -223,7 +223,7 @@ comp_profile_plot <- ggplot(comp_all, aes(x = M1, y = NLL, color = component)) +
   facet_wrap(~model)
 comp_profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_comp_profile.png", 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png", 
        comp_profile_plot, 
        width=180, height=80, units="mm", dpi=300)
 
@@ -271,6 +271,6 @@ ssb_profile_plot <- ggplot(ssb_all, aes(x = year, y = SSB, color = M1, fill = M1
   facet_wrap(~model)
 ssb_profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1_profile_SSB.png", 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile_SSB.png", 
        ssb_profile_plot, 
        width=200, height=80, units="mm", dpi=300)

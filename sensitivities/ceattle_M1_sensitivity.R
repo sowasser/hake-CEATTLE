@@ -101,6 +101,10 @@ popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model
   theme(strip.background = element_blank(), strip.placement = "outside") 
 popdy_plot
 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_sens_popdy.png", 
+       popdy_plot, 
+       width=140, height=150, units="mm", dpi=300)
+
 ### Plot comparison to survey index -------------------------------------------
 init_surv <- ms_estM1$model$data_list$srv_biom %>%
   filter(Year > 1)
@@ -129,3 +133,7 @@ survey_plot <- ggplot() +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   xlab("year") + ylab("survey biomass")
 survey_plot
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_sens_survey.png", 
+       survey_plot, 
+       width=200, height=120, units="mm", dpi=300)
