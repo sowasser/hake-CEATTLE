@@ -93,6 +93,7 @@ timing_plot_popdy <- function(run_high, run_low) {
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
@@ -109,10 +110,6 @@ timing_popdy[[3]]
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[3]], 
        width=140, height=150, units="mm", dpi=300)
-
-timing_popdy[[4]]
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", timing_popdy[[4]], 
-       width=150, height=80, units="mm", dpi=300)
 
 # Calculate reference points 
 DynamicB0_recent <- c(run_recent$quantities$DynamicB0[1:length(2005:2019)])
@@ -139,23 +136,24 @@ extract_nbyage <- function(run, name, years) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_nbyage(run_90s, "1988-1999", 1988:1999),
-                         extract_nbyage(run_all, "all years", 1988:2019),
-                         extract_nbyage(run_recent, "2005-2019", 2005:2019))
+nbyage_test_all <- rbind(extract_nbyage(run_90s$model, "high (1988-1999)", 1988:1999),
+                         extract_nbyage(ms_estM1$model, "all years", 1988:2022),
+                         extract_nbyage(run_recent$model, "low (2005-2019)", 2005:2019))
 
 # Set 15 as accumulation age
 nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
 
 # Plot yearly nbyage
 nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
-nbyage_test_all$model <- factor(nbyage_test_all$model, levels = c("1988-1999", "all years", "2005-2019"))
+nbyage_test_all$model <- factor(nbyage_test_all$model, 
+                                levels = c("high (1988-1999)", "all years", "low (2005-2019)"))
 
 test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  scale_x_discrete(breaks = seq(1988, 2022, 3)) +
   xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
   facet_wrap(~model, ncol = 1)
@@ -166,201 +164,28 @@ ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_nbyage.png", test
 
 
 ### Plot mortality ------------------------------------------------------------
-plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim = NULL, type = 0, width = 8,  height = 5.5, title = NULL, log = FALSE, minyr = NULL, theta = 155, species = NULL, maxage = NULL, title_cex = 10, M2 = TRUE) {
-  
-  # Convert single one into a list
-  if(class(Rceattle) == "Rceattle"){
-    Rceattle <- list(Rceattle)
-  }
-  
-  if(length(Rceattle) > 1){
-    stop("Can only plot one model")
-  }
-  
-  # Extract data objects
-  if(is.null(minyr)){ minyr <- Rceattle[[1]]$data_list$styr}
-  
-  Years <- minyr:Rceattle[[1]]$data_list$endyr
-  if(incl_proj){
-    Years <- minyr:Rceattle[[1]]$data_list$projyr
-  }
-  nyrs_vec <- length(Years)
-  nyrs <- max(nyrs_vec)
-  maxyr <- max((sapply(Years, max)))
-  
-  nspp <- Rceattle[[1]]$data_list$nspp
-  spnames <- Rceattle[[1]]$data_list$spnames
-  estdynamics <- Rceattle[[1]]$data_list$estDynamics
-  nages <- Rceattle[[1]]$data_list$nages
-  
-  if(!is.null(maxage)){
-    nages <- sapply(nages, function(x) ifelse(x > maxage, maxage, x))
-  }
-  
-  minage <- Rceattle[[1]]$data_list$minage
-  nsex <- Rceattle[[1]]$data_list$nsex
-  
-  # Get M
-  M_array <-
-    array(NA, dim = c(nspp, 2, max(nages), nyrs, length(Rceattle)))
-  M1_array <-
-    array(NA, dim = c(nspp, 2, max(nages), length(Rceattle)))
-  for (i in 1:length(Rceattle)) {
-    M1_array[, , ,i] <- Rceattle[[i]]$quantities$M1[,,1:max(nages)]
-    if(!M2){
-      M_array[, , , ,i] <- Rceattle[[i]]$quantities$M[,,1:max(nages),(1:nyrs)+(minyr - Rceattle[[1]]$data_list$styr)]
-    }
-    if(M2){
-      M_array[, , , ,i] <- Rceattle[[i]]$quantities$M2[,,1:max(nages),(1:nyrs)+(minyr - Rceattle[[1]]$data_list$styr)]
-    }
-  }
-  
-  if(log){
-    M1_array = log(M1_array)
-    M_array = log(M_array)
-  }
-  
-  # Plot limits
-  zmax <- c()
-  zmin <- c()
-  for (i in 1:dim(M_array)[1]) {
-    zmax[i] <- max(c(M_array[i,,,,], 0), na.rm = T)
-    zmin[i] <- min(c(M_array[i,,,,], 0), na.rm = T)
-  }
-  
-  # Plot trajectory
-  loops <- ifelse(is.null(file), 1, 2)
-  
-  #################################
-  # Mortality time series
-  #################################
-  if(is.null(species)){
-    species <- 1:nspp
-  }
-  spp <- species
-  
-  # Species
-  for(j in 1:nspp){
-    sp <- j
-    
-    if(estdynamics[j] == 0 & sp %in% spp){
-      
-      # Sexes
-      for(sex in 1:nsex[sp]){
-        
-        # Get sex for legend
-        legend_sex = sex
-        legend_sex2 = ifelse(sex == 1, "Female", "Male")
-        if(nsex[sp] == 1){
-          legend_sex <- 0
-          legend_sex2 = "Combined"
-        }
-        
-        # Save
-        for (i in 1:loops) {
-          if (i == 2) {
-            filename <- paste0(file, "predation_and_residual_mortality_spp_",sp,"_sex_",legend_sex2,".png")
-            png(
-              file = filename ,
-              width = width,
-              height = height,
-              units = "in",
-              res = 300
-            )
-          }
-          
-          # Subset mortality data
-          m_subset <- (M_array[j, sex, (1:nages[sp]), 1:nyrs, 1])
-          
-          # Get ages
-          ages <- (1:(nages[sp])) - 1 + minage[sp]
-          
-          # Rearrange data
-          data <- data.frame(Year = rep(Years, each = length(ages)), Age = rep(ages, length(Years)), M = c(m_subset))
-          
-          # Plot limits
-          if(is.null(zlim)){
-            zlim <- c(zmin[sp], zmax[sp])
-          }
-          
-          if(is.character(zlim)){
-            zlim <- c(min(zmin), max(zmax))
-          }
-          
-          # Plot as tiles
-          if(type == 0){
-            p = ggplot2::ggplot(data, aes(y = Age, x = Year, zmin = zlim[1], zmax = zlim[2])) + 
-              geom_tile(aes(fill = M))  + 
-              # scale_fill_viridis(limits=c(0, 2)) +  # set upper limit so plots match
-              scale_y_continuous(expand = c(0, 0), breaks=seq(0,max(ages),round(nages[sp]/5))) + 
-              coord_equal() +  scale_x_continuous(expand = c(0, 0))+ 
-              theme( panel.border = element_rect(colour = "black", fill=NA, size=1))
-            if(!is.null(title)){
-              p = p + ggtitle(paste0(title,": ",spnames[j] )) + 
-                theme(plot.title = element_text(size = title_cex))
-            }
-            
-            scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for legend
-            
-            if(log){
-              p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
-            } else {
-              p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
-            }
-            return(p)
-          }
-          
-          # Plot as contours
-          if(type == 1){
-            print(ggplot2::ggplot(data, aes(y = Age, x = Year, z = M, zmin = zlim[1], zmax = zlim[2])) + geom_contour(colour = 1, size = 0.5) + geom_contour_filled()  + scale_y_continuous(expand = c(0, 0), breaks=seq(0,max(ages),round(nages[sp]/5))) +  scale_x_continuous(expand = c(0, 0)) + theme( panel.border = element_rect(colour = "black", fill=NA, size=1)) + scale_fill_viridis_d("M1 + M2"))
-          }
-          
-          # Plot as facets
-          if(type == 2){
-            p = ggplot(data=data, aes(x=Year, y = M, colour = Age, group = Age)) + theme( panel.border = element_rect(colour = "black", fill=NA, size=1), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) + geom_line(size = 2) + scale_color_viridis_c("Age")
-            print(p)
-          }
-          
-          # Plot as persp
-          if(type == 3){
-            par( mar=c(1 , 2 , 1 , 1) , tcl=-.25 , mgp=c(2 ,  1 ,  0) ,  oma=c(0 , 2 , 0 , 0))
-            pmat = persp(y = Years, x = ages, z = m_subset, zlab = NA, zlim = zlim, xlab = "Age", ylab = "Year", theta = theta, ticktype = "detailed")
-            mtext(ifelse(M2, "M2", "M"), side = 2, line = 0.5, at = 0)
-            if(M2){
-              text(-0.25,.15, labels = paste0("M1 = ",round((M1_array[j, sex, 1, 1]), 3)))
-            }
-            
-            if(nsex[sp] == 1){
-              mtext(paste0(title,": ",spnames[j]), side = 3, line = -2, at = 0)
-            }
-            if(nsex[sp] == 2){
-              mtext(paste0(title,": ",spnames[j], " ",legend_sex2), side = 3, line = -2, at = 0)
-            }
-          }
-          
-          if (i == 2) {
-            dev.off()
-          }
-        }
-      }
-    }
-  }
-}
-
-# Combine mortality plots together & save
-m_dirichlet <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all, type = 0, title = "all years", maxage = 15, zlim = c(0,2.2)),
-                                       plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1988-1999", maxage = 15, zlim = c(0,2.2)) +
-                                         scale_x_continuous(expand = c(0, 0), breaks = c(1988, 1992, 1996)),
-                                       plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15, zlim = c(0,2.2)),
-                                       ncol = 2, nrow = 2, 
-                                       layout_matrix = rbind(c(1,1), c(2,3)))
-
-# # Checking limits of the z-axis, sneakily.
-# no_zlim <- gridExtra::grid.arrange(plot_mortality_custom(Rceattle = run_all, type = 0, title = "all years", maxage = 15),
-#                                    plot_mortality_custom(Rceattle = run_90s, type = 0, title = "1988-1999", maxage = 15) +
-#                                      scale_x_continuous(expand = c(0, 0), breaks = c(1988, 1992, 1996)),
-#                                    plot_mortality_custom(Rceattle = run_recent, type = 0, title = "2005-2019", maxage = 15, zlim = c(0, 0.19)),
-#                                    ncol = 2, nrow = 2, layout_matrix = rbind(c(1,1), c(2,3)))
-
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_M.png", 
-       m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
+# TODO: fix this - my own mortality plot code from ceattle_cannibalism.R is below - create faceted plot
+# M2 <- extract_byage(run$quantities$M2, "multispecies", "M2")
+# total_mortality <- M2 %>%
+#   mutate(M1_M2 = M2 + rep(M1, length(years)))
+# total_mortality$age <- as.integer(total_mortality$age)
+# total_mortality$year <- as.integer(as.character(total_mortality$year))
+# 
+# mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.5)) + 
+#   geom_tile(aes(fill = M1_M2)) +
+#   scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) + 
+#   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
+#   scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.0), breaks = c(0.21, 2.0)) +
+#   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+#   coord_equal() +
+#   ylab("Age") + xlab("Year") +
+#   theme(panel.border = element_rect(colour = NA, fill = NA))
+# 
+# # Min, max, mean natural mortality by age, for ages 1-5
+# M_byage <- total_mortality %>%
+#   filter(age < 6) %>%
+#   group_by(age) %>%
+#   summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
+# 
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_M.png", 
+#        m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
