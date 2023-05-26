@@ -96,33 +96,36 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   # Pull out recruitment
   nodiet_R <- c(ss_run$quantities$R)
-  ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:(start_yr-start)), ]
+  
+  # Get recruitment from SS3 files, offset by 1 year
+  ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:((start_yr-1)-start)), ]
+  ss3_R <- ss3_R[-nrow(ss3_R), ]
   
   # Find mean difference between the model runs -------------------------------
-  mean_SEM <- function(df1, df2, title) {
-    mean_out <- mean((df1 / 1000000) - (df2 / 1000000))
-    SEM <- sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range))
+  rel_change <- function(df1, df2, title) {
+    mean_out <- mean((df1 - df2) / df2)
+    SEM <- sd((df1 - df2) / df2) / sqrt(length(range))
     return(c(title, mean_out, SEM))
   }
   
   n_row <- length(start_yr:end_yr)
-  mean_SEM_all <- rbind(mean_SEM(biomass[1:n_row, 3],
-                                 nodiet_biomass[1:n_row, 3],
-                                 "cannibalism - no diet, SSB"),
-                        mean_SEM(biomass[(n_row+1):(2*(n_row)), 3],
-                                 nodiet_biomass[(n_row+1):(2*(n_row)), 3],
-                                 "cannibalism - no diet, Total"),
-                        mean_SEM(recruitment, nodiet_R,
-                                 "cannibalism - no diet, R"),
-                        mean_SEM(nodiet_biomass[1:n_row, 3],
-                                 ss3_biom[1:n_row, 3],
-                                 "no diet - SS3, SSB"),
-                        mean_SEM(nodiet_biomass[(n_row+1):(2*(n_row)), 3],
-                                 ss3_biom[(n_row+1):(2*(n_row)), 3],
-                                 "no diet - SS3, Total"),
-                        mean_SEM(nodiet_R,
-                                 ss3_R[1:(n_row), 2],
-                                 "no diet - SS3, R"))
+  rechange_all <- rbind(rel_change(biomass[1:n_row, 3],
+                                   nodiet_biomass[1:n_row, 3],
+                                   "cannibalism - no diet, SSB"),
+                        rel_change(biomass[(n_row+1):(2*(n_row)), 3],
+                                   nodiet_biomass[(n_row+1):(2*(n_row)), 3],
+                                   "cannibalism - no diet, Total"),
+                        rel_change(recruitment, nodiet_R,
+                                   "cannibalism - no diet, R"),
+                        rel_change(nodiet_biomass[1:n_row, 3],
+                                   ss3_biom[1:n_row, 3],
+                                   "no diet - SS3, SSB"),
+                        rel_change(nodiet_biomass[(n_row+1):(2*(n_row)), 3],
+                                   ss3_biom[(n_row+1):(2*(n_row)), 3],
+                                   "no diet - SS3, Total"),
+                        rel_change(nodiet_R,
+                                   ss3_R[1:(n_row), 3],
+                                   "no diet - SS3, R"))
 
   # Plot biomass & recruitment ------------------------------------------------
   # Put biomass together
@@ -138,13 +141,13 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
   R <- melt(R_wide, id.vars = "year")
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
-  ss3_1 <- as.data.frame(cbind(year = ((start_yr+1):end_yr), 
+  ss3_R <- as.data.frame(cbind(year = years, 
                                variable = rep("Assessment"), 
-                               value = ss3_R[1:length((start_yr+1):end_yr), 2],
-                               error = ss3_R[1:length((start_yr+1):end_yr), 3]))
+                               value = ss3_R[, 2],
+                               error = ss3_R[, 3]))
   R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")], 
                                     ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")])), 
-                 ss3_1)
+                 ss3_R)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
   R_all$error <- as.numeric(R_all$error)
@@ -203,27 +206,25 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("SSB/Biomass")
   
-  # TODO: fix this bit!
-  # # Plot the difference between model runs
-  # ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
-  # ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
-  # assessment <- all_popdy %>% filter(model == "Assessment")
-  # 
-  # diff_intrasp <- rbind(cbind.data.frame(year = years,
-  #                                        type = ceattle_intrasp$type,
-  #                                        difference = ceattle_intrasp$value - ceattle_nodiet$value,
-  #                                        models = "cannibalism - single-species"),
-  #                       cbind.data.frame(year = years,
-  #                                        type = ceattle_nodiet$type,
-  #                                        difference = ceattle_nodiet$value - assessment$value,
-  #                                        models = "single-species - assessment"))
-  # 
-  # diff_plot <- ggplot(diff_intrasp, aes(x=year, y=difference, color=models)) +
-  #   geom_line() +
-  #   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  #   facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-  #   theme(strip.background = element_blank(), strip.placement = "outside")
-  
+  # Plot the difference between model runs
+  ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
+  ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
+  assessment <- all_popdy %>% filter(model == "Assessment")
+
+  diff_intrasp <- rbind(cbind.data.frame(year = years,
+                                         type = ceattle_intrasp$type,
+                                         difference = ceattle_intrasp$value - ceattle_nodiet$value,
+                                         models = "cannibalism - single-species"),
+                        cbind.data.frame(year = years,
+                                         type = ceattle_nodiet$type,
+                                         difference = ceattle_nodiet$value - assessment$value,
+                                         models = "single-species - assessment"))
+
+  diff_plot <- ggplot(diff_intrasp, aes(x=year, y=difference, color=models)) +
+    geom_line() +
+    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+    facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
+    theme(strip.background = element_blank(), strip.placement = "outside")
   
   # Plot numbers-at-age -------------------------------------------------------
   nbyage <- extract_byage(ms_run$quantities$NByage, "CEATTLE - cannibalism", "numbers")
@@ -390,30 +391,34 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     write.csv(nbyage, paste0("data/CEATTLE/", assess_yr, "/ceattle_intrasp_nbyage.csv"), row.names = FALSE)
   }
   
-  return(list(mean_SEM_all, popdy_plot, ratio_plot, nbyage_plot, 
-              survey_plot, suit_plot, biombyage_plot, b_consumed_plot, 
-              yearly_b_plot))  # diff_plot
+  return(list(relative_change = rechange_all, popdy = popdy_plot, ratio = ratio_plot, 
+              pop_diff = diff_plot, nbyage = nbyage_plot, survey = survey_plot, 
+              suit = suit_plot, biombyage = biombyage_plot, 
+              b_consumed = b_consumed_plot, yearly_b = yearly_b_plot))
 }
 
 plots <- plot_models(ms_estM1$model, ss_estM1$model)
-mean_SEM <- plots[[1]]
-plots[[2]]
-plots[[3]]
-plots[[4]]
-plots[[5]]
-plots[[6]]
-plots[[7]]
-plots[[8]]
-plots[[9]]
-# plots[[10]]
+relative_change <- plots$relative_change
+plots$popdy
+plots$ratio
+plots$pop_diff
+plots$nbyage
+plots$survey
+plots$suit
+plots$biombyage
+plots$b_consumed
+plots$yearly_b
 
 # Plot with fixed M1
 plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
-plots_M1fixed[[2]]
+relative_change_M1fix <- plots_M1fixed$relative_change
+plots_M1fixed$popdy
+
 
 # Plot with a prior on M1
 plots_M1prior <- plot_models(ms_priorM1$model, ss_priorM1$model)
-plots_M1prior[[2]]
+relative_change_M1prior <- plots_M1prior$relative_change
+plots_M1prior$popdy
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
@@ -528,14 +533,14 @@ ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots[[2]], width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots[[3]], width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots[[4]], width=160, height=120, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots[[5]], width=200, height=120, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots[[6]], width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots[[7]], width=160, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots[[8]], width=140, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed[[2]], width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots_M1prior[[2]], width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots_M1prior$popdy, width=140, height=150, units="mm", dpi=300)
