@@ -103,9 +103,10 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   # Find mean difference between the model runs -------------------------------
   rel_change <- function(df1, df2, title) {
-    mean_out <- mean((df1 - df2) / df2)
-    SEM <- sd((df1 - df2) / df2) / sqrt(length(range))
-    return(c(title, mean_out, SEM))
+    mean_out <- mean((df1 / 1000000) - (df2 / 1000000))
+    SEM <- sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range))
+    percent <- mean(((df1 - df2) / df2) * 100) 
+    return(c(title, mean_out, SEM, percent))
   }
   
   n_row <- length(start_yr:end_yr)
@@ -124,7 +125,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                    ss3_biom[(n_row+1):(2*(n_row)), 3],
                                    "no diet - SS3, Total"),
                         rel_change(nodiet_R,
-                                   ss3_R[1:(n_row), 3],
+                                   ss3_R[1:(n_row), 2],
                                    "no diet - SS3, R"))
 
   # Plot biomass & recruitment ------------------------------------------------
