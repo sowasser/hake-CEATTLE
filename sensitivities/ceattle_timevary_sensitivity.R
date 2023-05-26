@@ -1,5 +1,6 @@
-# Run CEATTLE for Pacific hake while testing different proportions of
-# intraspecies predation, corrected with a Dirichlet multinomial distribution.
+# CEATTLE for Pacific hake while testing different proportions of cannibalism
+# from different time periods, corrected with a Dirichlet multinomial 
+# distribution.
 
 # devtools::install_github("grantdadams/Rceattle@dev")
 library(Rceattle)
@@ -11,77 +12,13 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
-
-# # Run CEATTLE with the values as they are in the data file
-# intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                  inits = NULL, # Initial parameters = 0
-#                                  file = NULL, # Don't save
-#                                  # debug = 1, # 1 = estimate, 0 = don't estimate
-#                                  random_rec = FALSE, # No random recruitment
-#                                  msmMode = 1, # Multispecies mode
-#                                  phase = "default")
-
-
-### Run CEATTLE with differing diet weight proportions ------------------------
-# Read in different Dirichlet-corrected datasets
-dirichlet_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
-dirichlet_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
-
-# Adapt weight proportions to replace those in the excel file & run CEATTLE
-run_ceattle <- function(df, start, end, proj, init) {
-  hake_intrasp$UobsWtAge <- df
-  hake_intrasp$styr <- start
-  hake_intrasp$endyr <- end
-  hake_intrasp$projyr <- proj
-  ceattle <- Rceattle::fit_mod(data_list = hake_intrasp,
-                               inits = init, # Initial parameters = 0
-                               file = NULL, # Don't save
-                               # debug = 1, # 1 = estimate, 0 = don't estimate
-                               random_rec = FALSE, # No random recruitment
-                               msmMode = 1, # Multi-species mode
-                               phase = "default")
-  return(ceattle)
-}
-
-# Run low-cannibalism models
-run_all <- run_ceattle(hake_intrasp$UobsWtAge, 1988, 2019, 2019, init = NULL)
-run_90s <- run_ceattle(dirichlet_90s, 1988, 1999, 1999, init = NULL)
-run_recent <- run_ceattle(dirichlet_recent, 2005, 2019, 2019, init = NULL)
-
-# # Run CEATTLE with no diet - for convergence issues
-# nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                 inits = NULL, # Initial parameters = 0
-#                                 file = NULL, # Don't save
-#                                 # debug = 1, # 1 = estimate, 0 = don't estimate
-#                                 random_rec = FALSE, # No random recruitment
-#                                 msmMode = 0, # Single-species mode
-#                                 phase = "default")
-
-
-# Check fit of CEATTLE model --------------------------------------------------
-fit_CEATTLE <- function(run) {
-  objective <- run$opt$objective
-  jnll <- run$quantities$jnll
-  K <- run$opt$number_of_coefficients[1]
-  AIC <- run$opt$AIC
-  gradient <- run$opt$max_gradient
-  
-  fit <- cbind(objective, jnll, K, AIC, gradient)
-  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
-  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
-  return(list(fit, jnll_summary))
-}
-
-dirichlet_fit <- rbind(cbind(model = "90s", fit_CEATTLE(run_90s)[[1]]),
-                       cbind(model = "recent", fit_CEATTLE(run_recent)[[1]]))
-dirichlet_summary <- cbind(fit_CEATTLE(run_90s)[[2]],
-                           fit_CEATTLE(run_recent)[[2]][, 3])[, -c(1:2)]
-colnames(dirichlet_summary) <- c("90s", "recent")
-
+load("models/ms_estM1.Rdata")
+# Read in different time period models (specified in run_ceattle.R)
+load("models/sensitivity/time-varying/run_90s.Rdata")
+load("models/sensitivity/time-varying/run_recent.Rdata")
 
 ### Plot population dynamics --------------------------------------------------
-timing_plot_popdy <- function() {
+timing_plot_popdy <- function(run_high, run_low) {
   # Pull out SSB & overall biomass from CEATTLE runs
   ceattle_biomass <- function(run, name, years) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -96,9 +33,9 @@ timing_plot_popdy <- function() {
     return(all_biom2)
   }
   
-  test_biom <- rbind(ceattle_biomass(run_all, "all years", 1988:2019),
-                     ceattle_biomass(run_90s, "1988-1999", 1988:1999),
-                     ceattle_biomass(run_recent, "2005-2019", 2005:2019))
+  test_biom <- rbind(ceattle_biomass(ms_estM1$model, "all years", 1988:2022),
+                     ceattle_biomass(run_high, "high (1988-1999)", 1988:1999),
+                     ceattle_biomass(run_low, "low (2005-2019)", 2005:2019))
   
   # Put recruitment together
   ceattle_R <- function(run, name, years) {
@@ -111,9 +48,9 @@ timing_plot_popdy <- function() {
                                  model = rep(name)))
     return(R_all)
   }
-  R_test <- rbind(ceattle_R(run_all, "all years", 1988:2019),
-                  ceattle_R(run_90s, "1988-1999", 1988:1999),
-                  ceattle_R(run_recent, "2005-2019", 2005:2019))
+  R_test <- rbind(ceattle_R(ms_estM1$model, "all years", 1988:2022),
+                  ceattle_R(run_high, "high (1988-1999)", 1988:1999),
+                  ceattle_R(run_low, "low (2005-2019)", 2005:2019))
   
   
   # Combine biomass & recruitment and plot
@@ -123,22 +60,24 @@ timing_plot_popdy <- function() {
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
   
   # Find mean difference between the model runs
-  mean_SEM <- function(model1, model2, stat, years) {
+  rel_change <- function(model1, model2, stat, years) {
     df1 <- all_popdy %>% 
-      filter(model == model1) %>% filter(variable == stat) %>% filter(year %in% years)
+      filter(model == model1 & variable == stat & year %in% years)
     df2 <- all_popdy %>%
       filter(model == model2) %>% filter(variable == stat) %>% filter(year %in% years)
-    mean_out <- mean((df1$value) - (df2$value))
-    SEM <- sd((df1$value) - (df2$value)) / sqrt(length(df2$value))
-    return(c(paste0(model1, " - ", model2, ", ", stat), mean_out, SEM))
+    mean_out <- mean((df1$value / 1000000) - (df2$value / 1000000))
+    SEM <- sd((df1$value / 1000000) - (df2$value / 1000000)) / sqrt(length(range))
+    percent <- mean(((df1$value - df2$value) / df2$value) * 100) 
+    label <- paste(model1, "-", model2, ", ", stat)
+    return(c(label, mean_out, SEM, percent))
   }
   
-  mean_SEM_all <- rbind(mean_SEM("1988-1999", "all years", "SSB", 1988:1999),
-                        mean_SEM("1988-1999", "all years", "Total Biomass", 1988:1999),
-                        mean_SEM("1988-1999", "all years", "Recruitment", 1988:1999),
-                        mean_SEM("2005-2019", "all years", "SSB", 2005:2019),
-                        mean_SEM("2005-2019", "all years", "Total Biomass", 2005:2019),
-                        mean_SEM("2005-2019", "all years", "Recruitment", 2005:2019))
+  rechange_all <- rbind(rel_change("high (1988-1999)", "all years", "SSB", 1988:1999),
+                        rel_change("high (1988-1999)", "all years", "Total Biomass", 1988:1999),
+                        rel_change("high (1988-1999)", "all years", "Recruitment", 1988:1999),
+                        rel_change("low (2005-2019)", "all years", "SSB", 2005:2019),
+                        rel_change("low (2005-2019)", "all years", "Total Biomass", 2005:2019),
+                        rel_change("low (2005-2019)", "all years", "Recruitment", 2005:2019))
   
   # Plot population dynamics
   all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
@@ -159,33 +98,13 @@ timing_plot_popdy <- function() {
     labs(color = "model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside")
-  
-  # Plot ratio of SSB:Biomass to look for skewness in age composition
-  ratio <- function(run, name, years) {
-    df <- as.data.frame(cbind(year = years,
-                              value = (c(run$quantities$biomassSSB) * 2) / c(run$quantities$biomass),
-                              model = rep(name)))
-    return(df)
-  }
-  
-  ratio_all <- rbind(ratio(run_all, "all years", 1988:2019),
-                     ratio(run_90s, "1988-1999", 1988:1999),
-                     ratio(run_recent, "2005-2019", 2005:2019))
-  ratio_all$year <- as.numeric(ratio_all$year)
-  ratio_all$value <- as.numeric(ratio_all$value)
 
-  ratio_plot <- ggplot(ratio_all, aes(x=year, y=value, color=model)) +
-    geom_line(aes(linetype = model)) +
-    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    ylab("SSB/Biomass")
-
-  return(list(all_popdy, mean_SEM_all, popdy_plot, ratio_plot))
+  return(list(all_popdy, rechange_all, popdy_plot))
 }
 
-timing_popdy <- timing_plot_popdy()
-mean_SEM <- timing_popdy[[2]]
-
+timing_popdy <- timing_plot_popdy(run_high = run_90s$model, 
+                                  run_low = run_recent$model)
+relative_change <- timing_popdy[[2]]
 timing_popdy[[3]]
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[3]], 

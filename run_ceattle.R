@@ -171,3 +171,58 @@ save(ms_priorM1, file = "models/ms_priorM1.Rdata")
 #                                   map = map,
 #                                   msmMode = 1, # Single-species mode - no predation mortality
 #                                   phase = "default")
+
+
+### Run sensitivities ---------------------------------------------------------
+# Time-varying diet -----------------------------------------------------------
+# Read in different Dirichlet-corrected datasets
+dirichlet_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
+data_90s <- hake_intrasp
+data_90s$UobsWtAge <- dirichlet_90s
+data_90s$styr <- 1988
+data_90s$endyr <- 1999
+data_90s$projyr <- 1999
+
+run_90s <- run_CEATTLE(data = data_90s,
+                       M1 = 1,
+                       prior = FALSE,
+                       init = NULL,
+                       msm = 1,
+                       M_phase = 1)
+run_90s$fit  # check convergence
+save(run_90s, file = "models/sensitivity/time-varying/run_90s.Rdata")
+
+run_90s_prior <- run_CEATTLE(data = data_90s,
+                             M1 = 1,
+                             prior = TRUE,
+                             init = NULL,
+                             msm = 1,
+                             M_phase = 1)
+run_90s_prior$fit  # check convergence
+save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata")
+
+dirichlet_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
+data_recent <- hake_intrasp
+data_recent$UobsWtAge <- dirichlet_recent
+data_recent$styr <- 2005
+data_recent$endyr <- 2019
+data_recent$projyr <- 2019
+
+run_recent <- run_CEATTLE(data = data_recent,
+                          M1 = 1,
+                          prior = FALSE,
+                          init = NULL,
+                          msm = 1,
+                          M_phase = 1)
+run_recent$fit  # check convergence
+save(run_recent, file = "models/sensitivity/time-varying/run_recent.Rdata")
+
+run_recent_prior <- run_CEATTLE(data = data_recent,
+                                M1 = 1,
+                                prior = TRUE,
+                                init = NULL,
+                                msm = 1,
+                                M_phase = 1)
+run_recent_prior$fit  # check convergence
+save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
+  
