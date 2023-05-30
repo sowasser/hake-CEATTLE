@@ -19,34 +19,21 @@ load("models/sensitivity/diet/run_wt50.Rdata")
 load("models/sensitivity/diet/run_wt75.Rdata")
 
 # Check fit of CEATTLE model --------------------------------------------------
-fit_CEATTLE <- function(run) {
-  objective <- run$opt$objective
-  jnll <- run$quantities$jnll
-  K <- run$opt$number_of_coefficients[1]
-  AIC <- run$opt$AIC
-  gradient <- run$opt$max_gradient
-  
-  fit <- cbind(objective, jnll, K, AIC, gradient)
-  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
-  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
-  return(list(fit, jnll_summary))
-}
-
-sensitivity_fit <- rbind(cbind(model = "wt05", fit_CEATTLE(run_wt05)[[1]]),
-                         cbind(model = "wt10", fit_CEATTLE(run_wt10)[[1]]),
-                         cbind(model = "wt50", fit_CEATTLE(run_wt50)[[1]]),
-                         cbind(model = "wt75", fit_CEATTLE(run_wt75)[[1]]))
-sensitivity_summary <- cbind(fit_CEATTLE(run_wt05)[[2]],
-                             fit_CEATTLE(run_wt10)[[2]][, 3],
-                             fit_CEATTLE(run_wt50)[[2]][, 3],
-                             fit_CEATTLE(run_wt75)[[2]][, 3])[, -c(1:2)]
+sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05$fit),
+                         cbind(model = "wt10", run_wt10$fit),
+                         cbind(model = "wt50", run_wt50$fit),
+                         cbind(model = "wt75", run_wt75$fit))
+sensitivity_summary <- cbind(run_wt05$summary,
+                             run_wt10$summary[, 3],
+                             run_wt50$summary[, 3],
+                             run_wt75$summary[, 3])[, -c(1:2)]
 colnames(sensitivity_summary) <- c("wt05", "wt10", "wt50", "wt75")
 
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
-years <- 1988:2019
-
-test_plot_popdy <- function() {
+years <- 1988:2022
+names <- c("observed cannibalism", "0.5% cannibalism", "10% cannibalism", "50% cannibalism", "75% cannibalism")
+test_plot_popdy <- function(models, names = names) {
   # Pull out SSB & overall biomass from CEATTLE runs
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -61,11 +48,11 @@ test_plot_popdy <- function() {
     return(all_biom2)
   }
   
-  test_biom <- rbind(ceattle_biomass(run_intrasp, "observed proportion"),
-                     ceattle_biomass(run_wt05, "0.5% cannibalism"),
-                     ceattle_biomass(run_wt10, "10% cannibalism"),
-                     ceattle_biomass(run_wt50, "50% cannibalism"),
-                     ceattle_biomass(run_wt75, "75% cannibalism"))
+  test_biom <- rbind(ceattle_biomass(models[[1]], names[1]),
+                     ceattle_biomass(models[[2]], names[2]),
+                     ceattle_biomass(models[[3]], names[3]),
+                     ceattle_biomass(models[[4]], names[4]),
+                     ceattle_biomass(models[[5]], names[5]))
   
   # Put recruitment together
   ceattle_R <- function(run, name) {
@@ -78,11 +65,11 @@ test_plot_popdy <- function() {
                                  model = rep(name)))
     return(R_all)
   }
-  R_test <- rbind(ceattle_R(run_intrasp, "observed proportion"),
-                  ceattle_R(run_wt05, "0.5% cannibalism"),
-                  ceattle_R(run_wt10, "10% cannibalism"),
-                  ceattle_R(run_wt50, "50% cannibalism"),
-                  ceattle_R(run_wt75, "75% cannibalism"))
+  R_test <- rbind(ceattle_R(models[[1]], names[1]),
+                  ceattle_R(models[[2]], names[2]),
+                  ceattle_R(models[[3]], names[3]),
+                  ceattle_R(models[[4]], names[4]),
+                  ceattle_R(models[[5]], names[5]))
   
   # Combine biomass & recruitment and plot
   all_popdy <- rbind(test_biom, R_test)
@@ -116,11 +103,11 @@ test_plot_popdy <- function() {
     return(df)
   }
   
-  ratio_all <- rbind(ratio(run_intrasp, "observed proportion"),
-                     ratio(run_wt05, "0.5% cannibalism"),
-                     ratio(run_wt10, "10% cannibalism"),
-                     ratio(run_wt50, "50% cannibalism"),
-                     ratio(run_wt75, "75% cannibalism"))
+  ratio_all <- rbind(ratio(models[[1]], names[1]),
+                     ratio(models[[2]], names[2]),
+                     ratio(models[[3]], names[3]),
+                     ratio(models[[4]], names[4]),
+                     ratio(models[[5]], names[5]))
   ratio_all$year <- as.numeric(ratio_all$year)
   ratio_all$value <- as.numeric(ratio_all$value)
 
@@ -129,12 +116,12 @@ test_plot_popdy <- function() {
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     ylab("SSB/Biomass")
-  ratio_plot
   
   return(list(all_popdy, popdy_plot, ratio_plot))
 }
 
-test_popdy <- test_plot_popdy()
+models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, run_wt75$model)
+test_popdy <- test_plot_popdy(models = models)
 test_popdy[[2]]
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", test_popdy[[2]], 
@@ -145,14 +132,14 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png", test_
        width=150, height=80, units="mm", dpi=300)
 
 
-# Numbers-at-age for each model run -------------------------------------------
-# Read in data from no diet CEATTLE run
-intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
-intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("observed proportion", nrow(intrasp_nbyage)))
-colnames(intrasp_nbyage)[4] <- "model"
-
-extract_nbyage <- function(run, name) {
-  df <- as.data.frame(as.table(run$quantities$NByage))
+# # Numbers-at-age for each model run -------------------------------------------
+# # Read in data from no diet CEATTLE run
+# intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
+# intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("observed proportion", nrow(intrasp_nbyage)))
+# colnames(intrasp_nbyage)[4] <- "model"
+# 
+extract_byage <- function(run, name) {
+  df <- as.data.frame(as.table(quantity))
 
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
@@ -164,68 +151,68 @@ extract_nbyage <- function(run, name) {
 
   return(df)
 }
-
-nbyage_test_all <- rbind(extract_nbyage(run_wt05, "0.5% cannibalism"),
-                         extract_nbyage(run_wt10, "10% cannibalism"),
-                         extract_nbyage(run_wt50, "50% cannibalism"),
-                         extract_nbyage(run_wt75, "75% cannibalism"),
-                         intrasp_nbyage)
-
-# Set 15 as accumulation age
-nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
-
-# Plot yearly nbyage
-nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
-# nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
-
-test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
-  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
-  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-  xlab(" ") + ylab("Age") +
-  theme(legend.position = "none") +
-  facet_wrap(~model, ncol = 2, scales = "free_x")
-test_nbyage_plot
-
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
-       width=220, height=210, units="mm", dpi=300)
-
-
-### New plot of popdy and numbers-at-age --------------------------------------
-# Calculate annual mean age
-mean_nbyage_test <- nbyage_test_all %>%
-  group_by(year, model) %>%
-  summarize(value = weighted.mean(age, numbers)) %>%
-  ungroup()
-
-# Add extra columns, reorder, and combine with popdy dataframe
-mean_nbyage_test$variable <- rep("Mean Age")
-mean_nbyage_test$error <- rep(0)
-mean_nbyage_test$min <- rep(0)
-mean_nbyage_test$max <- rep(0)
-mean_nbyage_test <- mean_nbyage_test[, c(1, 4, 3, 5, 2, 6, 7)]
-
-popdy_meanage <- rbind(test_popdy[[1]], mean_nbyage_test)
-popdy_meanage$year <- as.integer(popdy_meanage$year)
-popdy_meanage$model <- factor(popdy_meanage$model)
-
-meanage_popdy_plot <- ggplot(popdy_meanage, aes(x=year, y=value, color = model, fill = model)) +
-  geom_line(aes(linetype = model)) +
-  scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-  geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  ylim(0, NA) +
-  ylab(" ") +
-  labs(color = "model") +
-  facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
-  theme(strip.background = element_blank(), strip.placement = "outside")
-meanage_popdy_plot
-
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
-       width=140, height=170, units="mm", dpi=300)
+# 
+# nbyage_test_all <- rbind(extract_nbyage(run_wt05, "0.5% cannibalism"),
+#                          extract_nbyage(run_wt10, "10% cannibalism"),
+#                          extract_nbyage(run_wt50, "50% cannibalism"),
+#                          extract_nbyage(run_wt75, "75% cannibalism"),
+#                          intrasp_nbyage)
+# 
+# # Set 15 as accumulation age
+# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+# 
+# # Plot yearly nbyage
+# nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+# # nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
+# 
+# test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
+#   geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
+#   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+#   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+#   scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+#   scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+#   xlab(" ") + ylab("Age") +
+#   theme(legend.position = "none") +
+#   facet_wrap(~model, ncol = 2, scales = "free_x")
+# test_nbyage_plot
+# 
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
+#        width=220, height=210, units="mm", dpi=300)
+# 
+# 
+# ### New plot of popdy and numbers-at-age --------------------------------------
+# # Calculate annual mean age
+# mean_nbyage_test <- nbyage_test_all %>%
+#   group_by(year, model) %>%
+#   summarize(value = weighted.mean(age, numbers)) %>%
+#   ungroup()
+# 
+# # Add extra columns, reorder, and combine with popdy dataframe
+# mean_nbyage_test$variable <- rep("Mean Age")
+# mean_nbyage_test$error <- rep(0)
+# mean_nbyage_test$min <- rep(0)
+# mean_nbyage_test$max <- rep(0)
+# mean_nbyage_test <- mean_nbyage_test[, c(1, 4, 3, 5, 2, 6, 7)]
+# 
+# popdy_meanage <- rbind(test_popdy[[1]], mean_nbyage_test)
+# popdy_meanage$year <- as.integer(popdy_meanage$year)
+# popdy_meanage$model <- factor(popdy_meanage$model)
+# 
+# meanage_popdy_plot <- ggplot(popdy_meanage, aes(x=year, y=value, color = model, fill = model)) +
+#   geom_line(aes(linetype = model)) +
+#   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
+#   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
+#   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+#   ylim(0, NA) +
+#   ylab(" ") +
+#   labs(color = "model") +
+#   facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
+#   theme(strip.background = element_blank(), strip.placement = "outside")
+# meanage_popdy_plot
+# 
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
+#        width=140, height=170, units="mm", dpi=300)
 
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------
@@ -261,188 +248,47 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png
 
 ### Look at mortality-at-age timeseries ---------------------------------------
 # Custom mortality function that outputs ggplot object ------------------------
-plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim = NULL, type = 0, width = 8,  height = 5.5, title = NULL, log = FALSE, minyr = NULL, theta = 155, species = NULL, maxage = NULL, title_cex = 10, M2 = TRUE) {
-    
-    # Convert single one into a list
-    if(class(Rceattle) == "Rceattle"){
-      Rceattle <- list(Rceattle)
-    }
-    
-    if(length(Rceattle) > 1){
-      stop("Can only plot one model")
-    }
-    
-    # Extract data objects
-    if(is.null(minyr)){ minyr <- Rceattle[[1]]$data_list$styr}
-    
-    Years <- minyr:Rceattle[[1]]$data_list$endyr
-    if(incl_proj){
-      Years <- minyr:Rceattle[[1]]$data_list$projyr
-    }
-    nyrs_vec <- length(Years)
-    nyrs <- max(nyrs_vec)
-    maxyr <- max((sapply(Years, max)))
-    
-    nspp <- Rceattle[[1]]$data_list$nspp
-    spnames <- Rceattle[[1]]$data_list$spnames
-    estdynamics <- Rceattle[[1]]$data_list$estDynamics
-    nages <- Rceattle[[1]]$data_list$nages
-    
-    if(!is.null(maxage)){
-      nages <- sapply(nages, function(x) ifelse(x > maxage, maxage, x))
-    }
-    
-    minage <- Rceattle[[1]]$data_list$minage
-    nsex <- Rceattle[[1]]$data_list$nsex
-    
-    # Get M
-    M_array <-
-      array(NA, dim = c(nspp, 2, max(nages), nyrs, length(Rceattle)))
-    M1_array <-
-      array(NA, dim = c(nspp, 2, max(nages), length(Rceattle)))
-    for (i in 1:length(Rceattle)) {
-      M1_array[, , ,i] <- Rceattle[[i]]$quantities$M1[,,1:max(nages)]
-      if(!M2){
-        M_array[, , , ,i] <- Rceattle[[i]]$quantities$M[,,1:max(nages),(1:nyrs)+(minyr - Rceattle[[1]]$data_list$styr)]
-      }
-      if(M2){
-        M_array[, , , ,i] <- Rceattle[[i]]$quantities$M2[,,1:max(nages),(1:nyrs)+(minyr - Rceattle[[1]]$data_list$styr)]
-      }
-    }
-    
-    if(log){
-      M1_array = log(M1_array)
-      M_array = log(M_array)
-    }
-    
-    # Plot limits
-    zmax <- c()
-    zmin <- c()
-    for (i in 1:dim(M_array)[1]) {
-      zmax[i] <- max(c(M_array[i,,,,], 0), na.rm = T)
-      zmin[i] <- min(c(M_array[i,,,,], 0), na.rm = T)
-    }
-    
-    # Plot trajectory
-    loops <- ifelse(is.null(file), 1, 2)
-    
-    #################################
-    # Mortality time series
-    #################################
-    if(is.null(species)){
-      species <- 1:nspp
-    }
-    spp <- species
-    
-    # Species
-    for(j in 1:nspp){
-      sp <- j
-      
-      if(estdynamics[j] == 0 & sp %in% spp){
-        
-        # Sexes
-        for(sex in 1:nsex[sp]){
-          
-          # Get sex for legend
-          legend_sex = sex
-          legend_sex2 = ifelse(sex == 1, "Female", "Male")
-          if(nsex[sp] == 1){
-            legend_sex <- 0
-            legend_sex2 = "Combined"
-          }
-          
-          # Save
-          for (i in 1:loops) {
-            if (i == 2) {
-              filename <- paste0(file, "predation_and_residual_mortality_spp_",sp,"_sex_",legend_sex2,".png")
-              png(
-                file = filename ,
-                width = width,
-                height = height,
-                units = "in",
-                res = 300
-              )
-            }
-            
-            # Subset mortality data
-            m_subset <- (M_array[j, sex, (1:nages[sp]), 1:nyrs, 1])
-            
-            # Get ages
-            ages <- (1:(nages[sp])) - 1 + minage[sp]
-            
-            # Rearrange data
-            data <- data.frame(Year = rep(Years, each = length(ages)), Age = rep(ages, length(Years)), M = c(m_subset))
-            
-            # Plot limits
-            if(is.null(zlim)){
-              zlim <- c(zmin[sp], zmax[sp])
-            }
-            
-            if(is.character(zlim)){
-              zlim <- c(min(zmin), max(zmax))
-            }
-            
-            # Plot as tiles
-            if(type == 0){
-              p = ggplot2::ggplot(data, aes(y = Age, x = Year, zmin = zlim[1], zmax = zlim[2])) + geom_tile(aes(fill = M))  + scale_y_continuous(expand = c(0, 0), breaks=seq(0,max(ages),round(nages[sp]/5))) + coord_equal() +  scale_x_continuous(expand = c(0, 0))+ theme( panel.border = element_rect(colour = "black", fill=NA, size=1))
-              if(!is.null(title)){
-                p = p + ggtitle(paste0(title,": ",spnames[j] )) + theme(plot.title = element_text(size = title_cex))
-              }
-              
-              scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for legend
-              
-              if(log){
-                p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
-              } else {
-                p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
-              }
-              return(p)
-            }
-            
-            # Plot as contours
-            if(type == 1){
-              print(ggplot2::ggplot(data, aes(y = Age, x = Year, z = M, zmin = zlim[1], zmax = zlim[2])) + geom_contour(colour = 1, size = 0.5) + geom_contour_filled()  + scale_y_continuous(expand = c(0, 0), breaks=seq(0,max(ages),round(nages[sp]/5))) +  scale_x_continuous(expand = c(0, 0)) + theme( panel.border = element_rect(colour = "black", fill=NA, size=1)) + scale_fill_viridis_d("M1 + M2"))
-            }
-            
-            # Plot as facets
-            if(type == 2){
-              p = ggplot(data=data, aes(x=Year, y = M, colour = Age, group = Age)) + theme( panel.border = element_rect(colour = "black", fill=NA, size=1), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) + geom_line(size = 2) + scale_color_viridis_c("Age")
-              print(p)
-            }
-            
-            # Plot as persp
-            if(type == 3){
-              par( mar=c(1 , 2 , 1 , 1) , tcl=-.25 , mgp=c(2 ,  1 ,  0) ,  oma=c(0 , 2 , 0 , 0))
-              pmat = persp(y = Years, x = ages, z = m_subset, zlab = NA, zlim = zlim, xlab = "Age", ylab = "Year", theta = theta, ticktype = "detailed")
-              mtext(ifelse(M2, "M2", "M"), side = 2, line = 0.5, at = 0)
-              if(M2){
-                text(-0.25,.15, labels = paste0("M1 = ",round((M1_array[j, sex, 1, 1]), 3)))
-              }
-              
-              if(nsex[sp] == 1){
-                mtext(paste0(title,": ",spnames[j]), side = 3, line = -2, at = 0)
-              }
-              if(nsex[sp] == 2){
-                mtext(paste0(title,": ",spnames[j], " ",legend_sex2), side = 3, line = -2, at = 0)
-              }
-            }
-            
-            if (i == 2) {
-              dev.off()
-            }
-          }
-        }
-      }
-    }
+extract_M <- function(run, quantity, name) {
+  M1 <- run$quantities$M1[1, 1, 1:15]
+  M2 <- extract_byage(quantity, name)
+  total_mortality <- M2 %>%
+    mutate(M1_M2 = M2$numbers + M1)
+  total_mortality$age <- as.integer(total_mortality$age)
+  total_mortality$year <- as.integer(as.character(total_mortality$year))
+  return(total_mortality)
 }
 
-# Combine mortality plots together & save
-m_test <- ggpubr::ggarrange(plot_mortality_custom(Rceattle = run_wt05, type = 0, title = "0.5% cannibalism", maxage = 15),
-                            plot_mortality_custom(Rceattle = run_wt10, type = 0, title = "10% cannibalism", maxage = 15),
-                            plot_mortality_custom(Rceattle = run_wt50, type = 0, title = "50% cannibalism", maxage = 15),
-                            plot_mortality_custom(Rceattle = run_wt75, type = 0, title = "75% cannibalism", maxage = 15),
-                            ncol = 2, nrow = 2)
-# m_test
+M_all <- rbind(extract_M(run_wt05$model, run_wt05$model$quantities$M2, names[2]),
+               extract_M(run_wt10$model, run_wt10$model$quantities$M2, names[3]),
+               extract_M(run_wt50$model, run_wt50$model$quantities$M2, names[4]),
+               extract_M(run_wt75$model, run_wt75$model$quantities$M2, names[5]))
+
+max(M_all$M1_M2)  # check max M for plotting
+timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
+  geom_tile(aes(fill = M1_M2)) +
+  scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
+  scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.6), breaks = c(0.21, 2.6)) +
+  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  coord_equal() +
+  ylab("Age") + xlab("Year") +
+  facet_wrap(~model, ncol = 1)
+timevary_M
+
+# Min, max, mean natural mortality by age, for ages 1-5
+M_byage <- M_all %>%
+  filter(age < 6) %>%
+  group_by(age, model) %>%
+  summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
+
+M1_all <- rbind(data.frame(model = "0.5%", 
+                           mean = mean(run_wt05$model$quantities$M1[1, 1, 1:15])),
+                data.frame(model = "10%", 
+                           mean = mean(run_wt10$model$quantities$M1[1, 1, 1:15])),
+                data.frame(model = "50%", 
+                           mean = mean(run_wt50$model$quantities$M1[1, 1, 1:15])),
+                data.frame(model = "75%", 
+                           mean = mean(run_wt75$model$quantities$M1[1, 1, 1:15])))
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", m_test, 
        width=200, height = 100, units = "mm", dpi=300)
