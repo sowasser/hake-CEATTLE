@@ -1,5 +1,5 @@
-# Run CEATTLE for Pacific hake while testing different proportions of
-# intraspecies predation
+# Run CEATTLE for Pacific hake while testing different proportions of 
+# cannibalism in their diet.
 
 # devtools::install_github("grantdadams/Rceattle@dev")
 library(reshape2)
