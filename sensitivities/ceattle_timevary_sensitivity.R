@@ -65,8 +65,8 @@ timing_plot_popdy <- function(run_high, run_low) {
       filter(model == model1 & variable == stat & year %in% years)
     df2 <- all_popdy %>%
       filter(model == model2) %>% filter(variable == stat) %>% filter(year %in% years)
-    mean_out <- mean((df1$value / 1000000) - (df2$value / 1000000))
-    SEM <- sd((df1$value / 1000000) - (df2$value / 1000000)) / sqrt(length(range))
+    mean_out <- mean((df1$value) - (df2$value))
+    SEM <- sd((df1$value) - (df2$value)) / sqrt(length(range))
     percent <- mean(((df1$value - df2$value) / df2$value) * 100) 
     label <- paste(model1, "-", model2, ", ", stat)
     return(c(label, mean_out, SEM, percent))
@@ -108,7 +108,7 @@ timing_popdy <- timing_plot_popdy(run_high = run_90s$model,
 relative_change <- timing_popdy[[2]]
 timing_popdy[[3]]
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[3]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]], 
        width=140, height=150, units="mm", dpi=300)
 
 # Calculate reference points 
@@ -120,8 +120,8 @@ SSB_recent[15] / DynamicB0_recent[15] # 2019 value
 
 # Numbers-at-age for each model run -------------------------------------------
 # Read in data from no diet CEATTLE run
-extract_nbyage <- function(run, name, years) {
-  df <- as.data.frame(as.table(run$quantities$NByage))
+extract_byage2 <- function(quantity, name, years) {
+  df <- as.data.frame(as.table(quantity))
   
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
@@ -136,9 +136,12 @@ extract_nbyage <- function(run, name, years) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_nbyage(run_90s$model, "high (1988-1999)", 1988:1999),
-                         extract_nbyage(ms_estM1$model, "all years", 1988:2022),
-                         extract_nbyage(run_recent$model, "low (2005-2019)", 2005:2019))
+nbyage_test_all <- rbind(extract_byage2(run_90s$model$quantities$NByage, 
+                                        "high (1988-1999)", 1988:1999),
+                         extract_byage2(ms_estM1$model$quantities$NByage, 
+                                        "all years", 1988:2022),
+                         extract_byage2(run_recent$model$quantities$NByage, 
+                                        "low (2005-2019)", 2005:2019))
 
 # Set 15 as accumulation age
 nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
@@ -159,33 +162,52 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   facet_wrap(~model, ncol = 1)
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_nbyage.png", test_nbyage_plot,
-       width=250, height=150, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
+       width=150, height=150, units="mm", dpi=300)
 
 
 ### Plot mortality ------------------------------------------------------------
-# TODO: fix this - my own mortality plot code from ceattle_cannibalism.R is below - create faceted plot
-# M2 <- extract_byage(run$quantities$M2, "multispecies", "M2")
-# total_mortality <- M2 %>%
-#   mutate(M1_M2 = M2 + rep(M1, length(years)))
-# total_mortality$age <- as.integer(total_mortality$age)
-# total_mortality$year <- as.integer(as.character(total_mortality$year))
-# 
-# mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.5)) + 
-#   geom_tile(aes(fill = M1_M2)) +
-#   scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) + 
-#   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
-#   scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.0), breaks = c(0.21, 2.0)) +
-#   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-#   coord_equal() +
-#   ylab("Age") + xlab("Year") +
-#   theme(panel.border = element_rect(colour = NA, fill = NA))
-# 
-# # Min, max, mean natural mortality by age, for ages 1-5
-# M_byage <- total_mortality %>%
-#   filter(age < 6) %>%
-#   group_by(age) %>%
-#   summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
-# 
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/dirichlet_M.png", 
-#        m_dirichlet, width=180, height = 180, units = "mm", dpi=300)
+extract_M <- function(run, quantity, name, years) {
+  M1 <- run$quantities$M1[1, 1, 1:15]
+  M2 <- extract_byage2(quantity, name, years)
+  total_mortality <- M2 %>%
+    mutate(M1_M2 = M2$numbers + rep(M1, length(years)))
+  total_mortality$age <- as.integer(total_mortality$age)
+  total_mortality$year <- as.integer(as.character(total_mortality$year))
+  return(total_mortality)
+}
+
+M_all <- rbind(extract_M(run_90s$model, run_90s$model$quantities$M2,
+                         "high (1988-1999)", 1988:1999),
+               extract_M(run_recent$model, run_recent$model$quantities$M2,
+                         "low (2005-2019)", 2005:2019),
+               extract_M(ms_estM1$model, ms_estM1$model$quantities$M2, 
+                         "all years", 1988:2022))
+
+max(M_all$M1_M2)  # check max M for plotting
+timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
+  geom_tile(aes(fill = M1_M2)) +
+  scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
+  scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.6), breaks = c(0.21, 2.6)) +
+  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  coord_equal() +
+  ylab("Age") + xlab("Year") +
+  facet_wrap(~model, ncol = 1)
+timevary_M
+
+# Min, max, mean natural mortality by age, for ages 1-5
+M_byage <- M_all %>%
+  filter(age < 6) %>%
+  group_by(age, model) %>%
+  summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
+
+M1_all <- rbind(data.frame(model = "all years", 
+                           mean = mean(ms_estM1$model$quantities$M1[1, 1, 1:15])),
+                data.frame(model = "1988-1999", 
+                           mean = mean(run_90s$model$quantities$M1[1, 1, 1:15])),
+                data.frame(model = "2005-2019", 
+                           mean = mean(run_recent$model$quantities$M1[1, 1, 1:15])))
+
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
+       timevary_M, width=140, height = 170, units = "mm", dpi=300)
