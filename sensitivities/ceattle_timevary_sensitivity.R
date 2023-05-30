@@ -211,3 +211,18 @@ M1_all <- rbind(data.frame(model = "all years",
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
        timevary_M, width=140, height = 170, units = "mm", dpi=300)
+
+
+### Plot using models with a prior on M1 --------------------------------------
+load("models/ms_priorM1.Rdata")
+# Read in different time period models (specified in run_ceattle.R)
+load("models/sensitivity/time-varying/run_90s_prior.Rdata")
+load("models/sensitivity/time-varying/run_recent_prior.Rdata")
+
+timing_popdy_prior <- timing_plot_popdy(run_high = run_90s_prior$model, 
+                                        run_low = run_recent_prior$model)
+relative_change_prior <- timing_popdy_prior[[2]]
+timing_popdy_prior[[3]]
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_prior.png", timing_popdy_prior[[3]], 
+       width=140, height=150, units="mm", dpi=300)
