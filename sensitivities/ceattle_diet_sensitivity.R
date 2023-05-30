@@ -11,62 +11,12 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230111.xlsx")
-
-# # Run CEATTLE with no predation (single-species)
-# nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-#                                 inits = NULL, # Initial parameters = 0
-#                                 file = NULL, # Don't save
-#                                 msmMode = 0, # Multispecies mode
-#                                 phase = "default")
-
-
-# Run CEATTLE with differing diet weight proportions --------------------------
-# Pull out data from base intrasp run
-wts <- hake_intrasp$UobsWtAge %>% 
-  group_by(Pred_age, Prey_age) %>%
-  summarize(wt_prop = mean(Stomach_proportion_by_weight))
-
-wt05 <- rescale_max(wts$wt_prop, to = c(0, 0.005))
-wt10 <- rescale_max(wts$wt_prop, to = c(0, 0.1))
-wt50 <- rescale_max(wts$wt_prop, to = c(0, 0.5))
-wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
-
-prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
-colnames(prop)[3] <- c("observed data")
-prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
-
-# stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
-#   geom_bar(stat = "identity", position = "dodge") +
-#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-#   ylab("stomach proportion") + xlab("prey age") +
-#   facet_wrap(~Pred_age, ncol = 3)
-# stomach_props
-# 
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
-#        width=140, height=150, units="mm", dpi=300)
-
-
-# Adapt weight proportions to replace those in the excel file & run CEATTLE
-run_ceattle <- function(wt, df, init) {
-  df$UobsWtAge$Stomach_proportion_by_weight <- wt
-  ceattle <- Rceattle::fit_mod(data_list = df,
-                               inits = init, # Initial parameters = 0
-                               file = NULL, # Don't save
-                               # debug = 1, # 1 = estimate, 0 = don't estimate
-                               random_rec = FALSE, # No random recruitment
-                               msmMode = 1, # Multi-species mode
-                               phase = "default")
-  return(ceattle)
-}
-
-# Run low-cannibalism models
-run_intrasp <- run_ceattle(hake_intrasp$UobsWtAge$Stomach_proportion_by_weight, hake_intrasp)
-run_wt05 <- run_ceattle(wt05, hake_intrasp, init = NULL)
-run_wt10 <- run_ceattle(wt10, hake_intrasp, init = NULL)
-run_wt50 <- run_ceattle(wt50, hake_intrasp, init = NULL)
-run_wt75 <- run_ceattle(wt75, hake_intrasp, init = run_wt50$estimated_params)  # can help with convergence
-
+# Read in models
+load("models/ms_estM1.Rdata")
+load("models/sensitivity/diet/run_wt05.Rdata")
+load("models/sensitivity/diet/run_wt10.Rdata")
+load("models/sensitivity/diet/run_wt50.Rdata")
+load("models/sensitivity/diet/run_wt75.Rdata")
 
 # Check fit of CEATTLE model --------------------------------------------------
 fit_CEATTLE <- function(run) {

@@ -10,6 +10,8 @@
 # remotes::install_github("grantdadams/Rceattle")
 # devtools::install_github("grantdadams/Rceattle", ref = "dev")
 library(Rceattle)
+library(dplyr)
+library(scales)
 
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230427.xlsx")
@@ -182,7 +184,6 @@ data_90s$UobsWtAge <- dirichlet_90s
 data_90s$styr <- 1988
 data_90s$endyr <- 1999
 data_90s$projyr <- 1999
-
 run_90s <- run_CEATTLE(data = data_90s,
                        M1 = 1,
                        prior = FALSE,
@@ -191,7 +192,6 @@ run_90s <- run_CEATTLE(data = data_90s,
                        M_phase = 1)
 run_90s$fit  # check convergence
 save(run_90s, file = "models/sensitivity/time-varying/run_90s.Rdata")
-
 run_90s_prior <- run_CEATTLE(data = data_90s,
                              M1 = 1,
                              prior = TRUE,
@@ -207,7 +207,6 @@ data_recent$UobsWtAge <- dirichlet_recent
 data_recent$styr <- 2005
 data_recent$endyr <- 2019
 data_recent$projyr <- 2019
-
 run_recent <- run_CEATTLE(data = data_recent,
                           M1 = 1,
                           prior = FALSE,
@@ -216,7 +215,6 @@ run_recent <- run_CEATTLE(data = data_recent,
                           M_phase = 1)
 run_recent$fit  # check convergence
 save(run_recent, file = "models/sensitivity/time-varying/run_recent.Rdata")
-
 run_recent_prior <- run_CEATTLE(data = data_recent,
                                 M1 = 1,
                                 prior = TRUE,
@@ -225,4 +223,105 @@ run_recent_prior <- run_CEATTLE(data = data_recent,
                                 M_phase = 1)
 run_recent_prior$fit  # check convergence
 save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
-  
+
+# Variation in diet proportion ------------------------------------------------
+# Pull out data from base intrasp run
+wts <- hake_intrasp$UobsWtAge %>% 
+  group_by(Pred_age, Prey_age) %>%
+  summarize(wt_prop = mean(Stomach_proportion_by_weight))
+
+wt05 <- rescale_max(wts$wt_prop, to = c(0, 0.005))
+wt10 <- rescale_max(wts$wt_prop, to = c(0, 0.1))
+wt50 <- rescale_max(wts$wt_prop, to = c(0, 0.5))
+wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
+
+# # Look at diet proportions
+# prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
+# colnames(prop)[3] <- c("observed data")
+# prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
+# 
+# stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
+#   geom_bar(stat = "identity", position = "dodge") +
+#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+#   ylab("stomach proportion") + xlab("prey age") +
+#   facet_wrap(~Pred_age, ncol = 3)
+# stomach_props
+# 
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
+#        width=140, height=150, units="mm", dpi=300)
+
+data05 <- hake_intrasp
+data05$UobsWtAge$Stomach_proportion_by_weight <- wt05
+run_wt05 <- run_CEATTLE(data = data05,
+                        M1 = 1,
+                        prior = FALSE,
+                        init = NULL,
+                        msm = 1,
+                        M_phase = 1)
+run_wt05$fit
+save(run_wt05, file = "models/sensitivity/diet/run_wt05.Rdata")
+run_wt05_prior <- run_CEATTLE(data = data05,
+                              M1 = 1,
+                              prior = TRUE,
+                              init = NULL,
+                              msm = 1,
+                              M_phase = 1)
+run_wt05_prior$fit
+save(run_wt05_prior, file = "models/sensitivity/diet/run_wt05_prior.Rdata")
+
+data10 <- hake_intrasp
+data10$UobsWtAge$Stomach_proportion_by_weight <- wt10
+run_wt10 <- run_CEATTLE(data = data10,
+                        M1 = 1,
+                        prior = FALSE,
+                        init = NULL,
+                        msm = 1,
+                        M_phase = 1)
+run_wt10$fit
+save(run_wt10, file = "models/sensitivity/diet/run_wt10.Rdata")
+run_wt10_prior <- run_CEATTLE(data = data10,
+                              M1 = 1,
+                              prior = TRUE,
+                              init = NULL,
+                              msm = 1,
+                              M_phase = 1)
+run_wt10_prior$fit
+save(run_wt10_prior, file = "models/sensitivity/diet/run_wt10_prior.Rdata")
+
+data50 <- hake_intrasp
+data50$UobsWtAge$Stomach_proportion_by_weight <- wt50
+run_wt50 <- run_CEATTLE(data = data50,
+                        M1 = 1,
+                        prior = FALSE,
+                        init = NULL,
+                        msm = 1,
+                        M_phase = 1)
+run_wt50$fit
+save(run_wt50, file = "models/sensitivity/diet/run_wt50.Rdata")
+run_wt50_prior <- run_CEATTLE(data = data50,
+                              M1 = 1,
+                              prior = TRUE,
+                              init = NULL,
+                              msm = 1,
+                              M_phase = 1)
+run_wt50_prior$fit
+save(run_wt50_prior, file = "models/sensitivity/diet/run_wt50_prior.Rdata")
+
+data75 <- hake_intrasp
+data75$UobsWtAge$Stomach_proportion_by_weight <- wt75
+run_wt75 <- run_CEATTLE(data = data75,
+                        M1 = 1,
+                        prior = FALSE,
+                        init = NULL,
+                        msm = 1,
+                        M_phase = 1)
+run_wt75$fit
+save(run_wt75, file = "models/sensitivity/diet/run_wt75.Rdata")
+run_wt75_prior <- run_CEATTLE(data = data75,
+                              M1 = 1,
+                              prior = TRUE,
+                              init = NULL,
+                              msm = 1,
+                              M_phase = 1)
+run_wt75_prior$fit
+save(run_wt75_prior, file = "models/sensitivity/diet/run_wt75_prior.Rdata")
