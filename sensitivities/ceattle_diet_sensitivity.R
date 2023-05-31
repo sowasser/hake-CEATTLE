@@ -32,8 +32,10 @@ colnames(sensitivity_summary) <- c("wt05", "wt10", "wt50", "wt75")
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
 years <- 1988:2022
-models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, run_wt75$model)
-names <- c("observed cannibalism", "0.5% cannibalism", "10% cannibalism", "50% cannibalism", "75% cannibalism")
+models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, 
+               run_wt75$model)
+names <- c("observed cannibalism", "0.5% cannibalism", "10% cannibalism", 
+           "50% cannibalism", "75% cannibalism")
 
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
@@ -79,7 +81,9 @@ plot_popdy <- function(biom, R) {
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
-  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+  all_popdy$variable <- factor(all_popdy$variable, 
+                               labels = c("SSB (Mt)", "Total Biomass (Mt)", 
+                                          "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -279,7 +283,9 @@ load("models/sensitivity/diet/run_wt10_prior.Rdata")
 load("models/sensitivity/diet/run_wt50_prior.Rdata")
 load("models/sensitivity/diet/run_wt75_prior.Rdata")
 
-models_prior <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, run_wt50_prior$model, run_wt75_prior$model)
+models_prior <- list(ms_priorM1$model, run_wt05_prior$model, 
+                     run_wt10_prior$model, run_wt50_prior$model, 
+                     run_wt75_prior$model)
 
 test_biom_prior <- rbind(ceattle_biomass(models_prior[[1]], names[1]),
                          ceattle_biomass(models_prior[[2]], names[2]),
@@ -295,7 +301,36 @@ R_test_prior <- rbind(ceattle_R(models_prior[[1]], names[1]),
 
 plot_popdy(test_biom_prior, R_test_prior)
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
-       plot_popdy(test_biom, R_test), 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy_prior.png", 
+       plot_popdy(test_biom_prior, R_test_prior), 
        width=140, height=150, units="mm", dpi=300)
 
+### Plot models with no projection period -------------------------------------
+years <- 1988:2019
+load("models/ms_noproj.Rdata")
+load("models/sensitivity/diet/run_wt05_noproj.Rdata")
+load("models/sensitivity/diet/run_wt10_noproj.Rdata")
+load("models/sensitivity/diet/run_wt50_noproj.Rdata")
+load("models/sensitivity/diet/run_wt75_noproj.Rdata")
+
+models_noproj <- list(ms_noproj$model, run_wt05_noproj$model, 
+                      run_wt10_noproj$model, run_wt50_noproj$model, 
+                      run_wt75_noproj$model)
+
+test_biom_noproj <- rbind(ceattle_biomass(models_noproj[[1]], names[1]),
+                          ceattle_biomass(models_noproj[[2]], names[2]),
+                          ceattle_biomass(models_noproj[[3]], names[3]),
+                          ceattle_biomass(models_noproj[[4]], names[4]),
+                          ceattle_biomass(models_noproj[[5]], names[5]))
+
+R_test_noproj <- rbind(ceattle_R(models_noproj[[1]], names[1]),
+                       ceattle_R(models_noproj[[2]], names[2]),
+                       ceattle_R(models_noproj[[3]], names[3]),
+                       ceattle_R(models_noproj[[4]], names[4]),
+                       ceattle_R(models_noproj[[5]], names[5]))
+
+plot_popdy(test_biom_noproj, R_test_noproj)
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy_noproj.png", 
+       plot_popdy(test_biom_noproj, R_test_noproj), 
+       width=140, height=150, units="mm", dpi=300)

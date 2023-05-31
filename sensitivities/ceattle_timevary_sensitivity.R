@@ -18,7 +18,7 @@ load("models/sensitivity/time-varying/run_90s.Rdata")
 load("models/sensitivity/time-varying/run_recent.Rdata")
 
 ### Plot population dynamics --------------------------------------------------
-timing_plot_popdy <- function(run_high, run_low) {
+timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   # Pull out SSB & overall biomass from CEATTLE runs
   ceattle_biomass <- function(run, name, years) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
@@ -33,7 +33,7 @@ timing_plot_popdy <- function(run_high, run_low) {
     return(all_biom2)
   }
   
-  test_biom <- rbind(ceattle_biomass(ms_estM1$model, "all years", 1988:2022),
+  test_biom <- rbind(ceattle_biomass(ms_model, "all years", all_years),
                      ceattle_biomass(run_high, "high (1988-1999)", 1988:1999),
                      ceattle_biomass(run_low, "low (2005-2019)", 2005:2019))
   
@@ -48,7 +48,7 @@ timing_plot_popdy <- function(run_high, run_low) {
                                  model = rep(name)))
     return(R_all)
   }
-  R_test <- rbind(ceattle_R(ms_estM1$model, "all years", 1988:2022),
+  R_test <- rbind(ceattle_R(ms_model, "all years", all_years),
                   ceattle_R(run_high, "high (1988-1999)", 1988:1999),
                   ceattle_R(run_low, "low (2005-2019)", 2005:2019))
   
@@ -104,7 +104,9 @@ timing_plot_popdy <- function(run_high, run_low) {
 }
 
 timing_popdy <- timing_plot_popdy(run_high = run_90s$model, 
-                                  run_low = run_recent$model)
+                                  run_low = run_recent$model,
+                                  ms_model = ms_estM1$model,
+                                  all_years = all_years)
 relative_change <- timing_popdy[[2]]
 timing_popdy[[3]]
 
@@ -212,15 +214,30 @@ M1_all <- rbind(data.frame(model = "all years",
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
        timevary_M, width=140, height = 170, units = "mm", dpi=300)
 
+### Plot with no projection period on the models ------------------------------
+load("models/ms_noproj.Rdata")
+load("models/sensitivity/time-varying/run_90s_noproj.Rdata")
+load("models/sensitivity/time-varying/run_recent_noproj.Rdata")
+
+timing_popdy_noproj <- timing_plot_popdy(run_high = run_90s_noproj$model, 
+                                         run_low = run_recent_noproj$model,
+                                         ms_model = ms_noproj$model,
+                                         all_years = 1988:2019)
+relative_change_noproj <- timing_popdy_noproj[[2]]
+timing_popdy_noproj[[3]]
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_noproj.png", timing_popdy_noproj[[3]], 
+       width=140, height=150, units="mm", dpi=300)
 
 ### Plot using models with a prior on M1 --------------------------------------
 load("models/ms_priorM1.Rdata")
-# Read in different time period models (specified in run_ceattle.R)
 load("models/sensitivity/time-varying/run_90s_prior.Rdata")
 load("models/sensitivity/time-varying/run_recent_prior.Rdata")
 
 timing_popdy_prior <- timing_plot_popdy(run_high = run_90s_prior$model, 
-                                        run_low = run_recent_prior$model)
+                                        run_low = run_recent_prior$model,
+                                        ms_model = ms_priorM1$model,
+                                        all_years = 1988:2022)
 relative_change_prior <- timing_popdy_prior[[2]]
 timing_popdy_prior[[3]]
 

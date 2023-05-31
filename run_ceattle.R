@@ -17,7 +17,7 @@ library(scales)
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230427.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
-run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
+run_CEATTLE <- function(data, M1, prior, init, msm, M_phase, estMode) {
   data$est_M1 <- M1  
   # data$endyr <- 2019
   run <- fit_mod(data_list = data,
@@ -30,7 +30,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase) {
                                             M1_prior_mean = 0.2,
                                             M1_prior_sd = .1),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
-                 estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+                 estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
                                            FsprLimit = 0.4, # F40%
                                            Ptarget = 0.4, # Target is 40% B0
@@ -103,7 +103,8 @@ ss_fixM1 <- run_CEATTLE(data = hake_intrasp,
                         prior = FALSE, 
                         init = NULL, 
                         msm = 0, 
-                        M_phase = 6)
+                        M_phase = 6,
+                        estMode = 0)
 ss_fixM1$fit  # check convergence
 save(ss_fixM1, file = "models/ss_fixM1.Rdata")
 
@@ -112,7 +113,8 @@ ss_estM1 <- run_CEATTLE(data = hake_intrasp,
                         prior = FALSE, 
                         init = ss_fixM1[[1]]$estimated_params, 
                         msm = 0, 
-                        M_phase = 1)
+                        M_phase = 1,
+                        estMode = 0)
 ss_estM1$fit  # check convergence
 ss_estM1$model$quantities$M1
 save(ss_estM1, file = "models/ss_estM1.Rdata")
@@ -122,7 +124,8 @@ ss_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           prior = TRUE,
                           init = NULL,
                           msm = 0,
-                          M_phase = 1)
+                          M_phase = 1,
+                          estMode = 0)
 ss_priorM1$fit  # check convergence
 ss_priorM1$model$quantities$M1
 save(ss_priorM1, file = "models/ss_priorM1.Rdata")
@@ -133,7 +136,8 @@ ms_estM1 <- run_CEATTLE(data = hake_intrasp,
                         prior = FALSE, 
                         init = ss_estM1$model$estimated_params, 
                         msm = 1, 
-                        M_phase = 1)
+                        M_phase = 1,
+                        estMode = 0)
 ms_estM1$fit  # check convergence
 # Rceattle diagnostic plots 
 Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
@@ -145,7 +149,8 @@ ms_fixM1 <- run_CEATTLE(data = hake_intrasp,
                         prior = FALSE, 
                         init = ss_fixM1$model$estimated_params, 
                         msm = 1, 
-                        M_phase = 6)
+                        M_phase = 6,
+                        estMode = 0)
 ms_fixM1$fit  # check convergence
 save(ms_fixM1, file = "models/ms_fixM1.Rdata")
 
@@ -154,11 +159,23 @@ ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           prior = TRUE,
                           init = NULL,
                           msm = 1,
-                          M_phase = 1)
+                          M_phase = 1,
+                          estMode = 0)
 ms_priorM1$fit  # check convergence
 ms_priorM1$model$quantities$M1
 save(ms_priorM1, file = "models/ms_priorM1.Rdata")
 
+data_noproj <- hake_intrasp
+data_noproj$projyr <- 2019
+ms_noproj <- run_CEATTLE(data = data_noproj, 
+                         M1 = 1, 
+                         prior = FALSE, 
+                         init = NULL, 
+                         msm = 1, 
+                         M_phase = 1,
+                         estMode = 1)
+ms_noproj$fit  # check convergence
+save(ms_noproj, file = "models/ms_noproj.Rdata")
 
 # For future reference: age-blocked mortality at 1, 3, and 3+ -----------------
 # map <- intrasp_run$map
@@ -189,15 +206,26 @@ run_90s <- run_CEATTLE(data = data_90s,
                        prior = FALSE,
                        init = NULL,
                        msm = 1,
-                       M_phase = 1)
+                       M_phase = 1,
+                       estMode = 0)
 run_90s$fit  # check convergence
 save(run_90s, file = "models/sensitivity/time-varying/run_90s.Rdata")
+run_90s_noproj <- run_CEATTLE(data = data_90s,
+                              M1 = 1,
+                              prior = FALSE,
+                              init = NULL,
+                              msm = 1,
+                              M_phase = 1,
+                              estMode = 1)
+run_90s_noproj$fit  # check convergence
+save(run_90s_noproj, file = "models/sensitivity/time-varying/run_90s_noproj.Rdata")
 run_90s_prior <- run_CEATTLE(data = data_90s,
                              M1 = 1,
                              prior = TRUE,
                              init = NULL,
                              msm = 1,
-                             M_phase = 1)
+                             M_phase = 1,
+                             estMode = 0)
 run_90s_prior$fit  # check convergence
 save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata")
 
@@ -212,15 +240,26 @@ run_recent <- run_CEATTLE(data = data_recent,
                           prior = FALSE,
                           init = NULL,
                           msm = 1,
-                          M_phase = 1)
+                          M_phase = 1,
+                          estMode = 0)
 run_recent$fit  # check convergence
 save(run_recent, file = "models/sensitivity/time-varying/run_recent.Rdata")
+run_recent_noproj <- run_CEATTLE(data = data_recent,
+                                 M1 = 1,
+                                 prior = FALSE,
+                                 init = NULL,
+                                 msm = 1,
+                                 M_phase = 1,
+                                 estMode = 1)
+run_recent_noproj$fit  # check convergence
+save(run_recent_noproj, file = "models/sensitivity/time-varying/run_recent_noproj.Rdata")
 run_recent_prior <- run_CEATTLE(data = data_recent,
                                 M1 = 1,
                                 prior = TRUE,
                                 init = NULL,
                                 msm = 1,
-                                M_phase = 1)
+                                M_phase = 1,
+                                estMode = 0)
 run_recent_prior$fit  # check convergence
 save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
 
@@ -257,7 +296,8 @@ run_wt05 <- run_CEATTLE(data = data05,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1)
+                        M_phase = 1,
+                        estMode = 0)
 run_wt05$fit
 save(run_wt05, file = "models/sensitivity/diet/run_wt05.Rdata")
 run_wt05_prior <- run_CEATTLE(data = data05,
@@ -265,9 +305,20 @@ run_wt05_prior <- run_CEATTLE(data = data05,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1)
+                              M_phase = 1,
+                              estMode = 0)
 run_wt05_prior$fit
 save(run_wt05_prior, file = "models/sensitivity/diet/run_wt05_prior.Rdata")
+data05$projyr <- 2019
+run_wt05_noproj <- run_CEATTLE(data = data05,
+                               M1 = 1,
+                               prior = FALSE,
+                               init = NULL,
+                               msm = 1,
+                               M_phase = 1,
+                               estMode = 1)
+run_wt05_noproj$fit
+save(run_wt05_noproj, file = "models/sensitivity/diet/run_wt05_noproj.Rdata")
 
 data10 <- hake_intrasp
 data10$UobsWtAge$Stomach_proportion_by_weight <- wt10
@@ -276,7 +327,8 @@ run_wt10 <- run_CEATTLE(data = data10,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1)
+                        M_phase = 1,
+                        estMode = 0)
 run_wt10$fit
 save(run_wt10, file = "models/sensitivity/diet/run_wt10.Rdata")
 run_wt10_prior <- run_CEATTLE(data = data10,
@@ -284,9 +336,20 @@ run_wt10_prior <- run_CEATTLE(data = data10,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1)
+                              M_phase = 1,
+                              estMode = 0)
 run_wt10_prior$fit
 save(run_wt10_prior, file = "models/sensitivity/diet/run_wt10_prior.Rdata")
+data10$projyr <- 2019
+run_wt10_noproj <- run_CEATTLE(data = data10,
+                               M1 = 1,
+                               prior = FALSE,
+                               init = NULL,
+                               msm = 1,
+                               M_phase = 1,
+                               estMode = 1)
+run_wt10_noproj$fit
+save(run_wt10_noproj, file = "models/sensitivity/diet/run_wt10_noproj.Rdata")
 
 data50 <- hake_intrasp
 data50$UobsWtAge$Stomach_proportion_by_weight <- wt50
@@ -295,7 +358,8 @@ run_wt50 <- run_CEATTLE(data = data50,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1)
+                        M_phase = 1,
+                        estMode = 0)
 run_wt50$fit
 save(run_wt50, file = "models/sensitivity/diet/run_wt50.Rdata")
 run_wt50_prior <- run_CEATTLE(data = data50,
@@ -303,9 +367,20 @@ run_wt50_prior <- run_CEATTLE(data = data50,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1)
+                              M_phase = 1,
+                              estMode = 0)
 run_wt50_prior$fit
 save(run_wt50_prior, file = "models/sensitivity/diet/run_wt50_prior.Rdata")
+data50$projyr <- 2019
+run_wt50_noproj <- run_CEATTLE(data = data50,
+                               M1 = 1,
+                               prior = FALSE,
+                               init = NULL,
+                               msm = 1,
+                               M_phase = 1,
+                               estMode = 1)
+run_wt50_noproj$fit
+save(run_wt50_noproj, file = "models/sensitivity/diet/run_wt50_noproj.Rdata")
 
 data75 <- hake_intrasp
 data75$UobsWtAge$Stomach_proportion_by_weight <- wt75
@@ -314,7 +389,8 @@ run_wt75 <- run_CEATTLE(data = data75,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1)
+                        M_phase = 1,
+                        estMode = 0)
 run_wt75$fit
 save(run_wt75, file = "models/sensitivity/diet/run_wt75.Rdata")
 run_wt75_prior <- run_CEATTLE(data = data75,
@@ -322,6 +398,17 @@ run_wt75_prior <- run_CEATTLE(data = data75,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1)
+                              M_phase = 1,
+                              estMode = 0)
 run_wt75_prior$fit
 save(run_wt75_prior, file = "models/sensitivity/diet/run_wt75_prior.Rdata")
+data75$projyr <- 2019
+run_wt75_noproj <- run_CEATTLE(data = data75,
+                               M1 = 1,
+                               prior = FALSE,
+                               init = NULL,
+                               msm = 1,
+                               M_phase = 1,
+                               estMode = 1)
+run_wt75_noproj$fit
+save(run_wt75_noproj, file = "models/sensitivity/diet/run_wt75_noproj.Rdata")
