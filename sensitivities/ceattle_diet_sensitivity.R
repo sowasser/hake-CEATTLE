@@ -269,3 +269,33 @@ M1_all <- rbind(data.frame(model = "0.5%",
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test, 
        width=160, height = 250, units = "mm", dpi=300)
+
+
+### Plot models with a prior --------------------------------------------------
+# Read in models
+load("models/ms_priorM1.Rdata")
+load("models/sensitivity/diet/run_wt05_prior.Rdata")
+load("models/sensitivity/diet/run_wt10_prior.Rdata")
+load("models/sensitivity/diet/run_wt50_prior.Rdata")
+load("models/sensitivity/diet/run_wt75_prior.Rdata")
+
+models_prior <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, run_wt50_prior$model, run_wt75_prior$model)
+
+test_biom_prior <- rbind(ceattle_biomass(models_prior[[1]], names[1]),
+                         ceattle_biomass(models_prior[[2]], names[2]),
+                         ceattle_biomass(models_prior[[3]], names[3]),
+                         ceattle_biomass(models_prior[[4]], names[4]),
+                         ceattle_biomass(models_prior[[5]], names[5]))
+
+R_test_prior <- rbind(ceattle_R(models_prior[[1]], names[1]),
+                      ceattle_R(models_prior[[2]], names[2]),
+                      ceattle_R(models_prior[[3]], names[3]),
+                      ceattle_R(models_prior[[4]], names[4]),
+                      ceattle_R(models_prior[[5]], names[5]))
+
+plot_popdy(test_biom_prior, R_test_prior)
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
+       plot_popdy(test_biom, R_test), 
+       width=140, height=150, units="mm", dpi=300)
+
