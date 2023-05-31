@@ -32,47 +32,50 @@ colnames(sensitivity_summary) <- c("wt05", "wt10", "wt50", "wt75")
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
 years <- 1988:2022
+models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, run_wt75$model)
 names <- c("observed cannibalism", "0.5% cannibalism", "10% cannibalism", "50% cannibalism", "75% cannibalism")
-test_plot_popdy <- function(models, names = names) {
-  # Pull out SSB & overall biomass from CEATTLE runs
-  ceattle_biomass <- function(run, name) {
-    ssb <- (c(run$quantities$biomassSSB) * 2)
-    biom <- c(run$quantities$biomass)
-    wide <- as.data.frame(cbind(years, ssb, biom))
-    colnames(wide) <- c("year", "SSB", "Total Biomass")
-    all_biom <- melt(wide, id.vars = "year")
-    all_biom2 <- cbind(all_biom,
-                       error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
-                                 run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]),
-                       model = rep(name))
-    return(all_biom2)
-  }
-  
-  test_biom <- rbind(ceattle_biomass(models[[1]], names[1]),
-                     ceattle_biomass(models[[2]], names[2]),
-                     ceattle_biomass(models[[3]], names[3]),
-                     ceattle_biomass(models[[4]], names[4]),
-                     ceattle_biomass(models[[5]], names[5]))
-  
-  # Put recruitment together
-  ceattle_R <- function(run, name) {
-    R <- c(run$quantities$R)
-    error <- c(run$sdrep$sd[which(names(run$sdrep$value) == "R")])
-    R_all <- as.data.frame(cbind(year = years, 
-                                 variable = rep("Recruitment"),
-                                 value = R, 
-                                 error = error, 
-                                 model = rep(name)))
-    return(R_all)
-  }
-  R_test <- rbind(ceattle_R(models[[1]], names[1]),
-                  ceattle_R(models[[2]], names[2]),
-                  ceattle_R(models[[3]], names[3]),
-                  ceattle_R(models[[4]], names[4]),
-                  ceattle_R(models[[5]], names[5]))
-  
-  # Combine biomass & recruitment and plot
-  all_popdy <- rbind(test_biom, R_test)
+
+# Pull out SSB & overall biomass from CEATTLE runs
+ceattle_biomass <- function(run, name) {
+  ssb <- (c(run$quantities$biomassSSB) * 2)
+  biom <- c(run$quantities$biomass)
+  wide <- as.data.frame(cbind(years, ssb, biom))
+  colnames(wide) <- c("year", "SSB", "Total Biomass")
+  all_biom <- melt(wide, id.vars = "year")
+  all_biom2 <- cbind(all_biom,
+                     error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
+                               run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]),
+                     model = rep(name))
+  return(all_biom2)
+}
+
+test_biom <- rbind(ceattle_biomass(models[[1]], names[1]),
+                   ceattle_biomass(models[[2]], names[2]),
+                   ceattle_biomass(models[[3]], names[3]),
+                   ceattle_biomass(models[[4]], names[4]),
+                   ceattle_biomass(models[[5]], names[5]))
+
+# Put recruitment together
+ceattle_R <- function(run, name) {
+  R <- c(run$quantities$R)
+  error <- c(run$sdrep$sd[which(names(run$sdrep$value) == "R")])
+  R_all <- as.data.frame(cbind(year = years, 
+                               variable = rep("Recruitment"),
+                               value = R, 
+                               error = error, 
+                               model = rep(name)))
+  return(R_all)
+}
+
+R_test <- rbind(ceattle_R(models[[1]], names[1]),
+                ceattle_R(models[[2]], names[2]),
+                ceattle_R(models[[3]], names[3]),
+                ceattle_R(models[[4]], names[4]),
+                ceattle_R(models[[5]], names[5]))
+
+# Combine biomass & recruitment and plot
+plot_popdy <- function(biom, R) {
+  all_popdy <- rbind(biom, R)
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
@@ -82,8 +85,9 @@ test_plot_popdy <- function(models, names = names) {
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
-
+  
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
+    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_line(aes(linetype = model)) +
     scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
@@ -94,42 +98,14 @@ test_plot_popdy <- function(models, names = names) {
     labs(color = "model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside")
-  
-  # Plot ratio of SSB:Biomass to look for skewness in age composition
-  ratio <- function(run, name) {
-    df <- as.data.frame(cbind(year = years,
-                              value = (c(run$quantities$biomassSSB) * 2) / c(run$quantities$biomass),
-                              model = rep(name)))
-    return(df)
-  }
-  
-  ratio_all <- rbind(ratio(models[[1]], names[1]),
-                     ratio(models[[2]], names[2]),
-                     ratio(models[[3]], names[3]),
-                     ratio(models[[4]], names[4]),
-                     ratio(models[[5]], names[5]))
-  ratio_all$year <- as.numeric(ratio_all$year)
-  ratio_all$value <- as.numeric(ratio_all$value)
-
-  ratio_plot <- ggplot(ratio_all, aes(x=year, y=value, color=model)) +
-    geom_line(aes(linetype = model)) +
-    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    ylab("SSB/Biomass")
-  
-  return(list(all_popdy, popdy_plot, ratio_plot))
+  return(popdy_plot)
 }
 
-models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, run_wt75$model)
-test_popdy <- test_plot_popdy(models = models)
-test_popdy[[2]]
+plot_popdy(test_biom, R_test)
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", test_popdy[[2]], 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
+       plot_popdy(test_biom, R_test), 
        width=140, height=150, units="mm", dpi=300)
-
-test_popdy[[3]]
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png", test_popdy[[3]], 
-       width=150, height=80, units="mm", dpi=300)
 
 
 # # Numbers-at-age for each model run -------------------------------------------
@@ -138,17 +114,18 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_ratio.png", test_
 # intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("observed proportion", nrow(intrasp_nbyage)))
 # colnames(intrasp_nbyage)[4] <- "model"
 # 
-extract_byage <- function(run, name) {
-  df <- as.data.frame(as.table(quantity))
-
+# Helper function for extracting -by-age data from CEATTLE
+extract_byage <- function(result, name, type) {
+  df <- as.data.frame(as.table(result))
+  
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
   levels(df$Var4) <- c(years)
-  colnames(df) <- c("age", "year", "numbers")
-
+  colnames(df) <- c("age", "year", type)
+  
   df <- cbind(df, rep(name, nrow(df)))
   colnames(df)[4] <- "model"
-
+  
   return(df)
 }
 # 
@@ -248,32 +225,32 @@ extract_byage <- function(run, name) {
 
 ### Look at mortality-at-age timeseries ---------------------------------------
 # Custom mortality function that outputs ggplot object ------------------------
-extract_M <- function(run, quantity, name) {
+mortality <- function(run, name) {
   M1 <- run$quantities$M1[1, 1, 1:15]
-  M2 <- extract_byage(quantity, name)
+  M2 <- extract_byage(run$quantities$M2, name, "M2")
   total_mortality <- M2 %>%
-    mutate(M1_M2 = M2$numbers + M1)
+    mutate(M1_M2 = M2 + rep(M1, length(years)))
   total_mortality$age <- as.integer(total_mortality$age)
   total_mortality$year <- as.integer(as.character(total_mortality$year))
   return(total_mortality)
 }
 
-M_all <- rbind(extract_M(run_wt05$model, run_wt05$model$quantities$M2, names[2]),
-               extract_M(run_wt10$model, run_wt10$model$quantities$M2, names[3]),
-               extract_M(run_wt50$model, run_wt50$model$quantities$M2, names[4]),
-               extract_M(run_wt75$model, run_wt75$model$quantities$M2, names[5]))
+M_all <- rbind(mortality(run_wt05$model, names[2]),
+               mortality(run_wt10$model, names[3]),
+               mortality(run_wt50$model, names[4]),
+               mortality(run_wt75$model, names[5]))
 
 max(M_all$M1_M2)  # check max M for plotting
-timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
+M_test <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.6), breaks = c(0.21, 2.6)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 3.15), breaks = c(0.21, 3.15)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
   facet_wrap(~model, ncol = 1)
-timevary_M
+M_test
 
 # Min, max, mean natural mortality by age, for ages 1-5
 M_byage <- M_all %>%
@@ -290,5 +267,5 @@ M1_all <- rbind(data.frame(model = "0.5%",
                 data.frame(model = "75%", 
                            mean = mean(run_wt75$model$quantities$M1[1, 1, 1:15])))
 
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", m_test, 
-       width=200, height = 100, units = "mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test, 
+       width=160, height = 250, units = "mm", dpi=300)
