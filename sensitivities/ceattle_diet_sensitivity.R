@@ -296,7 +296,7 @@ R_test_fixed <- rbind(ceattle_R(models_fixed[[1]], names[1]),
                       ceattle_R(models_fixed[[4]], names[4]),
                       ceattle_R(models_fixed[[5]], names[5]))
 
-plot_popdy(test_biom_fixed, R_test_fixed)
+plot_popdy(test_biom_fixed %>% filter(year < 2018), R_test_fixed %>% filter(year < 2018))
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy_fixed.png", 
        plot_popdy(test_biom_fixed, R_test_fixed), 
