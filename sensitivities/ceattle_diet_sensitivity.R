@@ -274,6 +274,34 @@ M1_all <- rbind(data.frame(model = "0.5%",
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test, 
        width=160, height = 250, units = "mm", dpi=300)
 
+### Plot models with fixed M1 -------------------------------------------------
+load("models/ms_fixM1.Rdata")
+load("models/sensitivity/diet/run_wt05_fix.Rdata")
+load("models/sensitivity/diet/run_wt10_fix.Rdata")
+load("models/sensitivity/diet/run_wt50_fix.Rdata")
+load("models/sensitivity/diet/run_wt75_fix.Rdata")
+
+models_fixed <- list(ms_fixM1$model, run_wt05_fix$model, run_wt10_fix$model, 
+                     run_wt50_fix$model, run_wt75_fix$model)
+
+test_biom_fixed <- rbind(ceattle_biomass(models_fixed[[1]], names[1]),
+                         ceattle_biomass(models_fixed[[2]], names[2]),
+                         ceattle_biomass(models_fixed[[3]], names[3]),
+                         ceattle_biomass(models_fixed[[4]], names[4]),
+                         ceattle_biomass(models_fixed[[5]], names[5]))
+
+R_test_fixed <- rbind(ceattle_R(models_fixed[[1]], names[1]),
+                      ceattle_R(models_fixed[[2]], names[2]),
+                      ceattle_R(models_fixed[[3]], names[3]),
+                      ceattle_R(models_fixed[[4]], names[4]),
+                      ceattle_R(models_fixed[[5]], names[5]))
+
+plot_popdy(test_biom_fixed, R_test_fixed)
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy_fixed.png", 
+       plot_popdy(test_biom_fixed, R_test_fixed), 
+       width=140, height=150, units="mm", dpi=300)
+
 
 ### Plot models with a prior --------------------------------------------------
 # Read in models

@@ -300,6 +300,15 @@ run_wt05 <- run_CEATTLE(data = data05,
                         estMode = 0)
 run_wt05$fit
 save(run_wt05, file = "models/sensitivity/diet/run_wt05.Rdata")
+run_wt05_fix <- run_CEATTLE(data = data05,
+                            M1 = 0,
+                            prior = FALSE,
+                            init = NULL,
+                            msm = 1,
+                            M_phase = 6,
+                            estMode = 0)
+run_wt05_fix$fit
+save(run_wt05_fix, file = "models/sensitivity/diet/run_wt05_fix.Rdata")
 run_wt05_prior <- run_CEATTLE(data = data05,
                               M1 = 1,
                               prior = TRUE,
@@ -331,6 +340,15 @@ run_wt10 <- run_CEATTLE(data = data10,
                         estMode = 0)
 run_wt10$fit
 save(run_wt10, file = "models/sensitivity/diet/run_wt10.Rdata")
+run_wt10_fix <- run_CEATTLE(data = data10,
+                            M1 = 0,
+                            prior = FALSE,
+                            init = NULL,
+                            msm = 1,
+                            M_phase = 6,
+                            estMode = 0)
+run_wt10_fix$fit
+save(run_wt10_fix, file = "models/sensitivity/diet/run_wt10_fix.Rdata")
 run_wt10_prior <- run_CEATTLE(data = data10,
                               M1 = 1,
                               prior = TRUE,
@@ -362,6 +380,15 @@ run_wt50 <- run_CEATTLE(data = data50,
                         estMode = 0)
 run_wt50$fit
 save(run_wt50, file = "models/sensitivity/diet/run_wt50.Rdata")
+run_wt50_fix <- run_CEATTLE(data = data50,
+                            M1 = 0,
+                            prior = FALSE,
+                            init = NULL,
+                            msm = 1,
+                            M_phase = 6,
+                            estMode = 0)
+run_wt50_fix$fit
+save(run_wt50_fix, file = "models/sensitivity/diet/run_wt50_fix.Rdata")
 run_wt50_prior <- run_CEATTLE(data = data50,
                               M1 = 1,
                               prior = TRUE,
@@ -393,6 +420,15 @@ run_wt75 <- run_CEATTLE(data = data75,
                         estMode = 0)
 run_wt75$fit
 save(run_wt75, file = "models/sensitivity/diet/run_wt75.Rdata")
+run_wt75_fix <- run_CEATTLE(data = data75,
+                            M1 = 0,
+                            prior = FALSE,
+                            init = NULL,
+                            msm = 1,
+                            M_phase = 6,
+                            estMode = 0)
+run_wt75_fix$fit
+save(run_wt75_fix, file = "models/sensitivity/diet/run_wt75_fix.Rdata")
 run_wt75_prior <- run_CEATTLE(data = data75,
                               M1 = 1,
                               prior = TRUE,
