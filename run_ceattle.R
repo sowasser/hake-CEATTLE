@@ -30,7 +30,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase, estMode) {
                                             M1_prior_mean = 0.2,
                                             M1_prior_sd = .1),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
-                 estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+                 estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
                                            FsprLimit = 0.4, # F40%
                                            Ptarget = 0.4, # Target is 40% B0
@@ -225,7 +225,7 @@ run_90s_prior <- run_CEATTLE(data = data_90s,
                              init = NULL,
                              msm = 1,
                              M_phase = 1,
-                             estMode = 0)
+                             estMode = 1)
 run_90s_prior$fit  # check convergence
 save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata")
 
@@ -259,7 +259,7 @@ run_recent_prior <- run_CEATTLE(data = data_recent,
                                 init = NULL,
                                 msm = 1,
                                 M_phase = 1,
-                                estMode = 0)
+                                estMode = 1)
 run_recent_prior$fit  # check convergence
 save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
 
