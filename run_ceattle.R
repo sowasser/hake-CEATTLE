@@ -176,6 +176,16 @@ ms_noproj <- run_CEATTLE(data = data_noproj,
                          estMode = 1)
 ms_noproj$fit  # check convergence
 save(ms_noproj, file = "models/ms_noproj.Rdata")
+ms_priorM1_noproj <- run_CEATTLE(data = data_noproj,
+                                 M1 = 1,
+                                 prior = TRUE,
+                                 init = NULL,
+                                 msm = 1,
+                                 M_phase = 1,
+                                 estMode = 1)
+ms_priorM1_noproj$fit  # check convergence
+save(ms_priorM1_noproj, file = "models/ms_priorM1_noproj.Rdata")
+
 
 # For future reference: age-blocked mortality at 1, 3, and 3+ -----------------
 # map <- intrasp_run$map
