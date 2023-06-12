@@ -435,11 +435,11 @@ mortality <- function(run, type) {
     total_mortality$age <- as.integer(total_mortality$age)
     total_mortality$year <- as.integer(as.character(total_mortality$year))
     
-    mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.5)) + 
+    mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.8)) + 
       geom_tile(aes(fill = M1_M2)) +
       scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) + 
       scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
-      scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.0), breaks = c(0.21, 2.0)) +
+      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.8), breaks = c(0.21, 1.8)) +
       geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +

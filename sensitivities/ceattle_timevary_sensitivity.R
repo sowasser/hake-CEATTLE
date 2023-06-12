@@ -12,7 +12,7 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-load("models/ms_estM1.Rdata")
+load("models/ms_noproj.Rdata")
 # Read in different time period models (specified in run_ceattle.R)
 load("models/sensitivity/time-varying/run_90s_noproj.Rdata")
 load("models/sensitivity/time-varying/run_recent_noproj.Rdata")
@@ -86,6 +86,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
+  all_popdy$model <- factor(all_popdy$model, levels = c("high (1988-1999)", "low (2005-2019)", "all years"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line(aes(linetype = model)) +
@@ -93,7 +94,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    # geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
@@ -105,8 +106,8 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
 
 timing_popdy <- timing_plot_popdy(run_high = run_90s_noproj$model, 
                                   run_low = run_recent_noproj$model,
-                                  ms_model = ms_estM1$model,
-                                  all_years = 1988:2022)
+                                  ms_model = ms_noproj$model,
+                                  all_years = 1988:2019)
 relative_change <- timing_popdy[[2]]
 timing_popdy[[3]]
 
@@ -140,7 +141,7 @@ extract_byage2 <- function(quantity, name, years) {
 
 nbyage_test_all <- rbind(extract_byage2(run_90s_noproj$model$quantities$NByage, 
                                         "high (1988-1999)", 1988:1999),
-                         extract_byage2(ms_estM1$model$quantities$NByage, 
+                         extract_byage2(ms_noproj$model$quantities$NByage, 
                                         "all years", 1988:2022),
                          extract_byage2(run_recent_noproj$model$quantities$NByage, 
                                         "low (2005-2019)", 2005:2019))
@@ -183,8 +184,8 @@ M_all <- rbind(extract_M(run_90s_noproj$model, run_90s_noproj$model$quantities$M
                          "high (1988-1999)", 1988:1999),
                extract_M(run_recent_noproj$model, run_recent_noproj$model$quantities$M2,
                          "low (2005-2019)", 2005:2019),
-               extract_M(ms_estM1$model, ms_estM1$model$quantities$M2, 
-                         "all years", 1988:2022))
+               extract_M(ms_noproj$model, ms_noproj$model$quantities$M2, 
+                         "all years", 1988:2019))
 
 max(M_all$M1_M2)  # check max M for plotting
 timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
@@ -192,7 +193,7 @@ timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
   scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.6), breaks = c(0.21, 2.6)) +
-  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  # geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
   facet_wrap(~model, ncol = 1)
@@ -205,7 +206,7 @@ M_byage <- M_all %>%
   summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
 
 M1_all <- rbind(data.frame(model = "all years", 
-                           mean = mean(ms_estM1$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(ms_noproj$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "1988-1999", 
                            mean = mean(run_90s_noproj$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "2005-2019", 
@@ -215,14 +216,14 @@ ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
        timevary_M, width=140, height = 170, units = "mm", dpi=300)
 
 ### Plot using models with a prior on M1 --------------------------------------
-load("models/ms_priorM1.Rdata")
+load("models/ms_priorM1_noproj.Rdata")
 load("models/sensitivity/time-varying/run_90s_prior.Rdata")
 load("models/sensitivity/time-varying/run_recent_prior.Rdata")
 
 timing_popdy_prior <- timing_plot_popdy(run_high = run_90s_prior$model, 
                                         run_low = run_recent_prior$model,
-                                        ms_model = ms_priorM1$model,
-                                        all_years = 1988:2022)
+                                        ms_model = ms_priorM1_noproj$model,
+                                        all_years = 1988:2019)
 relative_change_prior <- timing_popdy_prior[[2]]
 timing_popdy_prior[[3]]
 
