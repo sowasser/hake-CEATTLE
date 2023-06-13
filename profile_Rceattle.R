@@ -9,108 +9,110 @@ library(Rceattle)
 library(ggplot2)
 library(viridis)
 library(dplyr)
+# Set ggplot theme
+theme_set(ggsidekick::theme_sleek())
 
-data <- read_data(file = "data/hake_intrasp_230427.xlsx")  # Read in data
-
-# Function updating M1 for each run of the model
-get_profile <- function(M1_change, init, msm) {
-  data$M1_base[, 3:17] <- M1_change
-  run <- fit_mod(
-    data_list = data,
-    inits = init,
-    file = NULL, # Don't save
-    msmMode = 0, 
-    M1Fun = Rceattle::build_M1(M1_model = 0,
-                               updateM1 = TRUE,
-                               M1_use_prior = FALSE),
-    estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-    HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
-                              FsprLimit = 0.4, # F40%
-                              Ptarget = 0.4, # Target is 40% B0
-                              Plimit = 0.1, # No fishing when SB<SB10
-                              Pstar = 0.45,
-                              Sigma = 0.5),
-    phase = "default",
-    initMode = 1,
-    projection_uncertainty = TRUE,
-    getsd = FALSE
-  )
-  
-  # Save the resulting run to losing progress to R bombs!
-  if (msm == 0) {save(run, file = paste0("models/profile/ss/run", as.character(M1_change), ".Rdata"))}
-  if (msm == 1) {save(run, file = paste0("models/profile/ms/run", as.character(M1_change), ".Rdata"))}
-  
-  message(run$quantities$jnll)  # print JNLL to console
-  return(run)
-}
-
-### Run profile over M1 -------------------------------------------------------
-# Load model with estimated M1 & check starting value
-load("models/ss_estM1.Rdata")
-startM_ss <- round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2)
-
-# SS down
-run0 <- get_profile(0.26, ss_estM1$model$estimated_params, 0)
-run1 <- get_profile(0.25, run0$estimated_params, 0)
-run2 <- get_profile(0.24, run1$estimated_params, 0)
-run3 <- get_profile(0.23, run2$estimated_params, 0)
-run4 <- get_profile(0.22, run3$estimated_params, 0)
-run5 <- get_profile(0.21, run4$estimated_params, 0)
-run6 <- get_profile(0.20, run5$estimated_params, 0)
-run7 <- get_profile(0.19, run6$estimated_params, 0)
-run8 <- get_profile(0.18, run7$estimated_params, 0)
-run9 <- get_profile(0.17, run8$estimated_params, 0)
-run10 <- get_profile(0.16, run9$estimated_params, 0)
-run11 <- get_profile(0.15, run10$estimated_params, 0)
-
-# SS up
-run12 <- get_profile(0.27, run$estimated_params, 0)
-run13 <- get_profile(0.28, run12$estimated_params, 0)
-run14 <- get_profile(0.29, run13$estimated_params, 0)
-run15 <- get_profile(0.30, run14$estimated_params, 0)
-run16 <- get_profile(0.31, run15$estimated_params, 0)
-run17 <- get_profile(0.32, run16$estimated_params, 0)
-run18 <- get_profile(0.33, run17$estimated_params, 0)
-run19 <- get_profile(0.34, run18$estimated_params, 0)
-run20 <- get_profile(0.35, run19$estimated_params, 0)
-
-rm(list = ls())  # clear environment to re-set runs
-
-# Load model with estimated M1 & check starting value
-load("models/ms_estM1.Rdata")
-startM_ms <- round(ms_estM1$model$quantities$M1[1, 1, 1], digits = 2)
-
-# MS down
-run0 <- get_profile(0.32, ms_estM1$model$estimated_params, 1)
-run1 <- get_profile(0.31, run0$estimated_params, 1)
-run2 <- get_profile(0.30, run1$estimated_params, 1)
-run3 <- get_profile(0.29, run2$estimated_params, 1)
-run4 <- get_profile(0.28, run3$estimated_params, 1)
-run5 <- get_profile(0.27, run4$estimated_params, 1)
-run6 <- get_profile(0.26, run5$estimated_params, 1)
-run7 <- get_profile(0.25, run6$estimated_params, 1)
-run8 <- get_profile(0.24, run7$estimated_params, 1)
-run9 <- get_profile(0.23, run8$estimated_params, 1)
-run10 <- get_profile(0.22, run9$estimated_params, 1)
-run11 <- get_profile(0.21, run10$estimated_params, 1)
-run12 <- get_profile(0.20, run11$estimated_params, 1)
-run13 <- get_profile(0.19, run12$estimated_params, 1)
-run14 <- get_profile(0.18, run13$estimated_params, 1)
-run15 <- get_profile(0.17, run14$estimated_params, 1)
-run16 <- get_profile(0.16, run15$estimated_params, 1)
-run17 <- get_profile(0.15, run16$estimated_params, 1)
-
-# MS up
-run18 <- get_profile(0.33, run0$estimated_params, 1)
-run19 <- get_profile(0.34, run18$estimated_params, 1)
-run20 <- get_profile(0.35, run19$estimated_params, 1)
+# data <- read_data(file = "data/hake_intrasp_230427.xlsx")  # Read in data
+# 
+# # Function updating M1 for each run of the model
+# get_profile <- function(M1_change, init, msm) {
+#   data$M1_base[, 3:17] <- M1_change
+#   run <- fit_mod(
+#     data_list = data,
+#     inits = init,
+#     file = NULL, # Don't save
+#     msmMode = 0, 
+#     M1Fun = Rceattle::build_M1(M1_model = 0,
+#                                updateM1 = TRUE,
+#                                M1_use_prior = FALSE),
+#     estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+#     HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
+#                               FsprLimit = 0.4, # F40%
+#                               Ptarget = 0.4, # Target is 40% B0
+#                               Plimit = 0.1, # No fishing when SB<SB10
+#                               Pstar = 0.45,
+#                               Sigma = 0.5),
+#     phase = "default",
+#     initMode = 1,
+#     projection_uncertainty = TRUE,
+#     getsd = FALSE
+#   )
+#   
+#   # Save the resulting run to losing progress to R bombs!
+#   if (msm == 0) {save(run, file = paste0("models/profile/ss/run", as.character(M1_change), ".Rdata"))}
+#   if (msm == 1) {save(run, file = paste0("models/profile/ms/run", as.character(M1_change), ".Rdata"))}
+#   
+#   message(run$quantities$jnll)  # print JNLL to console
+#   return(run)
+# }
+# 
+# ### Run profile over M1 -------------------------------------------------------
+# # Load model with estimated M1 & check starting value
+# load("models/ss_estM1.Rdata")
+# startM_ss <- round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2)
+# 
+# # SS down
+# run0 <- get_profile(0.26, ss_estM1$model$estimated_params, 0)
+# run1 <- get_profile(0.25, run0$estimated_params, 0)
+# run2 <- get_profile(0.24, run1$estimated_params, 0)
+# run3 <- get_profile(0.23, run2$estimated_params, 0)
+# run4 <- get_profile(0.22, run3$estimated_params, 0)
+# run5 <- get_profile(0.21, run4$estimated_params, 0)
+# run6 <- get_profile(0.20, run5$estimated_params, 0)
+# run7 <- get_profile(0.19, run6$estimated_params, 0)
+# run8 <- get_profile(0.18, run7$estimated_params, 0)
+# run9 <- get_profile(0.17, run8$estimated_params, 0)
+# run10 <- get_profile(0.16, run9$estimated_params, 0)
+# run11 <- get_profile(0.15, run10$estimated_params, 0)
+# 
+# # SS up
+# run12 <- get_profile(0.27, run$estimated_params, 0)
+# run13 <- get_profile(0.28, run12$estimated_params, 0)
+# run14 <- get_profile(0.29, run13$estimated_params, 0)
+# run15 <- get_profile(0.30, run14$estimated_params, 0)
+# run16 <- get_profile(0.31, run15$estimated_params, 0)
+# run17 <- get_profile(0.32, run16$estimated_params, 0)
+# run18 <- get_profile(0.33, run17$estimated_params, 0)
+# run19 <- get_profile(0.34, run18$estimated_params, 0)
+# run20 <- get_profile(0.35, run19$estimated_params, 0)
+# 
+# rm(list = ls())  # clear environment to re-set runs
+# 
+# # Load model with estimated M1 & check starting value
+# load("models/ms_estM1.Rdata")
+# startM_ms <- round(ms_estM1$model$quantities$M1[1, 1, 1], digits = 2)
+# 
+# # MS down
+# run0 <- get_profile(0.32, ms_estM1$model$estimated_params, 1)
+# run1 <- get_profile(0.31, run0$estimated_params, 1)
+# run2 <- get_profile(0.30, run1$estimated_params, 1)
+# run3 <- get_profile(0.29, run2$estimated_params, 1)
+# run4 <- get_profile(0.28, run3$estimated_params, 1)
+# run5 <- get_profile(0.27, run4$estimated_params, 1)
+# run6 <- get_profile(0.26, run5$estimated_params, 1)
+# run7 <- get_profile(0.25, run6$estimated_params, 1)
+# run8 <- get_profile(0.24, run7$estimated_params, 1)
+# run9 <- get_profile(0.23, run8$estimated_params, 1)
+# run10 <- get_profile(0.22, run9$estimated_params, 1)
+# run11 <- get_profile(0.21, run10$estimated_params, 1)
+# run12 <- get_profile(0.20, run11$estimated_params, 1)
+# run13 <- get_profile(0.19, run12$estimated_params, 1)
+# run14 <- get_profile(0.18, run13$estimated_params, 1)
+# run15 <- get_profile(0.17, run14$estimated_params, 1)
+# run16 <- get_profile(0.16, run15$estimated_params, 1)
+# run17 <- get_profile(0.15, run16$estimated_params, 1)
+# 
+# # MS up
+# run18 <- get_profile(0.33, run0$estimated_params, 1)
+# run19 <- get_profile(0.34, run18$estimated_params, 1)
+# run20 <- get_profile(0.35, run19$estimated_params, 1)
 
 
 ### Get JNLL for each run and plot --------------------------------------------
 # Clear environment and load models back in
 rm(list = ls())  
-load("models/ss_estM1.Rdata")
-load("models/ms_estM1.Rdata")
+# load("models/ss_estM1.Rdata")
+# load("models/ms_estM1.Rdata")
 
 # Single species
 runs_ss <- list.files(path = "models/profile/ss")  # List of all model runs
@@ -124,9 +126,14 @@ for(i in 1:length(runs_ss)) {
   m1_all_ss[i] <- round(run$quantities$M1[1, 1, 1], digits = 2)
 }
 
+# Load back in "run 0" above, which approximates the estimated value
+load("models/profile/ss/run0.26.Rdata")
+ss_start <- run
+ss_start$quantities$jnll
+
 # Combine with M1 input for each run
 profile_ss <- cbind.data.frame(M1 = m1_all_ss,
-                               JNLL = jnll_all_ss - ss_estM1$model$quantities$jnll,
+                               JNLL = jnll_all_ss - ss_start$quantities$jnll,
                                model = "single-species")
 
 # Cannibalism
@@ -141,22 +148,32 @@ for(i in 1:length(runs_ms)) {
   m1_all_ms[i] <- round(run$quantities$M1[1, 1, 1], digits = 2)
 }
 
+# Load back in "run 0" above, which approximates the estimated value
+load("models/profile/ms/run0.32.Rdata")
+ms_start <- run
+ms_start$quantities$jnll
+
 # Combine with M1 input for each run
 profile_ms <- cbind.data.frame(M1 = seq(0.15, 0.35, 0.01),
-                               JNLL = jnll_all_ms - ms_estM1$model$quantities$jnll,
+                               JNLL = jnll_all_ms - ms_start$quantities$jnll,
                                model = "cannibalism")
 
-est_M1 <- cbind.data.frame(value = c(0.257, 0.318),
-                           model = c("single-species", "cannibalism"))
-est_M1$model <- factor(est_M1$model, levels = c("single-species", "cannibalism"))
 
-profile_plot <- rbind(profile_ss, profile_ms) %>%
-  mutate(model = factor(model, levels = c("single-species", "cannibalism"))) %>%
-  ggplot(., aes(x = M1, y = JNLL)) +
-  geom_point() +
-  geom_line() +
-  geom_vline(xintercept = 0.21, linetype = "dotted") +
-  geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model), linetype = "dashed") +
+# add points at estimated value
+est_points <- cbind.data.frame(model = factor(c("single-species", "cannibalism")),
+                               M1 = c(0.26, 0.32),
+                               JNLL = c(0, 0))
+
+all_profile <- rbind(profile_ss, profile_ms) %>%
+  mutate(model = factor(model, levels = c("single-species", "cannibalism")))
+
+profile_plot <- ggplot() +
+  geom_line(data = all_profile, aes(x = M1, y = JNLL), linewidth = 1) +
+  geom_point(data = est_points, aes(x = M1, y = JNLL, color = model), size = 5) +
+  geom_hline(yintercept = 2, color = "lightgray") +
+  # geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model), 
+  #            linetype = "dashed", linewidth = 1) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.5) +
   ylab("JNLL") + labs(color = "M1 estimate") +
   # scale_x_continuous(breaks = seq(0.15, 0.35, 0.01)) +  # all scale markers for investigating
   ggsidekick::theme_sleek() +
@@ -190,7 +207,7 @@ comp_out <- function(run) {
   return(comp)
 }
 
-est_comp_ss <- comp_out(ss_estM1$model)
+est_comp_ss <- comp_out(ss_start)
 comp_all_ss <- data.frame()
 for(i in 1:length(runs_ss)) {
   load(paste0("models/profile/ss/", runs_ss[i]))
@@ -201,7 +218,7 @@ for(i in 1:length(runs_ss)) {
 }
 comp_all_ss$model <- "single-species"
 
-est_comp_ms <- comp_out(ms_estM1$model)
+est_comp_ms <- comp_out(ms_start)
 comp_all_ms <- data.frame()
 for(i in 1:length(runs_ms)) {
   load(paste0("models/profile/ms/", runs_ms[i]))
@@ -214,10 +231,14 @@ comp_all_ms$model <- "cannibalism"
 
 comp_all <- rbind(comp_all_ss, comp_all_ms)
 comp_all$model <- factor(comp_all$model, levels = c("single-species", "cannibalism"))
-comp_profile_plot <- ggplot(comp_all, aes(x = M1, y = NLL, color = component)) +
-  geom_line() +
-  geom_point(aes(shape = component)) +
-  geom_vline(data = est_M1, mapping = aes(xintercept = value), linetype = "dashed") +
+comp_profile_plot <- ggplot() +
+  geom_line(data = (comp_all %>% filter(component == "Total NLL")), 
+            aes(x = M1, y = NLL), linewidth = 1) +
+  geom_line(data = (comp_all %>% filter(component != "Total NLL")), 
+            aes(x = M1, y = NLL, color = component)) +
+  geom_point(data = (comp_all %>% filter(component != "Total NLL")), 
+             aes(x = M1, y = NLL, shape = component, color = component)) +
+  geom_vline(data = est_points, mapping = aes(xintercept = M1)) +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   ggsidekick::theme_sleek() +
   facet_wrap(~model)
@@ -261,9 +282,15 @@ ssb_all$year <- as.numeric(ssb_all$year)
 ssb_all$model <- factor(ssb_all$model, levels = c("single-species", "cannibalism"))
 ssb_all$M1 <- factor(as.character(ssb_all$M1))
 
-ssb_profile_plot <- ggplot(ssb_all, aes(x = year, y = SSB, color = M1, fill = M1)) +
-  geom_line() +
-  geom_ribbon(aes(ymin=(SSB - error), ymax=(SSB + error)), alpha = 0.2, color = NA) + 
+ssb_all_est <- ssb_all %>% filter(model == "single-species" & M1 == 0.26 | 
+                                    model == "cannibalism" & M1 == 0.32)
+
+ssb_profile_plot <- ggplot() +
+  geom_line(data = ssb_all, aes(x = year, y = SSB, color = M1)) +
+  geom_ribbon(data = ssb_all, 
+              aes(x = year, y = SSB, ymin=(SSB - error), ymax=(SSB + error), fill = M1), 
+              alpha = 0.2, color = NA) + 
+  geom_line(data = ssb_all_est, aes(x = year, y = SSB), size = 1) +
   ylab("Spawning Stock Biomass (Mt)") + labs(color = "M1") +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
@@ -273,4 +300,58 @@ ssb_profile_plot
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile_SSB.png", 
        ssb_profile_plot, 
+       width=200, height=80, units="mm", dpi=300)
+
+### Plot fit to survey index --------------------------------------------------
+init_surv <- run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
+
+survey_biom <- function(run, name) {
+  srv <- data.frame(year = 1995:2019,
+                    biomass = run$quantities$srv_bio_hat,
+                    log_sd = run$quantities$srv_log_sd_hat,
+                    M1 = rep(name, length(1995:2019)))
+  return(srv)
+}
+
+ss_srv <- data.frame()
+for(i in 1:length(runs_ss)) {
+  load(paste0("models/profile/ss/", runs_ss[i]))
+  srv_out <- survey_biom(run = run, 
+                         name = round(run$quantities$M1[1, 1, 1], digits = 2))
+  ss_srv <- rbind(ss_srv, srv_out)
+}
+ss_srv$model <- "single-species"
+
+ms_srv <- data.frame()
+for(i in 1:length(runs_ms)) {
+  load(paste0("models/profile/ms/", runs_ms[i]))
+  srv_out <- survey_biom(run = run, 
+                         name = round(run$quantities$M1[1, 1, 1], digits = 2))
+  ms_srv <- rbind(ms_srv, srv_out)
+}
+ms_srv$model <- "cannibalism"
+
+assess_srv <- read.csv(paste0("data/assessment/2020/survey_out.csv"))
+colnames(assess_srv) <- c("year", "biomass", "log_sd")
+
+srv_all <- rbind(ss_srv, ms_srv)
+srv_all$model <- factor(srv_all$model, levels = c("single-species", "cannibalism"))
+srv_all$M1 <- factor(as.character(srv_all$M1))
+
+survey_profile_plot <- ggplot() +
+  geom_pointrange(data = init_surv, 
+                  aes(x = Year, y = Observation,
+                      ymin = exp(log(Observation) - 1.96*Log_sd),
+                      ymax = exp(log(Observation) + 1.96*Log_sd)),
+                  fatten = 5) +
+  geom_line(data = srv_all, aes(x = year, y = biomass, color = M1), alpha = 0.8) +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  geom_line(data = assess_srv, aes(x = year, y = biomass), linetype = "dashed") +
+  xlab("year") + ylab("Index of Abundance") +
+  facet_wrap(~model, ncol = 2)
+survey_profile_plot
+
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile_survey.png", 
+       survey_profile_plot, 
        width=200, height=80, units="mm", dpi=300)
