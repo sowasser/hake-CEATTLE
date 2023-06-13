@@ -7,7 +7,7 @@ library(viridis)
 library(rnaturalearth)
 library(sf)
 library(rnaturalearthdata)
-library(rgeos)
+library(geos)
 library(purrr)
 library(ggsidekick)
 # Set ggplot theme
@@ -61,8 +61,8 @@ FEAT_sampling <- FEAT_all %>%
   labs(fill = "prey species (n)") + ylab(" ")
 FEAT_sampling
 
-ggsave(filename = "plots/diet/FEAT_sampling.png", FEAT_sampling, 
-       bg = "transparent", width=180, height=90, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/FEAT_sampling.png", FEAT_sampling, 
+#        bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
 ### Combine datasets ----------------------------------------------------------
@@ -98,7 +98,7 @@ all_data$prey_age[all_data$prey_wt > 300 & all_data$prey_name == "Pacific Hake"]
 all_data <- all_data %>% filter(year != 1980)
 
 # Write combined dataset
-write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv", row.names = FALSE)
+# write.csv(all_data, "data/diet/CCTD_FEAT_combined.csv", row.names = FALSE)
 
 
 ### Plot data -----------------------------------------------------------------
@@ -114,79 +114,100 @@ predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)
   labs(fill = "prey species") + ylab("stomachs (n)")
 predation_yearly
 
-ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly, 
-       bg = "transparent", width=190, height=100, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly, 
+#        bg = "transparent", width=190, height=100, units="mm", dpi=300)
 
 ### Plot timing of sample collection ----------------------------------------
-timing_all <- all_data %>%
-  group_by(year, month, prey_name) %>%
-  summarize(n = n()) %>%
+time_n <- all_data %>%
+  group_by(year, month) %>%
+  summarize(n_all = n()) %>%
   filter(!is.na(year))
-timing_all$month <- factor(timing_all$month)
 
-timing_yearly <- ggplot(timing_all, aes(x = as.factor(month), y = n, fill = prey_name)) +
-  geom_bar(position = "stack", stat = "identity") +
+time_n_cannibalism <- all_data %>%
+  filter(prey_name == "Pacific Hake") %>%
+  group_by(year, month) %>%
+  summarize(n_cannibalism = n()) %>%
+  filter(!is.na(year)) 
+
+time_n_all <- left_join(time_n, time_n_cannibalism)
+time_n_all$n_cannibalism[is.na(time_n_all$n_cannibalism)] <- 0
+time_n_all$prop <- time_n_all$n_cannibalism / time_n_all$n_all
+time_n_all <- time_n_all %>% arrange(year)
+# time_n_all$month <- factor(time_n_all$month)
+
+data_years <- c(1988:1992, 1995:1999, 2002, 2005, 2007, 2009, 2011:2013, 2015, 2017, 2019)
+all_months <- cbind.data.frame(year = rep(data_years, each = 12),
+                               month = rep(1:12, times = length(data_years)))
+time_all_months <- left_join(all_months, time_n_all)
+time_all_months[is.na(time_all_months)] <- 0
+
+timing_yearly <- ggplot(time_all_months, aes(x = month, y = n_all, fill = prop)) +
+  geom_bar(stat = "identity") +
   scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(limits = c(0, 1), begin = 0.1, end = 0.9) +
   xlab("sampling month") + ylab(" ") +
+  labs(fill = "cannibalism rate") +
   facet_wrap(~ year, ncol = 5)
 timing_yearly
 
-ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly, 
-       bg = "transparent", width=200, height=140, units="mm", dpi=300)
-
-timing_overall <- ggplot(timing_all, aes(x = as.factor(month), y = n, color = prey_name, fill = prey_name)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_x_discrete(limits=factor(1:12)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab("sampling month") + ylab(" ") + 
-  labs(fill = "prey species (n)", color = "prey species (n)")
-timing_overall
+# ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly, 
+#        bg = "transparent", width=200, height=140, units="mm", dpi=300)
 
 
 ### Plot location of sample collection --------------------------------------
-location_all <- all_data %>%
-  group_by(year, latitude, longitude, prey_name) %>%
-  summarize(n = n()) %>%
-  filter(!is.na(year)) %>%
-  arrange(prey_name)
+loc_n <- all_data %>%
+  group_by(year, latitude, longitude) %>%
+  summarize(n_all = n()) %>%
+  filter(!is.na(year))
+
+loc_n_cannibalism <- all_data %>%
+  filter(prey_name == "Pacific Hake") %>%
+  group_by(year, latitude, longitude) %>%
+  summarize(n_cannibalism = n()) %>%
+  filter(!is.na(year))
+
+loc_n_all <- left_join(loc_n, loc_n_cannibalism)
+loc_n_all$n_cannibalism[is.na(loc_n_all$n_cannibalism)] <- 0
+loc_n_all$prop <- loc_n_all$n_cannibalism / loc_n_all$n_all
+loc_n_all <- loc_n_all %>% arrange(prop)
+
+# New plot of cannibalism rate by year
+annual_rate <- loc_n_all %>%
+  group_by(year) %>%
+  summarize(n = sum(n_all),
+            prop = mean(prop)) %>%
+  ggplot(., aes(x = year, y = n, fill = prop)) +
+  geom_bar(stat = "identity") +
+  scale_fill_viridis(limits = c(0, 0.4), begin = 0.1, end = 0.9) +
+  ylab("stomachs (n)") +
+  labs(fill = "cannibalism rate")
+annual_rate
+
+ggsave(filename = "plots/diet/hake_cannibalism_rate.png", annual_rate,
+       bg = "transparent", width=190, height=100, units="mm", dpi=300)
 
 # Create a plot of location of observations by latitude and longitude
 world <- ne_countries(scale = "medium", returnclass = "sf")
 sf_use_s2(FALSE)  # turn off spherical geometry
 
-location_yearly <- ggplot(data = world) +
+locations <- ggplot(data = world) +
   geom_sf() +
-  geom_point(data = location_all, aes(x = longitude, y = latitude, colour = prey_name, size = n)) +
-  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
-  scale_x_continuous(breaks = seq(-135, -120, by = 10)) + 
-  scale_y_continuous(breaks = seq(35, 55, by = 10)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab(" ") + ylab(" ") + labs(color = "stomach content") +
-  facet_wrap(~year, ncol = 5)
-
-location_overall <- ggplot(data = world) +
-  geom_sf() +
-  geom_point(data = location_all, aes(x = longitude, y = latitude, colour = prey_name, size = n)) +
+  geom_point(data = loc_n_all, aes(x = longitude, y = latitude, color = prop, size = n_all)) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab(" ") + ylab(" ") + labs(color = "stomach content")
-location_overall
-
-ggsave(filename = "plots/diet/locations_overall.png", location_overall, 
-       bg = "transparent", width=100, height=100, units="mm", dpi=300)
+  scale_color_viridis(begin = 0.1, end = 0.9) +
+  xlab(" ") + ylab(" ") + labs(color = "cannibalism rate", size = "stomachs (n)") +
+  facet_wrap(~year, ncol = 5)
 
 ### Inset timing plots in yearly location plots -----------------------------
 # Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
 get_inset <- function(df) {
   # Create plot for the inset 
-  plot <- ggplot(df, aes(x = as.factor(month), y = n, fill = prey_name)) +
-    geom_bar(position = "stack", stat = "identity") +
-    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12), drop = FALSE) +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, drop = FALSE) +
+  plot <- ggplot(df, aes(x = factor(month), y = n_all, fill = prop)) +
+    geom_bar(stat = "identity") +
+    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12)) +
+    scale_fill_viridis(limits = c(0, 1), begin = 0.1, end = 0.9) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
@@ -207,10 +228,10 @@ annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax
                                           ymin = ymin, ymax = ymax))
 }
 
-inset_plot <- get_inset(timing_all)  # Actually create insets
+inset_plot <- get_inset(time_n_all)  # Actually create insets
 
 # How the insets will be mapped on to the main plots (applying above function)
-insets <- timing_all %>% 
+insets <- time_all_months %>% 
   split(f = .$year) %>%
   purrr::map(~annotation_custom2(
     grob = ggplotGrob(get_inset(.)), 
@@ -218,10 +239,12 @@ insets <- timing_all %>%
     ymin = 30.7, ymax = 40, xmin = -141, xmax = -124))  # position of insets
 
 # Bring everything together - add insets on to main plot (locations, created above)
-location_timing <- location_yearly +
+location_timing <- locations +
   coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
-  scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
+  scale_x_continuous(breaks = c(-135, -120)) +
+  scale_y_continuous(breaks = c(32, 55)) +
   insets
+location_timing
 
 ggsave(filename = "plots/diet/locations_timing.png", location_timing, 
        bg = "transparent", width=200, height=200, units="mm", dpi=300)

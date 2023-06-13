@@ -8,7 +8,7 @@ format:
 
 ![**Figure 2**: Dirichlet-weighted diet proportion by weight of cannibalism by predator hake age and prey hake age for three periods: all years in the dataset, 1991-1999, and the acoustic trawl survey from 2005-2019.](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
 
-![**Figure 3**: Hake stomachs containing Pacific hake (in green) or other food items (in purple) by location per year and by sampling month per year.](./plots/diet/locations_timing.png)
+![**Figure 3**: Proportion of hake stomachs containing Pacific hake by location and sampling month, per year of sampling.](./plots/diet/locations_timing.png)
 
 ![**Figure 4**: Spawning stock biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from CEATTLE model in single-species mode with no predation, from the CEATTLE model in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment.](./plots/CEATTLE/cannibalism/popdyn.png)
 
