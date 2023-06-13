@@ -309,12 +309,12 @@ sealion_hake[[8]]  # overall locations of predation by type
 # ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[8]], 
 #        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
-# Sea lion prey size
-CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
-  ggdist::stat_slab(aes(thickness = after_stat(pdf*n)), scale = 0.7) +
-  ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
-  xlab("prey hake length (cm)") + ylab(" ")
-CSL_hake_prey_size
+# # Sea lion prey size
+# CSL_hake_prey_size <- ggplot(CSL_hake, aes(x = Prey_Length_BC_mm / 10)) +
+#   ggdist::stat_slab(aes(thickness = after_stat(pdf*n)), scale = 0.7) +
+#   ggdist::stat_dotsinterval(side = "bottom", scale = 0.7, slab_size = NA) +
+#   xlab("prey hake length (cm)") + ylab(" ")
+# CSL_hake_prey_size
 
 # ggsave(filename = "plots/diet/Non-hake/CSL_hake_prey_size.png", CSL_hake_prey_size, 
 #        bg = "transparent", width=120, height=80, units="mm", dpi=300)
@@ -327,6 +327,35 @@ CSL_hake_monthly <- sealion_hake[[4]] %>%
   ungroup()
 CSL_hake_monthly$Month <- factor(CSL_hake_monthly$Month)
 
+test <- sealion_hake[[4]]
+
+CSL_month_n <- sealion_hake[[4]] %>%
+  group_by(Year, Month) %>%
+  summarize(n_all = n()) %>%
+  filter(!is.na(Year))
+
+CSL_month_n_hake <- sealion_hake[[4]] %>%
+  filter(type == "Pacific Hake") %>%
+  group_by(Year, Month) %>%
+  summarize(n_hake = n()) %>%
+  filter(!is.na(Year))
+
+CSL_month_n_all <- left_join(CSL_month_n, CSL_month_n_hake)
+CSL_month_n_all$n_hake[is.na(CSL_month_n_all$n_hake)] <- 0
+CSL_month_n_all$prop <- CSL_month_n_all$n_hake / CSL_month_n_all$n_all
+
+# New plot of hake predation rate by year
+CSL_hake_monthly <- ggplot(CSL_month_n_all, aes(x = Month, y = n_all, fill = prop)) +
+  geom_bar(stat = "identity") +
+  scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
+  scale_fill_viridis(begin = 0.1, end = 0.9) +
+  xlab("sampling month") + ylab(" ") +
+  labs(fill = "hake consumption rate") +
+  facet_wrap(~ Year, ncol = 4)
+CSL_hake_monthly
+
+ggsave(filename = "plots/diet/Non-hake/CSL_hake_monthly.png", CSL_hake_monthly, 
+       bg = "transparent", width=190, height=250, units="mm", dpi=300)
 
 # Seasonal proportion heatmap ------------------------------------------------
 # Get seasonal observations for hake & not hake
