@@ -573,15 +573,15 @@ ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comparison.png", comparison_pl
 
 # Neater comparison graph for write-up
 comp2 <- rbind(new_df(ceattle_all, "all years"),
-                    new_df(ceattle_90s, "1991-1999"),
-                    new_df(ceattle_recent, "2005-2019"))
+                    new_df(ceattle_90s, "high (1991-1999)"),
+                    new_df(ceattle_recent, "low (2005-2019)"))
 
 comp2 <- as.data.frame(comp2) 
 comp2$pred_age <- as.factor(comp2$pred_age)
 comp2$prey_age <- as.numeric(comp2$prey_age)
 comp2$prop <- as.numeric(comp2$prop)
 comp2$data <- factor(comp2$data, 
-                          levels = c("all years", "1991-1999", "2005-2019"))
+                          levels = c("all years", "high (1991-1999)", "low (2005-2019)"))
 comp2 <- comp2 %>% filter(prey_age <= 5)
 
 comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
