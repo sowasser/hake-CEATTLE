@@ -349,6 +349,7 @@ survey_profile_plot <- ggplot() +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   geom_line(data = assess_srv, aes(x = year, y = biomass), linetype = "dashed") +
   xlab("year") + ylab("Index of Abundance") +
+  ylim(0, NA) +
   facet_wrap(~model, ncol = 2)
 survey_profile_plot
 

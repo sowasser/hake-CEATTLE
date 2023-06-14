@@ -46,7 +46,18 @@ output:
 
 ![**Figure S.11**: Annual hake prey by weight (top three species) in hake stomachs within the CCTD by year of sampling.](./plots/diet/hake_prey_yearly.png)
 
- &nbsp;  
+ &nbsp; 
+ 
+![**Figure S.12**: Spawning stock biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from CEATTLE model in single-species mode with a prior on M1, from the CEATTLE model in cannibalism mode with a prior on M1, and from the 2020 stock assessment. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/popdyn_M1prior.png) 
 
+ &nbsp; 
 
-![**Figure S.12**: Annual occurrence of Pacific hake, by sampling month, in California sea lion (*Zalophus californianus*) scat samples in the CCTD.](./plots/diet/Non-hake/CSL_hake_monthly.png)
+![**Figure S.13**: Total negative log likelihood (in black) and likelihood components for the single-species and cannibalism CEATTLE models with fixed values of M1. Vertical line at the estimated M1 values for the single-species (0.26) and cannibalism (0.32) models. ](./plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png)
+
+  &nbsp; 
+
+![**Figure S.14**: Spawning stock biomass (Mt) for the single-species and cannibalism CEATTLE model with fixed values of M1. Black line represents SSB derived from the model with M1 fixed at the estimated values for the single-species (0.26) and cannibalism (0.32) models.](./plots/CEATTLE/cannibalism/Testing/M1/M1_profile_SSB.png)
+ 
+ &nbsp; 
+
+![**Figure S.15**: Annual occurrence of Pacific hake, by sampling month, in California sea lion (*Zalophus californianus*) scat samples in the CCTD.](./plots/diet/Non-hake/CSL_hake_monthly.png)

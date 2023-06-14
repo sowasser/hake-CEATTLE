@@ -310,6 +310,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_line(data = survey_all, aes(x = year, y = biomass, color = model), alpha = 0.8) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+    ylim(0, NA) +
     xlab("year") + ylab("Index of Abundance")
   
 # Suitability ---------------------------------------------------------------
