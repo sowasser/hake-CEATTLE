@@ -23,11 +23,10 @@ sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05$fit),
                          cbind(model = "wt10", run_wt10$fit),
                          cbind(model = "wt50", run_wt50$fit),
                          cbind(model = "wt75", run_wt75$fit))
-sensitivity_summary <- cbind(run_wt05$summary,
-                             run_wt10$summary[, 3],
-                             run_wt50$summary[, 3],
-                             run_wt75$summary[, 3])[, -c(1:2)]
-colnames(sensitivity_summary) <- c("wt05", "wt10", "wt50", "wt75")
+# sensitivity_summary <- cbind(run_wt05$summary,
+#                              run_wt10$summary[, 3],
+#                              run_wt50$summary[, 3],
+#                              run_wt75$summary[, 3])[, -c(1:2)]
 
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
@@ -340,6 +339,32 @@ load("models/sensitivity/diet/run_wt05_noproj.Rdata")
 load("models/sensitivity/diet/run_wt10_noproj.Rdata")
 load("models/sensitivity/diet/run_wt50_noproj.Rdata")
 load("models/sensitivity/diet/run_wt75_noproj.Rdata")
+
+sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05_noproj$fit),
+                         cbind(model = "wt10", run_wt10_noproj$fit),
+                         cbind(model = "wt50", run_wt50_noproj$fit),
+                         cbind(model = "wt75", run_wt75_noproj$fit))
+
+# New JNLL component tables (until models get re-run with this code included)
+comp_out <- function(run) {
+  comp <- data.frame(run$quantities$jnll_comp)
+  comp$component <- rownames(comp)
+  rownames(comp) <- NULL
+  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
+  # Separate comps for fishery & survey (in different columns originally)
+  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
+  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
+  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
+  comp <- comp[, c("component", "NLL")]
+  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
+  comp$NLL <- as.numeric(comp$NLL)
+  return(comp)
+}
+sensitivity_summary <- cbind(comp_out(run_wt05_noproj$model),
+                             comp_out(run_wt10_noproj$model)[, 2],
+                             comp_out(run_wt50_noproj$model)[, 2],
+                             comp_out(run_wt75_noproj$model)[, 2])
+colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
 
 models_noproj <- list(ms_noproj$model, run_wt05_noproj$model, 
                       run_wt10_noproj$model, run_wt50_noproj$model, 

@@ -17,6 +17,30 @@ load("models/ms_noproj.Rdata")
 load("models/sensitivity/time-varying/run_90s_noproj.Rdata")
 load("models/sensitivity/time-varying/run_recent_noproj.Rdata")
 
+sensitivity_fits <- rbind(cbind(model = "MS", ms_noproj$fit),
+                          cbind(model = "High (90s)", run_90s_noproj$fit),
+                          cbind(model = "Low (recent)", run_recent_noproj$fit))
+
+# New JNLL component tables (until models get re-run with this code included)
+comp_out <- function(run) {
+  comp <- data.frame(run$quantities$jnll_comp)
+  comp$component <- rownames(comp)
+  rownames(comp) <- NULL
+  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
+  # Separate comps for fishery & survey (in different columns originally)
+  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
+  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
+  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
+  comp <- comp[, c("component", "NLL")]
+  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
+  comp$NLL <- as.numeric(comp$NLL)
+  return(comp)
+}
+sensitivity_summary <- cbind(comp_out(ms_noproj$model),
+                             comp_out(run_90s_noproj$model)[, 2],
+                             comp_out(run_recent_noproj$model)[, 2])
+colnames(sensitivity_summary) <- c("component", "MS model", "High (90s)", "Low (recent)")
+
 ### Plot population dynamics --------------------------------------------------
 timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   # Pull out SSB & overall biomass from CEATTLE runs

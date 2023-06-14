@@ -91,10 +91,20 @@ run_CEATTLE <- function(data, M1, prior, init, msm, M_phase, estMode) {
   
   fit <- cbind(objective, jnll, K, AIC, gradient)
   
-  jnll_summary <- as.data.frame(run$quantities$jnll_comp)
-  jnll_summary$sum <- rowSums(run$quantities$jnll_comp)
+  # Get table of JNLL components
+  comp <- data.frame(run$quantities$jnll_comp)
+  comp$component <- rownames(comp)
+  rownames(comp) <- NULL
+  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
+  # Separate comps for fishery & survey (in different columns originally)
+  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
+  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
+  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
+  comp <- comp[, c("component", "NLL")]
+  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
+  comp$NLL <- as.numeric(comp$NLL)
   
-  return(list(model = run, fit = fit, summary = jnll_summary))
+  return(list(model = run, fit = fit, summary = comp))
 }
 
 # Run in single-species mode --------------------------------------------------
