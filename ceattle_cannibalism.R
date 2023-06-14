@@ -512,31 +512,55 @@ eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
   xlab("year") + ylab("F")
 eff_plot
 
-ms_estM1$model$quantities$SB0
-ms_estM1$model$quantities$Flimit # F that gives SPR40%
-ms_estM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
-ms_estM1$model$quantities$Ftarget
-relativeSSB_estM1 <- data.frame(t(ms_estM1$model$quantities$biomassSSB / ms_estM1$model$quantities$DynamicB0))
+
+ref_points <- cbind.data.frame(metric = c("R0", "SPR at B40"),
+                               SS = c((ss_estM1$model$quantities$R0 / 100000),
+                                      ss_estM1$model$quantities$SPRlimit),
+                               MS = c((ms_estM1$model$quantities$R0 / 100000),
+                                      ms_estM1$model$quantities$SPRlimit))
+
+quantile((ss_estM1$model$quantities$DynamicSB0 / 1000000), probs = c(0.025, 0.5, 0.975))
+quantile((ms_estM1$model$quantities$DynamicSB0 / 1000000), probs = c(0.025, 0.5, 0.975))
+
+# ms_estM1$model$quantities$Flimit # F that gives SPR40%
+# ss_estM1$model$quantities$Flimit # F that gives SPR40%
+# ms_estM1$model$quantities$Ftarget
+# ss_estM1$model$quantities$Ftarget
+
+
+# ms_run_Fspr <- Rceattle::fit_mod(data_list = ms_estM1$model$data_list,
+#                                  inits =  ms_estM1$model$estimated_params, # Initial parameters from ss_run
+#                                  estimateMode = 2, # Run projection only
+#                                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
+#                                                            FsprLimit = 0.4, # F40%
+#                                                            Ptarget = 0.4, # Target is 40% B0
+#                                                            Plimit = 0.1, # No fishing when SB<SB10
+#                                                            Pstar = 0.45,
+#                                                            Sigma = 0.5),
+#                                  msmMode = 1, # Single species mode
+#                                  verbose = 1)
+# 
+# ms_run_Fspr$quantities$DynamicB0 #B0
+# 
+# ms_run_Fspr$quantities$DynamicSB0 #SB0
+# 
+# ms_run_Fspr$quantities$Flimit #F that gives you SPR40%
+# 
+# ms_run_Fspr$quantities$SPRlimit #SPR40%
+
+# Relative SSB
+relativeSSB_estM1 <- data.frame(t(ms_estM1$model$quantities$biomassSSB / ms_estM1$model$quantities$DynamicSB0))
 relativeSSB_estM1$year <- rownames(relativeSSB_estM1)
 rownames(relativeSSB_estM1) <- NULL
 relativeSSB_estM1$model <- "estimated M1"
+quantile(relativeSSB_estM1$Hake, probs = c(0.025, 0.5, 0.975))
 
-ms_fixM1$model$quantities$B0
-ms_fixM1$model$quantities$SB0
-ms_fixM1$model$quantities$Flimit # F that gives SPR40%
-ms_fixM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
-ms_fixM1$model$quantities$Ftarget
-relativeSSB_fixM1 <- data.frame(t(ms_fixM1$model$quantities$biomassSSB / ms_fixM1$model$quantities$DynamicB0))
+relativeSSB_fixM1 <- data.frame(t(ms_fixM1$model$quantities$biomassSSB / ms_fixM1$model$quantities$DynamicSB0))
 relativeSSB_fixM1$year <- rownames(relativeSSB_fixM1)
 rownames(relativeSSB_fixM1) <- NULL
 relativeSSB_fixM1$model <- "fixed M1"
 
-ms_priorM1$model$quantities$B0
-ms_priorM1$model$quantities$SB0
-ms_priorM1$model$quantities$Flimit # F that gives SPR40%
-ms_priorM1$model$quantities$SPRlimit  # SPR40%, which is the same as B40% b/c no stock-recruit curve
-ms_priorM1$model$quantities$Ftarget
-relativeSSB_priorM1 <- data.frame(t(ms_priorM1$model$quantities$biomassSSB / ms_priorM1$model$quantities$DynamicB0))
+relativeSSB_priorM1 <- data.frame(t(ms_priorM1$model$quantities$biomassSSB / ms_priorM1$model$quantities$DynamicSB0))
 relativeSSB_priorM1$year <- rownames(relativeSSB_priorM1)
 rownames(relativeSSB_priorM1) <- NULL
 relativeSSB_priorM1$model <- "prior M1"
