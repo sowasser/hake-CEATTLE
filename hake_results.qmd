@@ -21,3 +21,5 @@ format:
 ![**Figure 8**: Spawning stock biomass (Mt), total biomass (Mt), and recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from the CEATTLE model with the estimate of mean cannibalism and for periods of high (1988-1999) and low (2005-2019) observed cannibalism.](./plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png)
 
 ![**Figure 9**: Residual (M1) and predation (M2) mortality by age and year for the CEATTLE model with the estimate of mean cannibalism for the entire period and for periods of high (1988-1999) and low (2005-2019) observed cannibalism.](./plots/CEATTLE/cannibalism/Testing/timevarying_M.png)
+
+![**Figure 10**: Frequency of hake occurrence in predator species diet samples, relative to the number of samples in the California Current Trophic Database.](./plots/diet/hake_predators.png)
