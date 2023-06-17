@@ -311,9 +311,9 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   intrasp_srv <- survey_biom(ms_run, "CEATTLE - cannibalism")
   nodiet_srv <- survey_biom(ss_run, "CEATTLE - single-species")
   
-  survey <- read.csv(paste0("data/assessment/", assess_yr, "/survey_out.csv"))
+  survey <- read.csv(paste0("data/assessment/", assess_yr, "/survey_simple.csv"))
   colnames(survey) <- c("year", "biomass", "log_sd")
-  survey <- cbind(survey, model = rep("Assessment", length(survey$year)))
+  survey <- cbind(survey, model = "Assessment")
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
   survey_all$model <- factor(survey_all$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
