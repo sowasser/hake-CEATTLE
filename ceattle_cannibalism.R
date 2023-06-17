@@ -35,8 +35,8 @@ model_fits <- rbind(cbind(model = "SS est M1", ss_estM1$fit),
 #                        ms_estM1$summary[, 3],
 #                        ms_fixM1$summary[, 3],
 #                        ms_priorM1$summary[, 3])[, -(1:2)]
-colnames(model_summary) <- c("SS est M1", "SS fix M1", "SS prior M1",
-                             "MS est M1", "MS fix M1", "MS prior M1")
+# colnames(model_summary) <- c("SS est M1", "SS fix M1", "SS prior M1",
+#                              "MS est M1", "MS fix M1", "MS prior M1")
 
 # New JNLL component tables (until models get re-run with this code included)
 comp_out <- function(run) {
