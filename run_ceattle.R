@@ -114,7 +114,6 @@ ss_fixM1 <- run_CEATTLE(data = hake_intrasp,
                         prior = FALSE, 
                         init = NULL, 
                         msm = 0, 
-                        M_phase = 6,
                         estMode = 0)
 ss_fixM1$fit  # check convergence
 save(ss_fixM1, file = "models/ss_fixM1.Rdata")
@@ -124,7 +123,6 @@ ss_estM1 <- run_CEATTLE(data = hake_intrasp,
                         prior = FALSE, 
                         init = ss_fixM1[[1]]$estimated_params, 
                         msm = 0, 
-                        M_phase = 1,
                         estMode = 0)
 ss_estM1$fit  # check convergence
 ss_estM1$model$quantities$M1
@@ -135,7 +133,6 @@ ss_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           prior = TRUE,
                           init = NULL,
                           msm = 0,
-                          M_phase = 1,
                           estMode = 0)
 ss_priorM1$fit  # check convergence
 ss_priorM1$model$quantities$M1
@@ -159,9 +156,9 @@ ms_estM1 <- run_CEATTLE(data = hake_intrasp,
                         estMode = 0)
 ms_estM1$fit  # check convergence
 ms_estM1$model$quantities$M1
-# Rceattle diagnostic plots 
-Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
-Rceattle::plot_recruitment(ms_estM1$model, add_ci = TRUE, incl_proj = TRUE)
+# # Rceattle diagnostic plots 
+# Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
+# Rceattle::plot_recruitment(ms_estM1$model, add_ci = TRUE, incl_proj = TRUE)
 save(ms_estM1, file = "models/ms_estM1.Rdata")
 
 ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
@@ -169,7 +166,6 @@ ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           prior = TRUE,
                           init = NULL,
                           msm = 1,
-                          M_phase = 1,
                           estMode = 0)
 ms_priorM1$fit  # check convergence
 ms_priorM1$model$quantities$M1
@@ -182,7 +178,6 @@ ms_noproj <- run_CEATTLE(data = data_noproj,
                          prior = FALSE, 
                          init = NULL, 
                          msm = 1, 
-                         M_phase = 1,
                          estMode = 1)
 ms_noproj$fit  # check convergence
 save(ms_noproj, file = "models/ms_noproj.Rdata")
@@ -191,7 +186,6 @@ ms_priorM1_noproj <- run_CEATTLE(data = data_noproj,
                                  prior = TRUE,
                                  init = NULL,
                                  msm = 1,
-                                 M_phase = 1,
                                  estMode = 1)
 ms_priorM1_noproj$fit  # check convergence
 save(ms_priorM1_noproj, file = "models/ms_priorM1_noproj.Rdata")
@@ -226,7 +220,6 @@ run_90s <- run_CEATTLE(data = data_90s,
                        prior = FALSE,
                        init = NULL,
                        msm = 1,
-                       M_phase = 1,
                        estMode = 0)
 run_90s$fit  # check convergence
 save(run_90s, file = "models/sensitivity/time-varying/run_90s.Rdata")
@@ -235,7 +228,6 @@ run_90s_noproj <- run_CEATTLE(data = data_90s,
                               prior = FALSE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1,
                               estMode = 1)
 run_90s_noproj$fit  # check convergence
 save(run_90s_noproj, file = "models/sensitivity/time-varying/run_90s_noproj.Rdata")
@@ -244,7 +236,6 @@ run_90s_prior <- run_CEATTLE(data = data_90s,
                              prior = TRUE,
                              init = NULL,
                              msm = 1,
-                             M_phase = 1,
                              estMode = 1)
 run_90s_prior$fit  # check convergence
 save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata")
@@ -260,7 +251,6 @@ run_recent <- run_CEATTLE(data = data_recent,
                           prior = FALSE,
                           init = NULL,
                           msm = 1,
-                          M_phase = 1,
                           estMode = 0)
 run_recent$fit  # check convergence
 save(run_recent, file = "models/sensitivity/time-varying/run_recent.Rdata")
@@ -269,7 +259,6 @@ run_recent_noproj <- run_CEATTLE(data = data_recent,
                                  prior = FALSE,
                                  init = NULL,
                                  msm = 1,
-                                 M_phase = 1,
                                  estMode = 1)
 run_recent_noproj$fit  # check convergence
 save(run_recent_noproj, file = "models/sensitivity/time-varying/run_recent_noproj.Rdata")
@@ -278,7 +267,6 @@ run_recent_prior <- run_CEATTLE(data = data_recent,
                                 prior = TRUE,
                                 init = NULL,
                                 msm = 1,
-                                M_phase = 1,
                                 estMode = 1)
 run_recent_prior$fit  # check convergence
 save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
@@ -316,7 +304,6 @@ run_wt05 <- run_CEATTLE(data = data05,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1,
                         estMode = 0)
 run_wt05$fit
 save(run_wt05, file = "models/sensitivity/diet/run_wt05.Rdata")
@@ -325,7 +312,6 @@ run_wt05_fix <- run_CEATTLE(data = data05,
                             prior = FALSE,
                             init = NULL,
                             msm = 1,
-                            M_phase = 6,
                             estMode = 0)
 run_wt05_fix$fit
 save(run_wt05_fix, file = "models/sensitivity/diet/run_wt05_fix.Rdata")
@@ -334,7 +320,6 @@ run_wt05_prior <- run_CEATTLE(data = data05,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1,
                               estMode = 0)
 run_wt05_prior$fit
 save(run_wt05_prior, file = "models/sensitivity/diet/run_wt05_prior.Rdata")
@@ -344,7 +329,6 @@ run_wt05_noproj <- run_CEATTLE(data = data05,
                                prior = FALSE,
                                init = NULL,
                                msm = 1,
-                               M_phase = 1,
                                estMode = 1)
 run_wt05_noproj$fit
 save(run_wt05_noproj, file = "models/sensitivity/diet/run_wt05_noproj.Rdata")
@@ -356,7 +340,6 @@ run_wt10 <- run_CEATTLE(data = data10,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1,
                         estMode = 0)
 run_wt10$fit
 save(run_wt10, file = "models/sensitivity/diet/run_wt10.Rdata")
@@ -365,7 +348,6 @@ run_wt10_fix <- run_CEATTLE(data = data10,
                             prior = FALSE,
                             init = NULL,
                             msm = 1,
-                            M_phase = 6,
                             estMode = 0)
 run_wt10_fix$fit
 save(run_wt10_fix, file = "models/sensitivity/diet/run_wt10_fix.Rdata")
@@ -374,7 +356,6 @@ run_wt10_prior <- run_CEATTLE(data = data10,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1,
                               estMode = 0)
 run_wt10_prior$fit
 save(run_wt10_prior, file = "models/sensitivity/diet/run_wt10_prior.Rdata")
@@ -384,7 +365,6 @@ run_wt10_noproj <- run_CEATTLE(data = data10,
                                prior = FALSE,
                                init = NULL,
                                msm = 1,
-                               M_phase = 1,
                                estMode = 1)
 run_wt10_noproj$fit
 save(run_wt10_noproj, file = "models/sensitivity/diet/run_wt10_noproj.Rdata")
@@ -396,7 +376,6 @@ run_wt50 <- run_CEATTLE(data = data50,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1,
                         estMode = 0)
 run_wt50$fit
 save(run_wt50, file = "models/sensitivity/diet/run_wt50.Rdata")
@@ -405,7 +384,6 @@ run_wt50_fix <- run_CEATTLE(data = data50,
                             prior = FALSE,
                             init = NULL,
                             msm = 1,
-                            M_phase = 6,
                             estMode = 0)
 run_wt50_fix$fit
 save(run_wt50_fix, file = "models/sensitivity/diet/run_wt50_fix.Rdata")
@@ -414,7 +392,6 @@ run_wt50_prior <- run_CEATTLE(data = data50,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1,
                               estMode = 0)
 run_wt50_prior$fit
 save(run_wt50_prior, file = "models/sensitivity/diet/run_wt50_prior.Rdata")
@@ -424,7 +401,6 @@ run_wt50_noproj <- run_CEATTLE(data = data50,
                                prior = FALSE,
                                init = NULL,
                                msm = 1,
-                               M_phase = 1,
                                estMode = 1)
 run_wt50_noproj$fit
 save(run_wt50_noproj, file = "models/sensitivity/diet/run_wt50_noproj.Rdata")
@@ -436,7 +412,6 @@ run_wt75 <- run_CEATTLE(data = data75,
                         prior = FALSE,
                         init = NULL,
                         msm = 1,
-                        M_phase = 1,
                         estMode = 0)
 run_wt75$fit
 save(run_wt75, file = "models/sensitivity/diet/run_wt75.Rdata")
@@ -445,7 +420,6 @@ run_wt75_fix <- run_CEATTLE(data = data75,
                             prior = FALSE,
                             init = NULL,
                             msm = 1,
-                            M_phase = 6,
                             estMode = 0)
 run_wt75_fix$fit
 save(run_wt75_fix, file = "models/sensitivity/diet/run_wt75_fix.Rdata")
@@ -454,7 +428,6 @@ run_wt75_prior <- run_CEATTLE(data = data75,
                               prior = TRUE,
                               init = NULL,
                               msm = 1,
-                              M_phase = 1,
                               estMode = 0)
 run_wt75_prior$fit
 save(run_wt75_prior, file = "models/sensitivity/diet/run_wt75_prior.Rdata")
@@ -464,7 +437,6 @@ run_wt75_noproj <- run_CEATTLE(data = data75,
                                prior = FALSE,
                                init = NULL,
                                msm = 1,
-                               M_phase = 1,
                                estMode = 1)
 run_wt75_noproj$fit
 save(run_wt75_noproj, file = "models/sensitivity/diet/run_wt75_noproj.Rdata")
