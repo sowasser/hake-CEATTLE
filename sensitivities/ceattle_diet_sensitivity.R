@@ -28,6 +28,26 @@ sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05$fit),
 #                              run_wt50$summary[, 3],
 #                              run_wt75$summary[, 3])[, -c(1:2)]
 
+comp_out <- function(run) {
+  comp <- data.frame(run$quantities$jnll_comp)
+  comp$component <- rownames(comp)
+  rownames(comp) <- NULL
+  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
+  # Separate comps for fishery & survey (in different columns originally)
+  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
+  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
+  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
+  comp <- comp[, c("component", "NLL")]
+  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
+  comp$NLL <- as.numeric(comp$NLL)
+  return(comp)
+}
+sensitivity_summary <- cbind(comp_out(run_wt05$model),
+                             comp_out(run_wt10$model)[, 2],
+                             comp_out(run_wt50$model)[, 2],
+                             comp_out(run_wt75$model)[, 2])
+colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
+
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
 years <- 1988:2022
@@ -89,6 +109,31 @@ plot_popdy <- function(biom, R) {
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
   
+  rel_change <- function(model1, model2, stat) {
+    df1 <- all_popdy %>% 
+      filter(model == model1 & variable == stat)
+    df2 <- all_popdy %>%
+      filter(model == model2) %>% filter(variable == stat) 
+    mean_out <- mean((df1$value) - (df2$value))
+    SEM <- sd((df1$value) - (df2$value)) / sqrt(length(range))
+    percent <- mean(((df1$value - df2$value) / df2$value) * 100) 
+    label <- paste(model1, "-", model2, ", ", stat)
+    return(c(label, mean_out, SEM, percent))
+  }
+  
+  rechange_all <- rbind(rel_change("0.5% cannibalism", "observed cannibalism", "SSB (Mt)"),
+                        rel_change("0.5% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
+                        rel_change("0.5% cannibalism", "observed cannibalism", "Recruitment (millions)"),
+                        rel_change("10% cannibalism", "observed cannibalism", "SSB (Mt)"),
+                        rel_change("10% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
+                        rel_change("10% cannibalism", "observed cannibalism", "Recruitment (millions)"),
+                        rel_change("50% cannibalism", "observed cannibalism", "SSB (Mt)"),
+                        rel_change("50% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
+                        rel_change("50% cannibalism", "observed cannibalism", "Recruitment (millions)"),
+                        rel_change("75% cannibalism", "observed cannibalism", "SSB (Mt)"),
+                        rel_change("75% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
+                        rel_change("75% cannibalism", "observed cannibalism", "Recruitment (millions)"))
+  
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_line(aes(linetype = model)) +
@@ -101,13 +146,17 @@ plot_popdy <- function(biom, R) {
     labs(color = "model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside")
-  return(popdy_plot)
+  return(list(change = rechange_all, plot = popdy_plot))
 }
 
-plot_popdy(test_biom, R_test)
+popdy_test <- plot_popdy(test_biom, R_test)
+
+relative_change_test <- popdy_test$change
+
+popdy_test$plot
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
-       plot_popdy(test_biom, R_test), 
+       popdy_test$plot, 
        width=140, height=150, units="mm", dpi=300)
 
 
@@ -248,7 +297,7 @@ M_test <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 3.15), breaks = c(0.21, 3.15)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.9), breaks = c(0.21, 2.9)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
