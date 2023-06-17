@@ -236,15 +236,15 @@ comp_profile_plot <- ggplot() +
             aes(x = M1, y = NLL, color = component)) +
   geom_point(data = (comp_all), 
              aes(x = M1, y = NLL, shape = component, color = component), size = 2) +
-  # geom_vline(data = est_points, mapping = aes(xintercept = M1)) +
+  geom_hline(yintercept = 2, color = "lightgray") +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  ggsidekick::theme_sleek() +
-  facet_wrap(~model)
+  ylab("change in negative log likelihood") +
+  facet_wrap(~model, ncol = 1)
 comp_profile_plot
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png", 
        comp_profile_plot, 
-       width=180, height=80, units="mm", dpi=300)
+       width=150, height=150, units="mm", dpi=300)
 
 ### Plot effect on spawning output --------------------------------------------
 ssb_all_ss <- data.frame()
