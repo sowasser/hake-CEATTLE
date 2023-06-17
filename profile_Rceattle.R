@@ -180,9 +180,9 @@ profile_plot <- ggplot() +
   facet_wrap(~model)
 profile_plot
 
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile.png", 
-#        profile_plot, 
-#        width=180, height=80, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile.png",
+       profile_plot,
+       width=180, height=80, units="mm", dpi=300)
 
 ### Plot JNLL components ------------------------------------------------------
 comp_out <- function(run) {
@@ -198,35 +198,30 @@ comp_out <- function(run) {
   comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
   comp$NLL <- as.numeric(comp$NLL)
   # # Select components for easier plotting.
-  # comp <- comp %>% filter(component %in% c("Fishery age composition",
-  #                                          "Survey age composition",
-  #                                          "Recruitment deviates",
-  #                                          "Selectivity deviates",
-  #                                          "Survey biomass",
-  #                                          "Total NLL"))
   comp <- comp %>% filter(!component %in% c("Fishery age composition", 
                                             "Survey age composition", 
                                             "Total catch"))
   return(comp)
 }
 
-est_comp_ss <- comp_out(ss_start)
+load("models/profile/ss/run0.19.Rdata"); ss_low <- run
 comp_all_ss <- data.frame()
 for(i in 1:length(runs_ss)) {
   load(paste0("models/profile/ss/", runs_ss[i]))
   comp <- comp_out(run)
-  comp$NLL <- comp$NLL - est_comp_ss$NLL
+  comp$NLL <- comp$NLL - comp_out(ss_low)$NLL
   comp$M1 <- round(run$quantities$M1[1, 1, 1], digits = 2)
   comp_all_ss <- rbind(comp_all_ss, comp)
 }
 comp_all_ss$model <- "single-species"
 
-est_comp_ms <- comp_out(ms_start)
+load("models/profile/ms/run0.24.Rdata"); ms_low <- run
+comp_all_ms <- data.frame()
 comp_all_ms <- data.frame()
 for(i in 1:length(runs_ms)) {
   load(paste0("models/profile/ms/", runs_ms[i]))
   comp <- comp_out(run)
-  comp$NLL <- comp$NLL - est_comp_ms$NLL
+  comp$NLL <- comp$NLL - comp_out(ms_low)$NLL
   comp$M1 <- round(run$quantities$M1[1, 1, 1], digits = 2)
   comp_all_ms <- rbind(comp_all_ms, comp)
 }
@@ -236,11 +231,11 @@ comp_all <- rbind(comp_all_ss, comp_all_ms)
 comp_all$model <- factor(comp_all$model, levels = c("single-species", "cannibalism"))
 comp_profile_plot <- ggplot() +
   geom_line(data = (comp_all %>% filter(component == "Total NLL")), 
-            aes(x = M1, y = NLL), linewidth = 1) +
+            aes(x = M1, y = NLL, color = component), linewidth = 1) +
   geom_line(data = (comp_all %>% filter(component != "Total NLL")), 
             aes(x = M1, y = NLL, color = component)) +
-  geom_point(data = (comp_all %>% filter(component != "Total NLL")), 
-             aes(x = M1, y = NLL, shape = component, color = component)) +
+  geom_point(data = (comp_all), 
+             aes(x = M1, y = NLL, shape = component, color = component), size = 2) +
   # geom_vline(data = est_points, mapping = aes(xintercept = M1)) +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   ggsidekick::theme_sleek() +
