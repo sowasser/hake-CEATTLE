@@ -417,7 +417,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
               b_consumed = b_consumed_plot, yearly_b = yearly_b_plot))
 }
 
-plots <- plot_models(ms_estM1$model, ss_estM1$model)
+plots <- plot_models(ms_estM1$model, ss_priorM1$model)
 relative_change <- plots$relative_change
 plots$popdy
 plots$ratio
