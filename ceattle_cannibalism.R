@@ -297,6 +297,25 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
   
+  # Difference between both models
+  nbyage_diff <- nbyage_ss3
+  nbyage_diff$age <- as.numeric(nbyage_diff$age)
+  nbyage_diff <- nbyage_diff %>% filter(as.numeric(age) <= 15)
+  nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
+  nbyage_diff$model <- "CEATTLE - assessment"
+  nbyage_diff$year <- factor(nbyage_diff$year)
+
+  limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
+  ggplot(nbyage_diff, aes(x=year, y=age)) +
+    geom_point(aes(size = numbers, color = numbers)) +
+    scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
+    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
+    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    xlab(" ") + ylab("Age") + 
+    labs(size="millions (n)", color="millions (n)") 
+
+  
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_estM1$model$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
   
