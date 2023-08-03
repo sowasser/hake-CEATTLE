@@ -11,7 +11,7 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-# Read in models
+# Read in estimated M1 models
 load("models/ms_estM1.Rdata")
 load("models/sensitivity/diet/run_wt05.Rdata")
 load("models/sensitivity/diet/run_wt10.Rdata")
@@ -180,30 +180,30 @@ extract_byage <- function(result, name, type) {
   
   return(df)
 }
-# 
-# nbyage_test_all <- rbind(extract_nbyage(run_wt05, "0.5% cannibalism"),
-#                          extract_nbyage(run_wt10, "10% cannibalism"),
-#                          extract_nbyage(run_wt50, "50% cannibalism"),
-#                          extract_nbyage(run_wt75, "75% cannibalism"),
-#                          intrasp_nbyage)
-# 
-# # Set 15 as accumulation age
-# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
-# 
-# # Plot yearly nbyage
-# nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
-# # nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
-# 
-# test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
-#   geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
-#   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-#   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-#   scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-#   scale_x_discrete(breaks = seq(1988, 2019, 3)) +
-#   xlab(" ") + ylab("Age") +
-#   theme(legend.position = "none") +
-#   facet_wrap(~model, ncol = 2, scales = "free_x")
-# test_nbyage_plot
+
+nbyage_test_all <- rbind(extract_byage(run_wt05$model$quantities$NByage, "0.5% cannibalism", "numbers"),
+                         extract_byage(run_wt10$model$quantities$NByage, "10% cannibalism", "numbers"),
+                         extract_byage(run_wt50$model$quantities$NByage, "50% cannibalism", "numbers"),
+                         extract_byage(run_wt75$model$quantities$NByage, "75% cannibalism", "numbers"),
+                         extract_byage(ms_estM1$model$quantities$NByage, "base cannibalism model", "numbers"))
+
+# Set 15 as accumulation age
+nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+
+# Plot yearly nbyage
+nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+# nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
+
+test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
+  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
+  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  xlab(" ") + ylab("Age") +
+  theme(legend.position = "none") +
+  facet_wrap(~model, ncol = 2, scales = "free_x")
+test_nbyage_plot
 # 
 # ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
 #        width=220, height=210, units="mm", dpi=300)
