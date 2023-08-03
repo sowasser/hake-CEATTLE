@@ -14,12 +14,12 @@ theme_set(theme_sleek())
 
 load("models/ms_estM1.Rdata")
 # Read in different time period models (specified in run_ceattle.R)
-load("models/sensitivity/time-varying/run_90s_noproj.Rdata")
-load("models/sensitivity/time-varying/run_recent_noproj.Rdata")
+load("models/sensitivity/time-varying/run_90s.Rdata")
+load("models/sensitivity/time-varying/run_recent.Rdata")
 
 sensitivity_fits <- rbind(cbind(model = "MS", ms_estM1$fit),
-                          cbind(model = "High (90s)", run_90s_noproj$fit),
-                          cbind(model = "Low (recent)", run_recent_noproj$fit))
+                          cbind(model = "High (90s)", run_90s$fit),
+                          cbind(model = "Low (recent)", run_recent$fit))
 
 # New JNLL component tables (until models get re-run with this code included)
 comp_out <- function(run) {
@@ -37,8 +37,8 @@ comp_out <- function(run) {
   return(comp)
 }
 sensitivity_summary <- cbind(comp_out(ms_estM1$model),
-                             comp_out(run_90s_noproj$model)[, 2],
-                             comp_out(run_recent_noproj$model)[, 2])
+                             comp_out(run_90s$model)[, 2],
+                             comp_out(run_recent$model)[, 2])
 colnames(sensitivity_summary) <- c("component", "MS model", "High (90s)", "Low (recent)")
 
 ### Plot population dynamics --------------------------------------------------
@@ -128,8 +128,8 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   return(list(all_popdy, rechange_all, popdy_plot))
 }
 
-timing_popdy <- timing_plot_popdy(run_high = run_90s_noproj$model, 
-                                  run_low = run_recent_noproj$model,
+timing_popdy <- timing_plot_popdy(run_high = run_90s$model, 
+                                  run_low = run_recent$model,
                                   ms_model = ms_estM1$model,
                                   all_years = 1988:2022)
 relative_change <- timing_popdy[[2]]
@@ -163,11 +163,11 @@ extract_byage2 <- function(quantity, name, years) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_byage2(run_90s_noproj$model$quantities$NByage, 
+nbyage_test_all <- rbind(extract_byage2(run_90s$model$quantities$NByage, 
                                         "high (1988-1999)", 1988:1999),
                          extract_byage2(ms_estM1$model$quantities$NByage, 
                                         "all years", 1988:2022),
-                         extract_byage2(run_recent_noproj$model$quantities$NByage, 
+                         extract_byage2(run_recent$model$quantities$NByage, 
                                         "low (2005-2019)", 2005:2019))
 
 # Set 15 as accumulation age
@@ -204,9 +204,9 @@ extract_M <- function(run, quantity, name, years) {
   return(total_mortality)
 }
 
-M_all <- rbind(extract_M(run_90s_noproj$model, run_90s_noproj$model$quantities$M2,
+M_all <- rbind(extract_M(run_90s$model, run_90s$model$quantities$M2,
                          "high (1988-1999)", 1988:1999),
-               extract_M(run_recent_noproj$model, run_recent_noproj$model$quantities$M2,
+               extract_M(run_recent$model, run_recent$model$quantities$M2,
                          "low (2005-2019)", 2005:2019),
                extract_M(ms_estM1$model, ms_estM1$model$quantities$M2, 
                          "all years", 1988:2022))
@@ -232,9 +232,9 @@ M_byage <- M_all %>%
 M1_all <- rbind(data.frame(model = "all years", 
                            mean = mean(ms_estM1$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "1988-1999", 
-                           mean = mean(run_90s_noproj$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(run_90s$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "2005-2019", 
-                           mean = mean(run_recent_noproj$model$quantities$M1[1, 1, 1:15])))
+                           mean = mean(run_recent$model$quantities$M1[1, 1, 1:15])))
 
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
        timevary_M, width=140, height = 170, units = "mm", dpi=300)

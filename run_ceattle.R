@@ -220,25 +220,9 @@ run_90s <- run_CEATTLE(data = data_90s,
                        prior = FALSE,
                        init = NULL,
                        msm = 1,
-                       estMode = 0)
+                       estMode = 1)
 run_90s$fit  # check convergence
 save(run_90s, file = "models/sensitivity/time-varying/run_90s.Rdata")
-run_90s_noproj <- run_CEATTLE(data = data_90s,
-                              M1 = 1,
-                              prior = FALSE,
-                              init = NULL,
-                              msm = 1,
-                              estMode = 1)
-run_90s_noproj$fit  # check convergence
-save(run_90s_noproj, file = "models/sensitivity/time-varying/run_90s_noproj.Rdata")
-run_90s_prior <- run_CEATTLE(data = data_90s,
-                             M1 = 1,
-                             prior = TRUE,
-                             init = NULL,
-                             msm = 1,
-                             estMode = 1)
-run_90s_prior$fit  # check convergence
-save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata")
 
 dirichlet_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
 data_recent <- hake_intrasp
@@ -251,25 +235,9 @@ run_recent <- run_CEATTLE(data = data_recent,
                           prior = FALSE,
                           init = NULL,
                           msm = 1,
-                          estMode = 0)
+                          estMode = 1)
 run_recent$fit  # check convergence
 save(run_recent, file = "models/sensitivity/time-varying/run_recent.Rdata")
-run_recent_noproj <- run_CEATTLE(data = data_recent,
-                                 M1 = 1,
-                                 prior = FALSE,
-                                 init = NULL,
-                                 msm = 1,
-                                 estMode = 1)
-run_recent_noproj$fit  # check convergence
-save(run_recent_noproj, file = "models/sensitivity/time-varying/run_recent_noproj.Rdata")
-run_recent_prior <- run_CEATTLE(data = data_recent,
-                                M1 = 1,
-                                prior = TRUE,
-                                init = NULL,
-                                msm = 1,
-                                estMode = 1)
-run_recent_prior$fit  # check convergence
-save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
 
 # Variation in diet proportion ------------------------------------------------
 # Pull out data from base intrasp run
