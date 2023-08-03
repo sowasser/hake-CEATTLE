@@ -53,7 +53,7 @@ colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
 years <- 1988:2022
 models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, 
                run_wt75$model)
-names <- c("observed cannibalism", "0.5% cannibalism", "10% cannibalism", 
+names <- c("base cannibalism model", "0.5% cannibalism", "10% cannibalism", 
            "50% cannibalism", "75% cannibalism")
 
 # Pull out SSB & overall biomass from CEATTLE runs
@@ -121,18 +121,18 @@ plot_popdy <- function(biom, R) {
     return(c(label, mean_out, SEM, percent))
   }
   
-  rechange_all <- rbind(rel_change("0.5% cannibalism", "observed cannibalism", "SSB (Mt)"),
-                        rel_change("0.5% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
-                        rel_change("0.5% cannibalism", "observed cannibalism", "Recruitment (millions)"),
-                        rel_change("10% cannibalism", "observed cannibalism", "SSB (Mt)"),
-                        rel_change("10% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
-                        rel_change("10% cannibalism", "observed cannibalism", "Recruitment (millions)"),
-                        rel_change("50% cannibalism", "observed cannibalism", "SSB (Mt)"),
-                        rel_change("50% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
-                        rel_change("50% cannibalism", "observed cannibalism", "Recruitment (millions)"),
-                        rel_change("75% cannibalism", "observed cannibalism", "SSB (Mt)"),
-                        rel_change("75% cannibalism", "observed cannibalism", "Total Biomass (Mt)"),
-                        rel_change("75% cannibalism", "observed cannibalism", "Recruitment (millions)"))
+  rechange_all <- rbind(rel_change("0.5% cannibalism", "base cannibalism model", "SSB (Mt)"),
+                        rel_change("0.5% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
+                        rel_change("0.5% cannibalism", "base cannibalism model", "Recruitment (millions)"),
+                        rel_change("10% cannibalism", "base cannibalism model", "SSB (Mt)"),
+                        rel_change("10% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
+                        rel_change("10% cannibalism", "base cannibalism model", "Recruitment (millions)"),
+                        rel_change("50% cannibalism", "base cannibalism model", "SSB (Mt)"),
+                        rel_change("50% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
+                        rel_change("50% cannibalism", "base cannibalism model", "Recruitment (millions)"),
+                        rel_change("75% cannibalism", "base cannibalism model", "SSB (Mt)"),
+                        rel_change("75% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
+                        rel_change("75% cannibalism", "base cannibalism model", "Recruitment (millions)"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
@@ -163,7 +163,7 @@ ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png",
 # # Numbers-at-age for each model run -------------------------------------------
 # # Read in data from no diet CEATTLE run
 # intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
-# intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("observed proportion", nrow(intrasp_nbyage)))
+# intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("base proportion", nrow(intrasp_nbyage)))
 # colnames(intrasp_nbyage)[4] <- "model"
 # 
 # Helper function for extracting -by-age data from CEATTLE
