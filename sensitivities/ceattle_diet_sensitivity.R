@@ -199,7 +199,7 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_x_discrete(breaks = seq(1988, 2019, 3)) +
+  scale_x_discrete(breaks = seq(1988, 2022, 3)) +
   xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
   facet_wrap(~model, ncol = 2, scales = "free_x")
@@ -210,35 +210,22 @@ test_nbyage_plot
 # 
 # 
 # ### New plot of popdy and numbers-at-age --------------------------------------
-# # Calculate annual mean age
-# mean_nbyage_test <- nbyage_test_all %>%
-#   group_by(year, model) %>%
-#   summarize(value = weighted.mean(age, numbers)) %>%
-#   ungroup()
-# 
-# # Add extra columns, reorder, and combine with popdy dataframe
-# mean_nbyage_test$variable <- rep("Mean Age")
-# mean_nbyage_test$error <- rep(0)
-# mean_nbyage_test$min <- rep(0)
-# mean_nbyage_test$max <- rep(0)
-# mean_nbyage_test <- mean_nbyage_test[, c(1, 4, 3, 5, 2, 6, 7)]
-# 
-# popdy_meanage <- rbind(test_popdy[[1]], mean_nbyage_test)
-# popdy_meanage$year <- as.integer(popdy_meanage$year)
-# popdy_meanage$model <- factor(popdy_meanage$model)
-# 
-# meanage_popdy_plot <- ggplot(popdy_meanage, aes(x=year, y=value, color = model, fill = model)) +
-#   geom_line(aes(linetype = model)) +
-#   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
-#   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-#   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-#   ylim(0, NA) +
-#   ylab(" ") +
-#   labs(color = "model") +
-#   facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
-#   theme(strip.background = element_blank(), strip.placement = "outside")
-# meanage_popdy_plot
+# Calculate annual mean age
+mean_nbyage <- nbyage_test_all %>%
+  group_by(year, model) %>%
+  summarize(mean = weighted.mean(age, numbers)) %>%
+  ungroup() %>%
+  ggplot(., aes(x=as.numeric(as.character(year)), 
+                y=mean, color = model, linetype = model)) +
+  geom_line() +
+  scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), 
+                        name = "model") +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  ylim(0, NA) +
+  ylab(" ") +
+  labs(color = "model") 
+mean_nbyage
 # 
 # ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
 #        width=140, height=170, units="mm", dpi=300)
