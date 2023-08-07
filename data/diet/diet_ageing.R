@@ -17,8 +17,22 @@ all_prey <- read.csv("data/diet/CCTD/hake_prey.csv")
 
 ### Parameterize length to age calculation  -----------------------------------
 # Read in maturity data
-maturity <- read.csv("~/Desktop/Local/hake-CEATTLE/Resources/hake-assessment-master/data/hake-maturity-data.csv")
-age_length <- data.frame(na.omit(cbind(Age = maturity$Age, Length = maturity$Length_cm)))
+maturity <- read.csv("Resources/hake-assessment-master/data/hake-maturity-data.csv")
+age_length <- data.frame(na.omit(cbind(Age = maturity$Age, 
+                                       Length = maturity$Length_cm)))
+
+# Plot age/length data by year
+maturity_yearly <- na.omit(cbind.data.frame(Year = maturity$Year,
+                                            Age = maturity$Age, 
+                                            Length = maturity$Length_cm)) %>%
+  ggplot(., aes(x = Age, y = Length)) +
+  geom_point() +
+  ylab("Length (cm)") +
+  facet_wrap(~Year)
+maturity_yearly
+ggsave("plots/diet/growth_yearly.png", maturity_yearly, 
+       width=250, height = 120, units = "mm", dpi=300)
+
 
 hake_ages <- 0:15
 hake_lengths <- min(age_length$Length):max(age_length$Length)
