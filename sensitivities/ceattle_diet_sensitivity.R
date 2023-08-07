@@ -223,7 +223,7 @@ mean_nbyage <- nbyage_test_all %>%
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
-  ylab(" ") +
+  ylab("mean age") + xlab("year") +
   labs(color = "model") 
 mean_nbyage
 # 
