@@ -18,6 +18,11 @@ load("models/sensitivity/diet/run_wt10.Rdata")
 load("models/sensitivity/diet/run_wt50.Rdata")
 load("models/sensitivity/diet/run_wt75.Rdata")
 
+plot_comp(run_wt05$model)
+plot_comp(run_wt10$model)
+plot_comp(run_wt50$model)
+plot_comp(run_wt75$model)
+
 # Check fit of CEATTLE model --------------------------------------------------
 sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05$fit),
                          cbind(model = "wt10", run_wt10$fit),
