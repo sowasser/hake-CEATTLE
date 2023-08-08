@@ -9,7 +9,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230616.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230808.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -63,40 +63,26 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
   return(list(model = run, fit = fit, summary = comp))
 }
 
-ms_model <- run_CEATTLE(data = hake_intrasp, 
-                        M1 = 1, 
-                        prior = TRUE, 
-                        init = NULL, 
-                        msm = 1, 
-                        estMode = 0)
-ms_model$fit  # check convergence
-ms_model$model$quantities$M1
-
 ss_model <- run_CEATTLE(data = hake_intrasp, 
                         M1 = 1, 
                         prior = TRUE, 
                         init = NULL, 
                         msm = 0, 
                         estMode = 0)
+ss_model$fit  # check convergence
+ss_model$model$quantities$M1
+
+ms_model <- run_CEATTLE(data = hake_intrasp, 
+                        M1 = 1, 
+                        prior = FALSE, 
+                        init = ss_model$model$estimated_params, 
+                        msm = 1, 
+                        estMode = 0)
 ms_model$fit  # check convergence
 ms_model$model$quantities$M1
 
-
-#' Plot results of CEATTLE runs (from run_ceattle.R), comparing the single-
-#' species model and the multispecies model (cannibalism), which uses 
-#' proportion of cannibalism calculated from diet database going back to 1988. 
-#' Different specifications of M1 (fixed, estimated, or with a prior) are also 
-#' explored.
-
-# devtools::install_github("grantdadams/Rceattle", ref = "dev")
-
-
-
-
-
-
 ### Plot multi-species vs. single-species vs. assessment ----------------------
-start_yr <- ms_estM1$model$data_list$styr
+start_yr <- ms_model$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
 hind_end <- 2019
@@ -317,9 +303,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_line(aes(color = model)) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) 
   
-  # Set 15 as accumulation age
-  nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
-  
   # Reduce down to millions for plotting
   nbyage_all$numbers <- nbyage_all$numbers / 1000000
   
@@ -328,7 +311,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
@@ -338,7 +320,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Difference between both models
   nbyage_diff <- nbyage_ss3
   nbyage_diff$age <- as.numeric(nbyage_diff$age)
-  nbyage_diff <- nbyage_diff %>% filter(as.numeric(age) <= 15)
   nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
   nbyage_diff$model <- "CEATTLE - assessment"
   nbyage_diff$year <- factor(nbyage_diff$year)
@@ -347,7 +328,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ggplot(nbyage_diff, aes(x=year, y=age)) +
     geom_point(aes(size = numbers, color = numbers)) +
     scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
-    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
@@ -355,7 +335,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   
   # Plot comparison to survey index -------------------------------------------
-  init_surv <- ms_estM1$model$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
+  init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
   
   survey_biom <- function(run, name) {
     srv <- data.frame(year = 1995:hind_end,
@@ -374,15 +354,16 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
   survey_all$model <- factor(survey_all$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+  survey_all$Observation <- survey_all
   
   survey_plot <- ggplot() +
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_pointrange(data = init_surv, 
-                    aes(x = Year, y = Observation,
-                        ymin = exp(log(Observation) - 1.96*Log_sd),
-                        ymax = exp(log(Observation) + 1.96*Log_sd)),
+                    aes(x = Year, y = Observation / 1000000,
+                        ymin = exp(log(Observation / 1000000) - 1.96*Log_sd),
+                        ymax = exp(log(Observation / 1000000) + 1.96*Log_sd)),
                     fatten = 5) +
-    geom_line(data = survey_all, aes(x = year, y = biomass, color = model), alpha = 0.8) +
+    geom_line(data = survey_all, aes(x = year, y = (biomass / 1000000), color = model), alpha = 0.8) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     ylim(0, NA) +
@@ -393,8 +374,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     filter(Var1 == "A" & Var2 == "A")
   
   suitability <- suitability[, 3:6]
-  suitability$Var3 <- factor(suitability$Var3, labels = c(1:15))
-  suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:15)))
+  suitability$Var3 <- factor(suitability$Var3, labels = c(1:20))
+  suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:20)))
   suitability$Var5 <- factor(suitability$Var5, labels = years)
   
   colnames(suitability) <- c("pred_age", "prey_age", "year", "value")
@@ -474,7 +455,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
               b_consumed = b_consumed_plot, yearly_b = yearly_b_plot))
 }
 
-plots <- plot_models(ms_estM1$model, ss_priorM1$model)
+plots <- plot_models(ms_model$model, ss_model$model)
 relative_change <- plots$relative_change
 plots$popdy
 plots$ratio
@@ -485,3 +466,6 @@ plots$suit
 plots$biombyage
 plots$b_consumed
 plots$yearly_b
+
+plot_comp(ss_model$model)
+plot_selectivity(ms_model$model)
