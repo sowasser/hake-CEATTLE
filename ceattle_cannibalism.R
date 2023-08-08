@@ -317,7 +317,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
 
   
   # Plot comparison to survey index -------------------------------------------
-  init_surv <- ms_estM1$model$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
+  init_surv <- ms_run$model$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
   
   survey_biom <- function(run, name) {
     srv <- data.frame(year = 1995:hind_end,
