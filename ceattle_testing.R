@@ -9,7 +9,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230808.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230810.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -75,7 +75,7 @@ ss_model$model$quantities$M1
 ms_model <- run_CEATTLE(data = hake_intrasp, 
                         M1 = 1, 
                         prior = FALSE, 
-                        init = ss_model$model$estimated_params, 
+                        init = NULL, 
                         msm = 1, 
                         estMode = 0)
 ms_model$fit  # check convergence
@@ -86,7 +86,8 @@ start_yr <- ms_model$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
 hind_end <- 2019
-assess_yr = "2020"
+assess_yr <- "2020"
+max_age <- 15
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -278,11 +279,12 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Read in data from SS3 & average beginning & middle of the year
   nbyage_ss3_all <- read.csv(paste0("data/assessment/", assess_yr, "/nbyage.csv")) %>%
     filter(Yr >= start_yr & Yr <= end_yr)
-  colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
+  colnames(nbyage_ss3_all) <- c("year", "timing", c(0:max_age))
+  nbyage_ss3_all <- nbyage_ss3_all[, 1:(max_age + 3)]
   
   nbyage_ss3_wide <- nbyage_ss3_all %>%
     group_by(year) %>%
-    summarize_at(vars("0":"20"), mean)
+    summarize_at(vars("0":"15"), mean)
   
   nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
   nbyage_ss3 <- cbind(nbyage_ss3, 
@@ -374,8 +376,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     filter(Var1 == "A" & Var2 == "A")
   
   suitability <- suitability[, 3:6]
-  suitability$Var3 <- factor(suitability$Var3, labels = c(1:20))
-  suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:20)))
+  suitability$Var3 <- factor(suitability$Var3, labels = c(1:max_age))
+  suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:max_age)))
   suitability$Var5 <- factor(suitability$Var5, labels = years)
   
   colnames(suitability) <- c("pred_age", "prey_age", "year", "value")
