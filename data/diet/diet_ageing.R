@@ -169,7 +169,7 @@ pred_ages <- (-log(1 - all_pred$FL_cm / Linf) / K) + a0
 max(na.omit(pred_ages))  # check maximum
 min(na.omit(pred_ages))  # check minimum
 pred_ages[pred_ages < 1] <- 1  # replace values < 1 (lower accumulation age)
-pred_ages[pred_ages > 15] <- 15  # set upper accumulation age to 20
+pred_ages[pred_ages > 20] <- 20  # set upper accumulation age to 20
 pred_ages <- round(pred_ages, digits = 0)  # round to whole number
 
 # Add ages column to predator dataset 
