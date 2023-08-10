@@ -33,8 +33,8 @@ growth_yearly <- na.omit(cbind.data.frame(survey = survey_ages$survey,
   ylab("Length (cm)") +
   facet_wrap(~Year, ncol = 6)
 growth_yearly
-ggsave("plots/diet/growth_yearly.png", growth_yearly, 
-       width=250, height = 120, units = "mm", dpi=300)
+# ggsave("plots/diet/growth_yearly.png", growth_yearly, 
+#        width=250, height = 120, units = "mm", dpi=300)
 
 # Plot von Bertalanffy growth curve -------------------------------------------
 hake_ages <- 0:20
@@ -82,7 +82,8 @@ ggplot(predicted_data, aes(x = predicted_ages, y = hake_lengths)) +
 
 # Try Schnute parameterization w/ both normal & lognormal VBGF ----------------
 a1 <- 1
-a2 <- 16
+a2 <- 20
+
 FSA::vbStarts(length ~ age, data = age_length, param = "Schnute", ages2use = c(a1, a2))
 
 # Normal
@@ -134,11 +135,11 @@ exp(vbgf.optim$par)[1:4]
 nls <- coef(vbgf.nls2)
 optim <- exp(vbgf.optim$par)
 
-# Solve for Linf and a0 using Schnute parameters
+# # Solve for Linf and a0 using Schnute parameters
 Linf2 <- la2 - la1 * exp(-k * (a2 - a1)) / (1 - exp(-k * (a2 - a1)))
 a0_2 <- a1 + (1/k * log((la2 - la1) / (la2 - (la1 * exp(-k * (a2 - a1))))))
-
-predicted_ages2 <- (-log(1 - hake_lengths/Linf2) / K) + a0_2
+ 
+predicted_ages2 <- (-log(1 - hake_lengths / Linf2) / k) + a0_2
 predicted_data2 <- data.frame(hake_lengths, predicted_ages2)
 
 ggplot() +
@@ -147,19 +148,20 @@ ggplot() +
                               (1-exp(-nls[3]*(age-1))) / 
                               (1-exp(-nls[3]*14)), 
                             linetype = "Schnute - normal", color = "Schnute - normal"),
-            linewidth = 1) +
+            linewidth = 1.5) +
   geom_line(data = age_length, aes(x = age, y = optim[1] + (optim[2] - optim[1]) *
                               (1-exp(-optim[3]*(age-1))) / 
                               (1-exp(-optim[3]*14)), 
                             linetype = "Schnute - lognormal", color = "Schnute - lognormal"),
-            linewidth = 1) +
+            linewidth = 1.5) +
   geom_line(data = predicted_data, aes(x = predicted_ages, y = hake_lengths,
                                 linetype = "VBGF", color = "VBGF"),
-            linewidth = 1) +
-  # geom_line(data = predicted_data2, aes(x = predicted_ages2, y = hake_lengths,
-  #                                      linetype = "VBGF w/ Schnute", color = "VBGF w/ Schnute"),
-  #           linewidth = 1) +
+            linewidth = 1.5) +
+  geom_line(data = predicted_data2, aes(x = predicted_ages2, y = hake_lengths,
+                                       linetype = "VBGF w/ Schnute", color = "VBGF w/ Schnute"),
+            linewidth = 1.5) +
   ylab("Length (cm)") +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   labs(linetype = "Model")
 
 
