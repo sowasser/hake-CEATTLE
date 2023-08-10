@@ -9,7 +9,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230810.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230808_a20.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -75,7 +75,7 @@ ss_model$model$quantities$M1
 ms_model <- run_CEATTLE(data = hake_intrasp, 
                         M1 = 1, 
                         prior = FALSE, 
-                        init = NULL, 
+                        init = ss_model$model$initial_params, 
                         msm = 1, 
                         estMode = 0)
 ms_model$fit  # check convergence
@@ -87,7 +87,7 @@ end_yr <- 2022
 years <- start_yr:end_yr
 hind_end <- 2019
 assess_yr <- "2020"
-max_age <- 15
+max_age <- 20
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -284,7 +284,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   nbyage_ss3_wide <- nbyage_ss3_all %>%
     group_by(year) %>%
-    summarize_at(vars("0":"15"), mean)
+    summarize_at(vars("0":as.character(max_age)), mean)
   
   nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
   nbyage_ss3 <- cbind(nbyage_ss3, 
@@ -319,21 +319,21 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
   
-  # Difference between both models
-  nbyage_diff <- nbyage_ss3
-  nbyage_diff$age <- as.numeric(nbyage_diff$age)
-  nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
-  nbyage_diff$model <- "CEATTLE - assessment"
-  nbyage_diff$year <- factor(nbyage_diff$year)
-  
-  limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
-  ggplot(nbyage_diff, aes(x=year, y=age)) +
-    geom_point(aes(size = numbers, color = numbers)) +
-    scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
-    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab(" ") + ylab("Age") + 
-    labs(size="millions (n)", color="millions (n)") 
+  # # Difference between both models
+  # nbyage_diff <- nbyage_ss3
+  # nbyage_diff$age <- as.numeric(nbyage_diff$age)
+  # nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
+  # nbyage_diff$model <- "CEATTLE - assessment"
+  # nbyage_diff$year <- factor(nbyage_diff$year)
+  # 
+  # limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
+  # ggplot(nbyage_diff, aes(x=year, y=age)) +
+  #   geom_point(aes(size = numbers, color = numbers)) +
+  #   scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
+  #   scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
+  #   geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  #   xlab(" ") + ylab("Age") + 
+  #   labs(size="millions (n)", color="millions (n)") 
   
   
   # Plot comparison to survey index -------------------------------------------
