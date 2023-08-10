@@ -50,7 +50,7 @@ FEAT_all <- FEAT_all %>%
 FEAT_all <- FEAT_all %>% 
   filter(predator_age != "(blank)") %>%
   mutate(predator_age = as.numeric(predator_age)) %>%
-  mutate(predator_age = ifelse(predator_age > 15, 15, predator_age))
+  mutate(predator_age = ifelse(predator_age > 20, 20, predator_age))
 
 FEAT_sampling <- FEAT_all %>%
   group_by(year, prey_name) %>%
