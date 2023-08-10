@@ -10,6 +10,14 @@ theme_set(theme_sleek())
 # Read in full aged dataset
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
 
+# Check numbers-at-age for diet data
+numbers <- aged_dataset %>% 
+  group_by(predator_age) %>%
+  summarize(n = n())
+
+# Set accumulation age back to 15 to deal with low sample sizes
+aged_dataset$predator_age[aged_dataset$predator_age > 15] <- 15
+
 # Create overall intraspecies predation dataset -------------------------------
 # Find the hake proportion for each predator
 aged_wt <- aged_dataset %>%
@@ -47,10 +55,10 @@ ggsave(filename = "plots/diet/cannibalism_overall.png", diet_plot,
 
 ### Get data ready to be added directly to CEATTLE ----------------------------
 # Create empty dataframe in shape for CEATTLE
-all_ages <- data.frame(predator_age = rep(1:15, each = 15),
-                       prey_age = rep(1:15, 15),
-                       sample_size = rep(NA, 225),
-                       wt_prop = rep(NA, 225))
+all_ages <- data.frame(predator_age = rep(1:20, each = 20),
+                       prey_age = rep(1:20, 20),
+                       sample_size = rep(NA, 400),
+                       wt_prop = rep(NA, 400))
 
 # Merge with data
 to_ceattle <- hake_prop %>%
@@ -72,10 +80,3 @@ intrasp_ceattle <- cbind(Pred = rep(1, nrow(to_ceattle)),
                          Stomach_proportion_by_weight = to_ceattle$wt_prop)
 
 write.csv(intrasp_ceattle, "data/diet/diet_for_CEATTLE_original.csv", row.names = FALSE)
-
-
-### See if it's worth doing time-varying (yearly) predation -------------------
-# same process for calculating the average as above, just disaggregated by year
-stomach_n_yearly <- aged_wt %>%
-  group_by(year, predator_age) %>%
-  summarize(sample_size = n())

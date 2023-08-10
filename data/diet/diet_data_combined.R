@@ -46,7 +46,7 @@ FEAT_all <- FEAT_all %>%
   select(stomach_uuid, month, year, tow_latitude, tow_longitude, predator_age, 
          prey_name, content_wt_g, measure_value)
 
-# Switch to age 15 accumulator age
+# Switch to age 20 accumulator age
 FEAT_all <- FEAT_all %>% 
   filter(predator_age != "(blank)") %>%
   mutate(predator_age = as.numeric(predator_age)) %>%
