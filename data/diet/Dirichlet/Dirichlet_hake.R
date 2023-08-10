@@ -475,10 +475,18 @@ run_Dirichlet <- function(data, name) {
 }
 
 ### Results -------------------------------------------------------------------
-# Run for all years
 # Read in full aged dataset
 aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
 
+# Check numbers-at-age for diet data
+numbers <- aged_dataset %>% 
+  group_by(predator_age) %>%
+  summarize(n = n())
+
+# Set accumulation age back to 15 to deal with low sample sizes
+aged_dataset$predator_age[aged_dataset$predator_age > 15] <- 15
+
+# Run for all years
 all_years <- run_Dirichlet(aged_dataset, "All years")
 
 all_years_df <- all_years[[1]]
