@@ -16,28 +16,31 @@ all_prey <- read.csv("data/diet/CCTD/hake_prey.csv")
 
 
 ### Parameterize length to age calculation  -----------------------------------
-# Read in maturity data
-maturity <- read.csv("Resources/hake-assessment-master/data/hake-maturity-data.csv")
-age_length <- data.frame(na.omit(cbind(Age = maturity$Age, 
-                                       Length = maturity$Length_cm)))
+# Read in age data from the survey & filter to only be hake
+survey_ages <- read.csv("data/diet/acoustic_survey.csv") %>% 
+  filter(common_name == "Pacific hake")
+
+age_length <- data.frame(na.omit(cbind(age = survey_ages$age, 
+                                       length = survey_ages$length)))
 
 # Plot age/length data by year
-maturity_yearly <- na.omit(cbind.data.frame(Year = maturity$Year,
-                                            Age = maturity$Age, 
-                                            Length = maturity$Length_cm)) %>%
-  ggplot(., aes(x = Age, y = Length)) +
+growth_yearly <- na.omit(cbind.data.frame(survey = survey_ages$survey,
+                                          age = survey_ages$age, 
+                                          length = survey_ages$length)) %>%
+  mutate(Year = substr(survey, 1, 4)) %>%  # Get year from survey number
+  ggplot(., aes(x = age, y = length)) +
   geom_point() +
   ylab("Length (cm)") +
-  facet_wrap(~Year)
-maturity_yearly
-ggsave("plots/diet/growth_yearly.png", maturity_yearly, 
+  facet_wrap(~Year, ncol = 6)
+growth_yearly
+ggsave("plots/diet/growth_yearly.png", growth_yearly, 
        width=250, height = 120, units = "mm", dpi=300)
 
+# Plot von Bertalanffy growth curve -------------------------------------------
+hake_ages <- 0:20
+hake_lengths <- min(age_length$length):max(age_length$length)
 
-hake_ages <- 0:15
-hake_lengths <- min(age_length$Length):max(age_length$Length)
-
-like <- function(logLinf,logK,a0,logSigma) {
+like <- function(logLinf, logK, a0, logSigma) {
   # Extract the parameters
   Linf <- exp(logLinf); K <- exp(logK); Sigma <- exp(logSigma)
   
@@ -45,15 +48,16 @@ like <- function(logLinf,logK,a0,logSigma) {
   Pred <- (-log(1 - Lengths/Linf) / K) + a0
   
   # Compute the negative log-likelihood
-  NegLogL <- -1*sum(dnorm(Ages,Pred,Sigma,TRUE))
+  NegLogL <- -1*sum(dnorm(Ages, Pred, Sigma, TRUE))
   
   return(NegLogL)
 }  
 
-start <- list(logLinf=log(100),logK=log(0.2),a0=1,logSigma=5)
+# FSA::vbStarts(length ~ age, data = age_length)  # suggested starting params
+start <- list(logLinf = log(90), logK=log(0.4), a0=0, logSigma=5)
 fixed <- NULL
-Ages <- age_length$Age
-Lengths <- age_length$Length
+Ages <- age_length$age
+Lengths <- age_length$length
 mleOutput <- mle(like,start=start)
 print(summary(mleOutput))
 
@@ -71,51 +75,92 @@ AIC(mleOutput)
 predicted_ages <- (-log(1 - hake_lengths/Linf) / K) + a0
 predicted_data <- data.frame(hake_lengths, predicted_ages)
 
-ggplot(predicted_data, aes(x = hake_lengths, y = predicted_ages)) +
+ggplot(predicted_data, aes(x = predicted_ages, y = hake_lengths)) +
   geom_line() +
-  geom_point(data = age_length, aes(x = Lengths, y = Age))
+  geom_point(data = age_length, aes(x = age, y = length))
 
 
-# Try different parameterization from Kiva in stock assess class --------------
-test <- FSA::vbStarts(Length_cm ~ Age, data = maturity, param = "Schnute", ages2use = c(1, 15))
+# Try Schnute parameterization w/ both normal & lognormal VBGF ----------------
+a1 <- 1
+a2 <- 16
+FSA::vbStarts(length ~ age, data = age_length, param = "Schnute", ages2use = c(a1, a2))
 
-vbgf.nls2 <- nls(Length_cm ~ la1 + (la2 - la1) * (1-exp(-k*(Age-1))) / (1-exp(-k*14)), 
-                 data = maturity, 
-                 start = list(la1 = 24, 
+# Normal
+vbgf.nls2 <- nls(length ~ la1 + (la2 - la1) * 
+                   (1 - exp(-k * (age - a1))) / (1 - exp(-k * (a2 - a1))), 
+                 data = age_length, 
+                 start = list(la1 = 23, 
                               la2 = 56, 
-                              k = 0.3))
+                              k = 0.4))
 summary(vbgf.nls2)
+summary(vbgf.nls2, cor=TRUE)$correlation %>% round(2)
 
 plot(fitted(vbgf.nls2), resid(vbgf.nls2))
 abline(h=0)
 
 nls <- coef(vbgf.nls2)
 
-ggplot(maturity) +
-  geom_point(aes(y = Age, x = Length_cm), alpha = 0.25) +
-  geom_line(aes(y = Age, x = nls[1] + (nls[2] - nls[1]) * (1-exp(-nls[3] * (Age - 1))) /
+ggplot(age_length) +
+  geom_point(aes(x = age, y = length), alpha = 0.25) +
+  geom_line(aes(x = age, y = nls[1] + (nls[2] - nls[1]) * (1-exp(-nls[3] * (age - 1))) /
                   (1-exp(-nls[3]*14))))
 
 k <- nls[3]
 la1 <- nls[1]
 la2 <- nls[2]
-pred_a <- (log(((all_pred$FL_cm * (1 - exp(-k * 14))) / (la1 + (la2 - la1))) -1) / -k) + 1  # NOT WORKING
 
+# Lognormal
 vbgf.loglike <- function(log.pars, dat, a1, a2) {
   pars <- exp(log.pars)
   
   l.pred <- pars["la1"] + (pars["la2"] - pars["la1"]) * 
-    (1-exp(-pars["k"]*(dat$Age - a1))) / 
+    (1-exp(-pars["k"]*(dat$age - a1))) / 
     (1-exp(-pars["k"]*(a2-a1)))
   
-  nll <- -dlnorm(x = dat$Length_cm, meanlog = log(l.pred) - pars['cv']^2, sdlog = pars['cv'], log = TRUE) %>%
+  nll <- -dlnorm(x = dat$length, 
+                 meanlog = log(l.pred) - pars['cv']^2, 
+                 sdlog = pars['cv'], 
+                 log = TRUE) %>%
     sum()
   return(nll)
 }
 
-dat <- filter(maturity, !is.na(Age))
-pars.init <- log(c(la1 = 24, la2 = 56, k = 0.3, cv = 0.4))
-vgbf.optim <- optim(pars.init, vbgf.loglike, dat=maturity, a1=1, a2=10)  # NOT WORKING
+dat <- filter(age_length, !is.na(age))
+pars.init <- log(c(la1 = 24, la2 = 56, k = 0.36, cv = 0.4))
+vbgf.optim <- optim(pars.init, vbgf.loglike, dat=dat, a1=a1, a2=a2)
+
+exp(vbgf.optim$par)[1:4]
+
+nls <- coef(vbgf.nls2)
+optim <- exp(vbgf.optim$par)
+
+# Solve for Linf and a0 using Schnute parameters
+Linf2 <- la2 - la1 * exp(-k * (a2 - a1)) / (1 - exp(-k * (a2 - a1)))
+a0_2 <- a1 + (1/k * log((la2 - la1) / (la2 - (la1 * exp(-k * (a2 - a1))))))
+
+predicted_ages2 <- (-log(1 - hake_lengths/Linf2) / K) + a0_2
+predicted_data2 <- data.frame(hake_lengths, predicted_ages2)
+
+ggplot() +
+  geom_point(data = age_length, aes(x = age, y = length), color = "gray", alpha = 0.5) +
+  geom_line(data = age_length, aes(x = age, y = nls[1] + (nls[2] - nls[1]) * 
+                              (1-exp(-nls[3]*(age-1))) / 
+                              (1-exp(-nls[3]*14)), 
+                            linetype = "Schnute - normal", color = "Schnute - normal"),
+            linewidth = 1) +
+  geom_line(data = age_length, aes(x = age, y = optim[1] + (optim[2] - optim[1]) *
+                              (1-exp(-optim[3]*(age-1))) / 
+                              (1-exp(-optim[3]*14)), 
+                            linetype = "Schnute - lognormal", color = "Schnute - lognormal"),
+            linewidth = 1) +
+  geom_line(data = predicted_data, aes(x = predicted_ages, y = hake_lengths,
+                                linetype = "VBGF", color = "VBGF"),
+            linewidth = 1) +
+  # geom_line(data = predicted_data2, aes(x = predicted_ages2, y = hake_lengths,
+  #                                      linetype = "VBGF w/ Schnute", color = "VBGF w/ Schnute"),
+  #           linewidth = 1) +
+  ylab("Length (cm)") +
+  labs(linetype = "Model")
 
 
 ### Calculate predator ages ---------------------------------------------------
@@ -124,7 +169,7 @@ pred_ages <- (-log(1 - all_pred$FL_cm / Linf) / K) + a0
 max(na.omit(pred_ages))  # check maximum
 min(na.omit(pred_ages))  # check minimum
 pred_ages[pred_ages < 1] <- 1  # replace values < 1 (lower accumulation age)
-pred_ages[pred_ages > 15] <- 15  # set upper accumulation age to 15
+pred_ages[pred_ages > 15] <- 15  # set upper accumulation age to 20
 pred_ages <- round(pred_ages, digits = 0)  # round to whole number
 
 # Add ages column to predator dataset 
@@ -161,9 +206,9 @@ FEAT_ages <- as.data.frame(rbind(cbind(age = FEAT_hake$predator_age, length = FE
                                        data = rep("FEAT predators", length(FEAT_hake$predator_ages)))))
 
 # Plot fit --------------------------------------------------------------------
-all_ages <- as.data.frame(rbind(cbind(age = maturity$Age,
-                                      length = maturity$Length_cm,
-                                      data = rep("assessment", length(maturity$Age))),
+all_ages <- as.data.frame(rbind(cbind(age = age_length$age,
+                                      length = age_length$length,
+                                      data = rep("assessment", length(age_length$age))),
                                 cbind(age = new_pred$pred_ages,
                                       length = new_pred$FL_cm,
                                       data = rep("CCTD predators", length(new_pred$pred_ages))),
@@ -181,8 +226,10 @@ all_ages$length <- as.numeric(all_ages$length)
 
 all_ages <- na.omit(all_ages)
 
-growth_curve <- ggplot(all_ages, aes(x = age, y = length, color = data, shape = data)) +
-  geom_point(alpha = 0.4, size = 3) +
+growth_curve <- ggplot(all_ages, aes(x = age, y = length, 
+                                     color = data, shape = data, alpha = data)) +
+  geom_point(size = 3) +
+  scale_alpha_discrete(range = c(0.2, 1)) +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9)
 growth_curve
 
