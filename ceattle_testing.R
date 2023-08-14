@@ -1,3 +1,11 @@
+remove.packages("Rceattle")
+remove.packages("00LOCK-Rceattle")
+devtools::install_github("grantdadams/Rceattle", ref = "dev")
+
+# # Local install
+# devtools::install_local("~/Desktop/Local/Rceattle")
+# library(Rceattle, lib.loc = "~/Desktop/Local/Rceattle")
+
 library(Rceattle)
 library(dplyr)
 library(reshape2)
