@@ -58,8 +58,8 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   }
   
   test_biom <- rbind(ceattle_biomass(ms_model, "base cannibalism model", all_years),
-                     ceattle_biomass(run_high, "high (1988-1999)", 1988:1999),
-                     ceattle_biomass(run_low, "low (2005-2019)", 2005:2019))
+                     ceattle_biomass(run_high, "high (1988-1999)", 1980:2019) %>% filter(year %in% 1980:1999),
+                     ceattle_biomass(run_low, "low (2005-2019)", 1980:2019) %>% filter(year %in% 2005:2019))
   
   # Put recruitment together
   ceattle_R <- function(run, name, years) {
@@ -73,8 +73,8 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
     return(R_all)
   }
   R_test <- rbind(ceattle_R(ms_model, "base cannibalism model", all_years),
-                  ceattle_R(run_high, "high (1988-1999)", 1988:1999),
-                  ceattle_R(run_low, "low (2005-2019)", 2005:2019))
+                  ceattle_R(run_high, "high (1988-1999)", 1980:2019) %>% filter(year %in% 1980:1999),
+                  ceattle_R(run_low, "low (2005-2019)", 1980:2019) %>% filter(year %in% 2005:2019))
   
   
   # Combine biomass & recruitment and plot
@@ -96,12 +96,12 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
     return(c(label, mean_out, SEM, percent))
   }
   
-  rechange_all <- rbind(rel_change("high (1988-1999)", "base cannibalism model", "SSB", 1988:1999),
-                        rel_change("high (1988-1999)", "base cannibalism model", "Total Biomass", 1988:1999),
-                        rel_change("high (1988-1999)", "base cannibalism model", "Recruitment", 1988:1999),
-                        rel_change("low (2005-2019)", "base cannibalism model", "SSB", 2005:2019),
-                        rel_change("low (2005-2019)", "base cannibalism model", "Total Biomass", 2005:2019),
-                        rel_change("low (2005-2019)", "base cannibalism model", "Recruitment", 2005:2019))
+  rechange_all <- rbind(rel_change("high (1988-1999)", "base cannibalism model", "SSB", 1980:2019),
+                        rel_change("high (1988-1999)", "base cannibalism model", "Total Biomass", 1980:2019),
+                        rel_change("high (1988-1999)", "base cannibalism model", "Recruitment", 1980:2019),
+                        rel_change("low (2005-2019)", "base cannibalism model", "SSB", 1980:2019),
+                        rel_change("low (2005-2019)", "base cannibalism model", "Total Biomass", 1980:2019),
+                        rel_change("low (2005-2019)", "base cannibalism model", "Recruitment", 1980:2019))
   
   # Plot population dynamics
   all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
@@ -131,12 +131,9 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
 timing_popdy <- timing_plot_popdy(run_high = run_90s$model, 
                                   run_low = run_recent$model,
                                   ms_model = ms_estM1$model,
-                                  all_years = 1988:2022)
+                                  all_years = 1980:2022)
 relative_change <- timing_popdy[[2]]
 timing_popdy[[3]]
-
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]], 
-       width=140, height=150, units="mm", dpi=300)
 
 # # Calculate reference points 
 # DynamicB0_recent <- c(run_recent_noproj$quantities$DynamicB0[1:length(2005:2019)])
@@ -164,11 +161,11 @@ extract_byage2 <- function(quantity, name, years) {
 }
 
 nbyage_test_all <- rbind(extract_byage2(run_90s$model$quantities$NByage, 
-                                        "high (1988-1999)", 1988:1999),
+                                        "high (1988-1999)", 1980:2019),
                          extract_byage2(ms_estM1$model$quantities$NByage, 
-                                        "base cannibalism model", 1988:2022),
+                                        "base cannibalism model", 1980:2022),
                          extract_byage2(run_recent$model$quantities$NByage, 
-                                        "low (2005-2019)", 2005:2019))
+                                        "low (2005-2019)", 1980:2019))
 
 # Set 15 as accumulation age
 nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
@@ -183,19 +180,16 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_x_discrete(breaks = seq(1988, 2022, 3)) +
+  scale_x_discrete(breaks = seq(1980, 2022, 3)) +
   xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
   facet_wrap(~model, ncol = 1)
 test_nbyage_plot
 
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
-       width=150, height=150, units="mm", dpi=300)
-
 
 ### Plot mortality ------------------------------------------------------------
 extract_M <- function(run, quantity, name, years) {
-  M1 <- run$quantities$M1[1, 1, 1:15]
+  M1 <- run$quantities$M1[1, 1, 1:20]
   M2 <- extract_byage2(quantity, name, years)
   total_mortality <- M2 %>%
     mutate(M1_M2 = M2$numbers + rep(M1, length(years)))
@@ -205,11 +199,11 @@ extract_M <- function(run, quantity, name, years) {
 }
 
 M_all <- rbind(extract_M(run_90s$model, run_90s$model$quantities$M2,
-                         "high (1988-1999)", 1988:1999),
+                         "high (1988-1999)", 1980:2019),
                extract_M(run_recent$model, run_recent$model$quantities$M2,
-                         "low (2005-2019)", 2005:2019),
+                         "low (2005-2019)", 1980:2019),
                extract_M(ms_estM1$model, ms_estM1$model$quantities$M2, 
-                         "base cannibalism model", 1988:2022))
+                         "base cannibalism model", 1980:2022))
 
 max(M_all$M1_M2)  # check max M for plotting
 timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
@@ -230,14 +224,12 @@ M_byage <- M_all %>%
   summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
 
 M1_all <- rbind(data.frame(model = "base cannibalism model", 
-                           mean = mean(ms_estM1$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(ms_estM1$model$quantities$M1[1, 1, 1:20])),
                 data.frame(model = "1988-1999", 
-                           mean = mean(run_90s$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(run_90s$model$quantities$M1[1, 1, 1:20])),
                 data.frame(model = "2005-2019", 
-                           mean = mean(run_recent$model$quantities$M1[1, 1, 1:15])))
+                           mean = mean(run_recent$model$quantities$M1[1, 1, 1:20])))
 
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
-       timevary_M, width=140, height = 170, units = "mm", dpi=300)
 
 ### Plot using models with a prior on M1 --------------------------------------
 load("models/ms_priorM1.Rdata")
@@ -247,9 +239,18 @@ load("models/sensitivity/time-varying/run_recent_prior.Rdata")
 timing_popdy_prior <- timing_plot_popdy(run_high = run_90s_prior$model, 
                                         run_low = run_recent_prior$model,
                                         ms_model = ms_priorM1$model,
-                                        all_years = 1988:2022)
+                                        all_years = 1980:2022)
 relative_change_prior <- timing_popdy_prior[[2]]
 timing_popdy_prior[[3]]
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_prior.png", timing_popdy_prior[[3]], 
        width=140, height=150, units="mm", dpi=300)
+
+
+### Save plots (when not experimenting) ---------------------------------------
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]], 
+#        width=140, height=150, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
+#        width=150, height=150, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
+#        timevary_M, width=140, height = 170, units = "mm", dpi=300)
