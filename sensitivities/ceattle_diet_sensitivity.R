@@ -18,10 +18,10 @@ load("models/sensitivity/diet/run_wt10.Rdata")
 load("models/sensitivity/diet/run_wt50.Rdata")
 load("models/sensitivity/diet/run_wt75.Rdata")
 
-plot_comp(run_wt05$model)
-plot_comp(run_wt10$model)
-plot_comp(run_wt50$model)
-plot_comp(run_wt75$model)
+Rceattle::plot_comp(run_wt05$model)
+Rceattle::plot_comp(run_wt10$model)
+Rceattle::plot_comp(run_wt50$model)
+Rceattle::plot_comp(run_wt75$model)
 
 # Check fit of CEATTLE model --------------------------------------------------
 sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05$fit),
@@ -55,7 +55,8 @@ colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
 
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
-years <- 1988:2022
+years <- 1980:2022
+max_age <- max_age <- ms_estM1$model$data_list$nages
 models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, 
                run_wt75$model)
 names <- c("base cannibalism model", "0.5% cannibalism", "10% cannibalism", 
@@ -160,10 +161,6 @@ relative_change_test <- popdy_test$change
 
 popdy_test$plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
-       popdy_test$plot, 
-       width=140, height=150, units="mm", dpi=300)
-
 
 # # Numbers-at-age for each model run -------------------------------------------
 # # Read in data from no diet CEATTLE run
@@ -192,8 +189,8 @@ nbyage_test_all <- rbind(extract_byage(run_wt05$model$quantities$NByage, "0.5% c
                          extract_byage(run_wt75$model$quantities$NByage, "75% cannibalism", "numbers"),
                          extract_byage(ms_estM1$model$quantities$NByage, "base cannibalism model", "numbers"))
 
-# Set 15 as accumulation age
-nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+# # Set 15 as accumulation age
+# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
 
 # Plot yearly nbyage
 nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
@@ -203,17 +200,14 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  # scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
   scale_x_discrete(breaks = seq(1988, 2022, 3)) +
   xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
   facet_wrap(~model, ncol = 2, scales = "free_x")
 test_nbyage_plot
-# 
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
-#        width=220, height=210, units="mm", dpi=300)
-# 
-# 
+
+
 # ### New plot of popdy and numbers-at-age --------------------------------------
 # Calculate annual mean age
 mean_nbyage <- nbyage_test_all %>%
@@ -231,9 +225,6 @@ mean_nbyage <- nbyage_test_all %>%
   ylab("mean age") + xlab("year") +
   labs(color = "model") 
 mean_nbyage
-# 
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
-#        width=140, height=170, units="mm", dpi=300)
 
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------
@@ -270,7 +261,7 @@ mean_nbyage
 ### Look at mortality-at-age timeseries ---------------------------------------
 # Custom mortality function that outputs ggplot object ------------------------
 mortality <- function(run, name) {
-  M1 <- run$quantities$M1[1, 1, 1:15]
+  M1 <- run$quantities$M1[1, 1, 1:max_age]
   M2 <- extract_byage(run$quantities$M2, name, "M2")
   total_mortality <- M2 %>%
     mutate(M1_M2 = M2 + rep(M1, length(years)))
@@ -285,11 +276,11 @@ M_all <- rbind(mortality(run_wt05$model, names[2]),
                mortality(run_wt75$model, names[5]))
 
 max(M_all$M1_M2)  # check max M for plotting
-M_test <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
+M_test <- ggplot(M_all, aes(y = age, x = year, zmin = 0)) +
   geom_tile(aes(fill = M1_M2)) +
-  scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
+  scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) +
   scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 3), breaks = c(0.21, 1, 2, 3)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2), breaks = c(0.21, 1, 2)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
@@ -311,5 +302,14 @@ M1_all <- rbind(data.frame(model = "0.5%",
                 data.frame(model = "75%", 
                            mean = mean(run_wt75$model$quantities$M1[1, 1, 1:15])))
 
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test, 
-       width=160, height = 250, units = "mm", dpi=300)
+
+### Save plots (when not experimenting) ---------------------------------------
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
+#        popdy_test$plot, 
+#        width=140, height=150, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
+#        width=220, height=210, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
+#        width=140, height=170, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test, 
+#        width=160, height = 250, units = "mm", dpi=300)
