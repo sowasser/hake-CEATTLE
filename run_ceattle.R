@@ -12,9 +12,14 @@
 library(Rceattle)
 library(dplyr)
 library(scales)
+library(ggplot2)
+library(viridis)
+library(ggsidekick)
+# Set ggplot theme
+theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230616.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230808_a20.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -115,6 +120,7 @@ ss_fixM1 <- run_CEATTLE(data = hake_intrasp,
                         init = NULL, 
                         msm = 0, 
                         estMode = 0)
+
 ss_fixM1$fit  # check convergence
 save(ss_fixM1, file = "models/ss_fixM1.Rdata")
 
@@ -253,11 +259,11 @@ wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 # # Look at diet proportions
 # prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
 # colnames(prop)[3] <- c("observed data")
-# prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
+# prop_all <- reshape2::melt(prop, id.vars = c("Pred_age", "Prey_age"))
 # 
 # stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
 #   geom_bar(stat = "identity", position = "dodge") +
-#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
 #   ylab("stomach proportion") + xlab("prey age") +
 #   facet_wrap(~Pred_age, ncol = 3)
 # stomach_props
