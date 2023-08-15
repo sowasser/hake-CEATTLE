@@ -63,6 +63,7 @@ end_yr <- 2022
 years <- start_yr:end_yr
 hind_end <- 2019
 assess_yr = "2020"
+max_age <- ms_estM1$model$data_list$nages
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -145,7 +146,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                         rel_change(nodiet_R,
                                    ss3_R[1:(n_row), 2],
                                    "no diet - SS3, R"))
-
+  
   # Plot biomass & recruitment ------------------------------------------------
   # Put biomass together
   nodiet_biom <- ceattle_biomass(ss_run, "CEATTLE - single-species")
@@ -229,7 +230,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
   ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
   assessment <- all_popdy %>% filter(model == "Assessment")
-
+  
   diff_intrasp <- rbind(cbind.data.frame(year = years,
                                          type = ceattle_intrasp$type,
                                          difference = ceattle_intrasp$value - ceattle_nodiet$value,
@@ -238,7 +239,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                          type = ceattle_nodiet$type,
                                          difference = ceattle_nodiet$value - assessment$value,
                                          models = "single-species - assessment"))
-
+  
   diff_plot <- ggplot(diff_intrasp, aes(x=year, y=difference, color=models)) +
     geom_line() +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
@@ -254,11 +255,12 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Read in data from SS3 & average beginning & middle of the year
   nbyage_ss3_all <- read.csv(paste0("data/assessment/", assess_yr, "/nbyage.csv")) %>%
     filter(Yr >= start_yr & Yr <= end_yr)
-  colnames(nbyage_ss3_all) <- c("year", "timing", c(0:20))
+  colnames(nbyage_ss3_all) <- c("year", "timing", c(0:max_age))
+  nbyage_ss3_all <- nbyage_ss3_all[, 1:(max_age + 3)]
   
   nbyage_ss3_wide <- nbyage_ss3_all %>%
     group_by(year) %>%
-    summarize_at(vars("0":"20"), mean)
+    summarize_at(vars("0":as.character(max_age)), mean)
   
   nbyage_ss3 <- melt(nbyage_ss3_wide[, -2], id.vars = "year")
   nbyage_ss3 <- cbind(nbyage_ss3, 
@@ -279,9 +281,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_line(aes(color = model)) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) 
   
-  # Set 15 as accumulation age
-  nbyage_all$age[as.numeric(nbyage_all$age) > 15] <- 15
-  
   # Reduce down to millions for plotting
   nbyage_all$numbers <- nbyage_all$numbers / 1000000
   
@@ -290,31 +289,28 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
     facet_wrap(~model, ncol=1)
   
-  # Difference between both models
-  nbyage_diff <- nbyage_ss3
-  nbyage_diff$age <- as.numeric(nbyage_diff$age)
-  nbyage_diff <- nbyage_diff %>% filter(as.numeric(age) <= 15)
-  nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
-  nbyage_diff$model <- "CEATTLE - assessment"
-  nbyage_diff$year <- factor(nbyage_diff$year)
-
-  limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
-  ggplot(nbyage_diff, aes(x=year, y=age)) +
-    geom_point(aes(size = numbers, color = numbers)) +
-    scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
-    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab(" ") + ylab("Age") + 
-    labs(size="millions (n)", color="millions (n)") 
-
+  # # Difference between both models
+  # nbyage_diff <- nbyage_ss3
+  # nbyage_diff$age <- as.numeric(nbyage_diff$age)
+  # nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
+  # nbyage_diff$model <- "CEATTLE - assessment"
+  # nbyage_diff$year <- factor(nbyage_diff$year)
+  # 
+  # limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
+  # ggplot(nbyage_diff, aes(x=year, y=age)) +
+  #   geom_point(aes(size = numbers, color = numbers)) +
+  #   scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
+  #   scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
+  #   geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  #   xlab(" ") + ylab("Age") + 
+  #   labs(size="millions (n)", color="millions (n)") 
+  
   
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
@@ -336,27 +332,28 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
   survey_all$model <- factor(survey_all$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+  survey_all$Observation <- survey_all
   
   survey_plot <- ggplot() +
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_pointrange(data = init_surv, 
-                    aes(x = Year, y = Observation,
-                        ymin = exp(log(Observation) - 1.96*Log_sd),
-                        ymax = exp(log(Observation) + 1.96*Log_sd)),
+                    aes(x = Year, y = Observation / 1000000,
+                        ymin = exp(log(Observation / 1000000) - 1.96*Log_sd),
+                        ymax = exp(log(Observation / 1000000) + 1.96*Log_sd)),
                     fatten = 5) +
-    geom_line(data = survey_all, aes(x = year, y = biomass, color = model), alpha = 0.8) +
+    geom_line(data = survey_all, aes(x = year, y = (biomass / 1000000), color = model), alpha = 0.8) +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     ylim(0, NA) +
     xlab("year") + ylab("Index of Abundance")
   
-# Suitability ---------------------------------------------------------------
+  # Suitability ---------------------------------------------------------------
   suitability <- as.data.frame(as.table(ms_run$quantities$suit_main)) %>%
     filter(Var1 == "A" & Var2 == "A")
   
   suitability <- suitability[, 3:6]
-  suitability$Var3 <- factor(suitability$Var3, labels = c(1:15))
-  suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:15)))
+  suitability$Var3 <- factor(suitability$Var3, labels = c(1:max_age))
+  suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:max_age)))
   suitability$Var5 <- factor(suitability$Var5, labels = years)
   
   colnames(suitability) <- c("pred_age", "prey_age", "year", "value")
@@ -461,7 +458,7 @@ plots_M1prior$popdy
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
-  M1 <- run$quantities$M1[1, 1, 1:15]
+  M1 <- run$quantities$M1[1, 1, 1:max_age]
   if(type == "single-species") {
     return(M1)
   }
@@ -475,9 +472,9 @@ mortality <- function(run, type) {
     
     mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.6)) + 
       geom_tile(aes(fill = M1_M2)) +
-      scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) + 
+      scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) + 
       scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
-      scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.1), breaks = c(0.21, 1, 2)) +
+      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), breaks = c(0.21, 1, 1.5)) +
       geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +
@@ -596,14 +593,14 @@ ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots_M1prior$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots_M1prior$popdy, width=140, height=150, units="mm", dpi=300)
