@@ -529,6 +529,17 @@ to_ceattle <- function(df) {
                           Year = rep(0, nrow(df2)),
                           Sample_size = rep(10, nrow(df2)),
                           Stomach_proportion_by_weight = df2[, 7]))
+  
+  # Add in extra rows for predator ages 16-20 (repeating age 15 data)
+  df3 <- rbind.data.frame(df2,
+                          df2 %>% filter(Pred_age == 15),
+                          df2 %>% filter(Pred_age == 15),
+                          df2 %>% filter(Pred_age == 15),
+                          df2 %>% filter(Pred_age == 15),
+                          df2 %>% filter(Pred_age == 15))
+  df3$Pred_age <- rep(1:20, each = nrow(df2 %>% filter(Pred_age == 15)))
+
+  return(df3)
 }
 
 ceattle_all <- to_ceattle(all_years_df)
