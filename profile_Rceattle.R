@@ -12,41 +12,41 @@ library(dplyr)
 # Set ggplot theme
 theme_set(ggsidekick::theme_sleek())
 
-# data <- read_data(file = "data/hake_intrasp_230616.xlsx")  # Read in data
-# 
-# # Function updating M1 for each run of the model
-# get_profile <- function(M1_change, model, msm) {
-#   # M1_change <- -0.01
-#   # model <- ss_estM1$model$estimated_params
-#   # msm <- 0
-#   M1_base <- data$M1_base[, 3:17]
-#   data$M1_base[, 3:17] <- M1_base + M1_change
-#   run <- fit_mod(
-#     data_list = data,
-#     inits = model,
-#     msmMode = msm,
-#     M1Fun = Rceattle::build_M1(M1_model = 0,
-#                                updateM1 = TRUE,
-#                                M1_use_prior = FALSE),
-#     estimateMode = 1,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-#     phase = "default",
-#     initMode = 1,
-#     loopnum = 100
-#   )
-# 
-#   # Save the resulting run to losing progress to R bombs!
-#   if (msm == 0) {save(run, file = paste0("models/profile/ss/run", 
-#                                          as.character(M1_base[, 1] + M1_change), 
-#                                          ".Rdata"))}
-#   if (msm == 1) {save(run, file = paste0("models/profile/ms/run", 
-#                                          as.character(M1_base[, 1] + M1_change), 
-#                                          ".Rdata"))}
-# 
-#   message(run$quantities$jnll)  # print JNLL to console
-#   return(run)
-# }
-# 
-# ### Run profile over M1 -------------------------------------------------------
+data <- read_data(file = "data/hake_intrasp_230808_a20.xlsx")  # Read in data
+
+# Function updating M1 for each run of the model
+get_profile <- function(M1_change, model, msm) {
+  # M1_change <- -0.01
+  # model <- ss_estM1$model$estimated_params
+  # msm <- 0
+  M1_base <- data$M1_base[, 3:22]
+  data$M1_base[, 3:22] <- M1_base + M1_change
+  run <- fit_mod(
+    data_list = data,
+    inits = model,
+    msmMode = msm,
+    M1Fun = Rceattle::build_M1(M1_model = 0,
+                               updateM1 = TRUE,
+                               M1_use_prior = FALSE),
+    estimateMode = 1,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+    phase = "default",
+    initMode = 1,
+    loopnum = 7
+  )
+
+  # Save the resulting run to losing progress to R bombs!
+  if (msm == 0) {save(run, file = paste0("models/profile/ss/run",
+                                         as.character(M1_base[, 1] + M1_change),
+                                         ".Rdata"))}
+  if (msm == 1) {save(run, file = paste0("models/profile/ms/run",
+                                         as.character(M1_base[, 1] + M1_change),
+                                         ".Rdata"))}
+
+  message(run$quantities$jnll)  # print JNLL to console
+  return(run)
+}
+
+### Run profile over M1 -------------------------------------------------------
 # # Load model with estimated M1 & check starting value
 # load("models/ss_estM1.Rdata")
 # startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
@@ -66,7 +66,7 @@ theme_set(ggsidekick::theme_sleek())
 # run11 <- get_profile(-0.11, ss_estM1$model$estimated_params, 0) # 0.10
 # 
 # # SS up
-# run12 <- get_profile(0.01, ss_estM1$model$estimated_params, 0)  # 0.22 
+# run12 <- get_profile(0.01, ss_estM1$model$estimated_params, 0)  # 0.22
 # run13 <- get_profile(0.02, ss_estM1$model$estimated_params, 0)  # 0.23
 # run14 <- get_profile(0.03, ss_estM1$model$estimated_params, 0)  # 0.24
 # run15 <- get_profile(0.04, ss_estM1$model$estimated_params, 0)  # 0.25
@@ -75,8 +75,8 @@ theme_set(ggsidekick::theme_sleek())
 # run18 <- get_profile(0.07, ss_estM1$model$estimated_params, 0)  # 0.28
 # run19 <- get_profile(0.08, ss_estM1$model$estimated_params, 0)  # 0.29
 # run20 <- get_profile(0.09, ss_estM1$model$estimated_params, 0)  # 0.30
-# 
-# 
+
+
 # # rm(list = ls())  # clear environment to re-set runs
 # # Load model with estimated M1 & check starting value
 # load("models/ms_estM1.Rdata")
@@ -106,17 +106,11 @@ theme_set(ggsidekick::theme_sleek())
 # run18 <- get_profile(0.07, ms_estM1$model$estimated_params, 1)  # 0.28
 # run19 <- get_profile(0.08, ms_estM1$model$estimated_params, 1)  # 0.29
 # run20 <- get_profile(0.09, ms_estM1$model$estimated_params, 1)  # 0.30
-# 
-# 
-# load("models/profile/ss/run0.31.Rdata")
-# round(run$quantities$M1[1, 1, 1], digits = 2)
 
 
 ### Get JNLL for each run and plot --------------------------------------------
 # Clear environment and load models back in
 rm(list = ls())  
-# load("models/ss_estM1.Rdata")
-# load("models/ms_estM1.Rdata")
 
 # Single species
 runs_ss <- list.files(path = "models/profile/ss")  # List of all model runs
@@ -180,9 +174,9 @@ profile_plot <- ggplot() +
   facet_wrap(~model)
 profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile.png",
-       profile_plot,
-       width=180, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile.png",
+#        profile_plot,
+#        width=180, height=80, units="mm", dpi=300)
 
 ### Plot JNLL components ------------------------------------------------------
 comp_out <- function(run) {
