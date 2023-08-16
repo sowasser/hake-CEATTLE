@@ -14,21 +14,17 @@ theme_set(theme_sleek())
 all_pred <- read.csv("data/diet/CCTD/hake_pred.csv")
 all_prey <- read.csv("data/diet/CCTD/hake_prey.csv") 
 
-
-### Parameterize length to age calculation  -----------------------------------
 # Read in age data from the survey & filter to only be hake
 survey_ages <- read.csv("data/diet/acoustic_survey.csv") %>% 
   filter(common_name == "Pacific hake")
 
-age_length <- data.frame(na.omit(cbind(age = survey_ages$age, 
-                                       length = survey_ages$length)))
+age_length <- na.omit(cbind.data.frame(survey = survey_ages$survey,
+                                       age = survey_ages$age, 
+                                       length = survey_ages$length)) %>%
+  mutate(Year = substr(survey, 1, 4))
 
 # Plot age/length data by year
-growth_yearly <- na.omit(cbind.data.frame(survey = survey_ages$survey,
-                                          age = survey_ages$age, 
-                                          length = survey_ages$length)) %>%
-  mutate(Year = substr(survey, 1, 4)) %>%  # Get year from survey number
-  ggplot(., aes(x = age, y = length)) +
+growth_yearly <- ggplot(age_length, aes(x = age, y = length)) +
   geom_point() +
   ylab("Length (cm)") +
   facet_wrap(~Year, ncol = 6)
@@ -36,7 +32,9 @@ growth_yearly
 # ggsave("plots/diet/growth_yearly.png", growth_yearly, 
 #        width=250, height = 120, units = "mm", dpi=300)
 
-# Plot von Bertalanffy growth curve -------------------------------------------
+
+### Try different growth curve calculations -----------------------------------
+# Plot von Bertalanffy growth curve 
 hake_ages <- 0:20
 hake_lengths <- min(age_length$length):max(age_length$length)
 
@@ -135,7 +133,7 @@ exp(vbgf.optim$par)[1:4]
 nls <- coef(vbgf.nls2)
 optim <- exp(vbgf.optim$par)
 
-# # Solve for Linf and a0 using Schnute parameters
+# Solve for Linf and a0 using Schnute parameters
 Linf2 <- la2 - la1 * exp(-k * (a2 - a1)) / (1 - exp(-k * (a2 - a1)))
 a0_2 <- a1 + (1/k * log((la2 - la1) / (la2 - (la1 * exp(-k * (a2 - a1))))))
  
@@ -163,6 +161,63 @@ ggplot() +
   ylab("Length (cm)") +
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   labs(linetype = "Model")
+
+
+# # Find von Bert parameters for specific years -------------------------------
+# VBGF_params <- function(year) {
+#   df <- age_length %>% filter(Year == year)
+#   hake_ages <- 0:20
+#   hake_lengths <- min(df$length):max(df$length)
+#   
+#   like <- function(logLinf, logK, a0, logSigma) {
+#     # Extract the parameters
+#     Linf <- exp(logLinf); K <- exp(logK); Sigma <- exp(logSigma)
+#     
+#     # make the model predictions
+#     Pred <- (-log(1 - Lengths/Linf) / K) + a0
+#     
+#     # Compute the negative log-likelihood
+#     NegLogL <- -1*sum(dnorm(Ages, Pred, Sigma, TRUE))
+#     
+#     return(NegLogL)
+#   }  
+#   
+#   start_est <- FSA::vbStarts(length ~ age, data = df)  # suggested starting params
+#   start <- list(logLinf = log(90), logK=log(0.4), a0=0, logSigma=6)
+#   Ages <- df$age
+#   Lengths <- df$length
+#   mleOutput <- mle(like, start=start)
+#   
+#   # Extract the parameters
+#   Linf <- exp(coef(mleOutput)[1])
+#   K <- exp(coef(mleOutput)[2])
+#   a0 <- coef(mleOutput)[3]
+#   Sigma <- exp(coef(mleOutput)[4])
+#   
+#   # Create dataframe of parameters
+#   parameters <- cbind.data.frame(
+#     year = year,
+#     Linf = exp(coef(mleOutput)[1]),
+#     K = exp(coef(mleOutput)[2]),
+#     a0 = coef(mleOutput)[3],
+#     Sigma = Sigma <- exp(coef(mleOutput)[4])
+#   )
+#   
+#   # Plot the model fit
+#   predicted_ages <- (-log(1 - hake_lengths/Linf) / K) + a0
+#   predicted_data <- data.frame(hake_lengths, predicted_ages)
+#   
+#   plot <- ggplot(predicted_data, aes(x = predicted_ages, y = hake_lengths)) +
+#     geom_line() +
+#     geom_point(data = age_length, aes(x = age, y = length)) +
+#     ggtitle(year)
+#   
+#   return(list(params = parameters, plot = plot))
+# }
+# 
+# years_used <- c(1989, 1992, 1995, 1998, 2005, 2007, 2011, 2015, 2017)
+# test <- VBGF_params(1992)
+# test$plot
 
 
 ### Calculate predator ages ---------------------------------------------------
