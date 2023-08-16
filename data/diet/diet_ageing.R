@@ -32,6 +32,19 @@ growth_yearly
 # ggsave("plots/diet/growth_yearly.png", growth_yearly, 
 #        width=250, height = 120, units = "mm", dpi=300)
 
+length_at_age <- age_length %>% 
+  group_by(Year, age) %>%
+  mutate(mean_length = mean(length)) %>%
+  ungroup() %>%
+  ggplot(.) +
+  # geom_point(aes(x = age, y = length, color = Year), alpha = 0.3) +
+  geom_line(aes(x = age, y = mean_length, color = Year), alpha = 0.8) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("mean length (cm)")
+length_at_age
+# ggsave("plots/diet/mean_length_at_age.png", length_at_age,
+#        width=180, height = 150, units = "mm", dpi=300)
+
 
 ### Try different growth curve calculations -----------------------------------
 # Plot von Bertalanffy growth curve 
