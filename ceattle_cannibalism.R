@@ -508,7 +508,6 @@ eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
   xlab("year") + ylab("F")
 eff_plot
 
-
 ref_points <- cbind.data.frame(metric = c("R0", "SPR at B40"),
                                SS = c((ss_estM1$model$quantities$R0 / 100000),
                                       ss_estM1$model$quantities$SPRlimit),

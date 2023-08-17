@@ -120,7 +120,6 @@ ss_fixM1 <- run_CEATTLE(data = hake_intrasp,
                         init = NULL, 
                         msm = 0, 
                         estMode = 0)
-
 ss_fixM1$fit  # check convergence
 save(ss_fixM1, file = "models/ss_fixM1.Rdata")
 
