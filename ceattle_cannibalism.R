@@ -7,6 +7,7 @@
 # devtools::install_github("grantdadams/Rceattle", ref = "dev")
 library(reshape2)
 library(dplyr)
+library(purrr)
 library(ggplot2)
 library(viridis)
 library(ggview)
@@ -29,33 +30,13 @@ model_fits <- rbind(cbind(model = "SS est M1", ss_estM1$fit),
                     cbind(model = "MS est M1", ms_estM1$fit),
                     cbind(model = "MS fix M1", ms_fixM1$fit),
                     cbind(model = "MS prior M1", ms_priorM1$fit))
-# model_summary <- cbind(ss_estM1$summary,
-#                        ss_fixM1$summary[, 3],
-#                        ss_priorM1$summary[, 3],
-#                        ms_estM1$summary[, 3],
-#                        ms_fixM1$summary[, 3],
-#                        ms_priorM1$summary[, 3])[, -(1:2)]
-# colnames(model_summary) <- c("SS est M1", "SS fix M1", "SS prior M1",
-#                              "MS est M1", "MS fix M1", "MS prior M1")
 
-# New JNLL component tables (until models get re-run with this code included)
-comp_out <- function(run) {
-  comp <- data.frame(run$quantities$jnll_comp)
-  comp$component <- rownames(comp)
-  rownames(comp) <- NULL
-  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
-  # Separate comps for fishery & survey (in different columns originally)
-  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
-  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
-  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
-  comp <- comp[, c("component", "NLL")]
-  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
-  comp$NLL <- as.numeric(comp$NLL)
-  return(comp)
-}
-model_summary <- cbind(comp_out(ss_estM1$model),
-                       comp_out(ms_estM1$model)[, 2])
-colnames(model_summary) <- c("component", "SS model", "MS model")
+model_summary <- list(ss_estM1$summary, ss_fixM1$summary, ss_priorM1$summary,
+                      ms_estM1$summary, ms_fixM1$summary, ms_priorM1$summary) %>%
+  reduce(full_join, by = "component")
+colnames(model_summary) <- c("component", "SS est M1", "SS fix M1", 
+                             "SS prior M1", "MS est M1", "MS fix M1",
+                             "MS prior M1")
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
 start_yr <- ms_estM1$model$data_list$styr
@@ -449,7 +430,6 @@ plots$yearly_b
 plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
 relative_change_M1fix <- plots_M1fixed$relative_change
 plots_M1fixed$popdy
-
 
 # Plot with a prior on M1
 plots_M1prior <- plot_models(ms_priorM1$model, ss_priorM1$model)
