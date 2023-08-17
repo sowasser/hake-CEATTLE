@@ -103,9 +103,9 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   # Find mean difference between the model runs -------------------------------
   rel_change <- function(df1, df2, title) {
-    mean_out <- mean((df1 / 1000000) - (df2 / 1000000))
-    SEM <- sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range))
-    percent <- mean(((df1 - df2) / df2) * 100) 
+    mean_out <- round(mean((df1 / 1000000) - (df2 / 1000000)), 3)
+    SEM <- round(sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range)), 3)
+    percent <- round(mean(((df1 - df2) / df2) * 100), 3)
     return(c(title, mean_out, SEM, percent))
   }
   
@@ -127,6 +127,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                         rel_change(nodiet_R,
                                    ss3_R[1:(n_row), 2],
                                    "no diet - SS3, R"))
+  colnames(rechange_all) <- c("model", "mean difference", "SEM", "percent")
   
   # Plot biomass & recruitment ------------------------------------------------
   # Put biomass together
@@ -225,7 +226,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_line() +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+    theme(strip.background = element_blank(), strip.placement = "outside") +
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray")  # Add line at end of hindcast
   
   # Plot numbers-at-age -------------------------------------------------------
   nbyage <- extract_byage(ms_run$quantities$NByage, "CEATTLE - cannibalism", "numbers")
@@ -414,7 +416,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
               b_consumed = b_consumed_plot, yearly_b = yearly_b_plot))
 }
 
-plots <- plot_models(ms_estM1$model, ss_priorM1$model)
+plots <- plot_models(ms_priorM1$model, ss_priorM1$model)
 relative_change <- plots$relative_change
 plots$popdy
 plots$ratio
@@ -431,10 +433,10 @@ plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
 relative_change_M1fix <- plots_M1fixed$relative_change
 plots_M1fixed$popdy
 
-# Plot with a prior on M1
-plots_M1prior <- plot_models(ms_priorM1$model, ss_priorM1$model)
-relative_change_M1prior <- plots_M1prior$relative_change
-plots_M1prior$popdy
+# Plot with M1 estimated
+plots_M1est <- plot_models(ms_estM1$model, ss_estM1$model)
+relative_change_M1est <- plots_M1est$relative_change
+plots_M1est$popdy
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
@@ -453,12 +455,13 @@ mortality <- function(run, type) {
     mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.6)) + 
       geom_tile(aes(fill = M1_M2)) +
       scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) + 
-      scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) + 
+      scale_x_continuous(expand = c(0, 0)) + 
       scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), breaks = c(0.21, 1, 1.5)) +
       geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +
       theme(panel.border = element_rect(colour = NA, fill = NA))
+    mortality_plot
     
     # Min, max, mean natural mortality by age, for ages 1-5
     M_byage <- total_mortality %>%
@@ -471,10 +474,10 @@ mortality <- function(run, type) {
 }
 
 # Cannibalism with estimated M1
-ms_mort <- mortality(ms_estM1$model, type = "multi-species")
-ms_mort[[1]]
-ms_mort[[2]]
-ms_M1 <- ms_mort[[3]]
+ms_est_mort <- mortality(ms_estM1$model, type = "multi-species")
+ms_est_mort[[1]]
+ms_est_mort[[2]]
+ms_est_M1 <- ms_est_mort[[3]]
 
 # Cannibalism with fixed M1
 ms_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
@@ -572,7 +575,9 @@ ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1prior$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
@@ -581,5 +586,3 @@ ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots_M1prior$popdy, width=140, height=150, units="mm", dpi=300)
