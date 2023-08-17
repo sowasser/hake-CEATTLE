@@ -4,6 +4,7 @@
 # devtools::install_github("grantdadams/Rceattle@dev")
 library(reshape2)
 library(dplyr)
+library(purrr)
 library(scales)
 library(ggplot2)
 library(viridis)
@@ -11,54 +12,35 @@ library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-# Read in estimated M1 models
-load("models/ms_estM1.Rdata")
-load("models/sensitivity/diet/run_wt05.Rdata")
-load("models/sensitivity/diet/run_wt10.Rdata")
-load("models/sensitivity/diet/run_wt50.Rdata")
-load("models/sensitivity/diet/run_wt75.Rdata")
+# Read in prior M1 models
+load("models/ms_priorM1.Rdata")
+load("models/sensitivity/diet/run_wt05_prior.Rdata")
+load("models/sensitivity/diet/run_wt10_prior.Rdata")
+load("models/sensitivity/diet/run_wt50_prior.Rdata")
+load("models/sensitivity/diet/run_wt75_prior.Rdata")
 
-Rceattle::plot_comp(run_wt05$model)
-Rceattle::plot_comp(run_wt10$model)
-Rceattle::plot_comp(run_wt50$model)
-Rceattle::plot_comp(run_wt75$model)
+# Rceattle::plot_comp(run_wt05$model)
+# Rceattle::plot_comp(run_wt10$model)
+# Rceattle::plot_comp(run_wt50$model)
+# Rceattle::plot_comp(run_wt75$model)
 
 # Check fit of CEATTLE model --------------------------------------------------
-sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05$fit),
-                         cbind(model = "wt10", run_wt10$fit),
-                         cbind(model = "wt50", run_wt50$fit),
-                         cbind(model = "wt75", run_wt75$fit))
-# sensitivity_summary <- cbind(run_wt05$summary,
-#                              run_wt10$summary[, 3],
-#                              run_wt50$summary[, 3],
-#                              run_wt75$summary[, 3])[, -c(1:2)]
+sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05_prior$fit),
+                         cbind(model = "wt10", run_wt10_prior$fit),
+                         cbind(model = "wt50", run_wt50_prior$fit),
+                         cbind(model = "wt75", run_wt75_prior$fit))
 
-comp_out <- function(run) {
-  comp <- data.frame(run$quantities$jnll_comp)
-  comp$component <- rownames(comp)
-  rownames(comp) <- NULL
-  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
-  # Separate comps for fishery & survey (in different columns originally)
-  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
-  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
-  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
-  comp <- comp[, c("component", "NLL")]
-  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
-  comp$NLL <- as.numeric(comp$NLL)
-  return(comp)
-}
-sensitivity_summary <- cbind(comp_out(run_wt05$model),
-                             comp_out(run_wt10$model)[, 2],
-                             comp_out(run_wt50$model)[, 2],
-                             comp_out(run_wt75$model)[, 2])
+sensitivity_summary <- list(run_wt05_prior$summary, run_wt10_prior$summary, 
+                            run_wt50_prior$summary, run_wt75_prior$summary) %>%
+  reduce(full_join, by = "component")
 colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
 
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
 years <- 1980:2022
-max_age <- max_age <- ms_estM1$model$data_list$nages
-models <- list(ms_estM1$model, run_wt05$model, run_wt10$model, run_wt50$model, 
-               run_wt75$model)
+max_age <- max_age <- ms_priorM1$model$data_list$nages
+models <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, 
+               run_wt50_prior$model, run_wt75_prior$model)
 names <- c("base cannibalism model", "0.5% cannibalism", "10% cannibalism", 
            "50% cannibalism", "75% cannibalism")
 
@@ -183,11 +165,11 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_byage(run_wt05$model$quantities$NByage, "0.5% cannibalism", "numbers"),
-                         extract_byage(run_wt10$model$quantities$NByage, "10% cannibalism", "numbers"),
-                         extract_byage(run_wt50$model$quantities$NByage, "50% cannibalism", "numbers"),
-                         extract_byage(run_wt75$model$quantities$NByage, "75% cannibalism", "numbers"),
-                         extract_byage(ms_estM1$model$quantities$NByage, "base cannibalism model", "numbers"))
+nbyage_test_all <- rbind(extract_byage(run_wt05_prior$model$quantities$NByage, "0.5% cannibalism", "numbers"),
+                         extract_byage(run_wt10_prior$model$quantities$NByage, "10% cannibalism", "numbers"),
+                         extract_byage(run_wt50_prior$model$quantities$NByage, "50% cannibalism", "numbers"),
+                         extract_byage(run_wt75_prior$model$quantities$NByage, "75% cannibalism", "numbers"),
+                         extract_byage(ms_priorM1$model$quantities$NByage, "base cannibalism model", "numbers"))
 
 # # Set 15 as accumulation age
 # nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
@@ -201,7 +183,7 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
   # scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_x_discrete(breaks = seq(1988, 2022, 3)) +
+  scale_x_discrete(breaks = seq(1980, 2022, 3)) +
   xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
   facet_wrap(~model, ncol = 2, scales = "free_x")
@@ -270,16 +252,16 @@ mortality <- function(run, name) {
   return(total_mortality)
 }
 
-M_all <- rbind(mortality(run_wt05$model, names[2]),
-               mortality(run_wt10$model, names[3]),
-               mortality(run_wt50$model, names[4]),
-               mortality(run_wt75$model, names[5]))
+M_all <- rbind(mortality(run_wt05_prior$model, names[2]),
+               mortality(run_wt10_prior$model, names[3]),
+               mortality(run_wt50_prior$model, names[4]),
+               mortality(run_wt75_prior$model, names[5]))
 
 max(M_all$M1_M2)  # check max M for plotting
 M_test <- ggplot(M_all, aes(y = age, x = year, zmin = 0)) +
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) +
-  scale_x_continuous(expand = c(0, 0), breaks=c(1990, 1995, 2000, 2005, 2010, 2015, 2020)) +
+  scale_x_continuous(expand = c(0, 0)) +
   scale_fill_viridis(name = "M1 + M2", limits = c(0, 2), breaks = c(0.21, 1, 2)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
@@ -294,22 +276,22 @@ M_byage <- M_all %>%
   summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
 
 M1_all <- rbind(data.frame(model = "0.5%", 
-                           mean = mean(run_wt05$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(run_wt05_prior$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "10%", 
-                           mean = mean(run_wt10$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(run_wt10_prior$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "50%", 
-                           mean = mean(run_wt50$model$quantities$M1[1, 1, 1:15])),
+                           mean = mean(run_wt50_prior$model$quantities$M1[1, 1, 1:15])),
                 data.frame(model = "75%", 
-                           mean = mean(run_wt75$model$quantities$M1[1, 1, 1:15])))
+                           mean = mean(run_wt75_prior$model$quantities$M1[1, 1, 1:15])))
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png", 
-#        popdy_test$plot, 
-#        width=140, height=150, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
-#        width=220, height=210, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot, 
-#        width=140, height=170, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test, 
-#        width=160, height = 250, units = "mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png",
+       popdy_test$plot,
+       width=140, height=150, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
+       width=220, height=210, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot,
+       width=140, height=170, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test,
+       width=160, height = 250, units = "mm", dpi=300)
