@@ -6,44 +6,30 @@
 library(Rceattle)
 library(reshape2)
 library(dplyr)
+library(purrr)
 library(ggplot2)
 library(viridis)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
-load("models/ms_estM1.Rdata")
+# Models with M1 prior
+load("models/ms_priorM1.Rdata")
 # Read in different time period models (specified in run_ceattle.R)
-load("models/sensitivity/time-varying/run_90s.Rdata")
-load("models/sensitivity/time-varying/run_recent.Rdata")
+load("models/sensitivity/time-varying/run_90s_prior.Rdata")
+load("models/sensitivity/time-varying/run_recent_prior.Rdata")
 
 # Year ranges
 all_years <- 1980:2022
 no_proj <- 1980:2019
 
-sensitivity_fits <- rbind(cbind(model = "MS", ms_estM1$fit),
-                          cbind(model = "High (90s)", run_90s$fit),
-                          cbind(model = "Low (recent)", run_recent$fit))
+timevary_fits <- rbind(cbind(model = "MS", ms_priorM1$fit),
+                       cbind(model = "High (90s)", run_90s_prior$fit),
+                       cbind(model = "Low (recent)", run_recent_prior$fit))
 
-# New JNLL component tables (until models get re-run with this code included)
-comp_out <- function(run) {
-  comp <- data.frame(run$quantities$jnll_comp)
-  comp$component <- rownames(comp)
-  rownames(comp) <- NULL
-  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
-  # Separate comps for fishery & survey (in different columns originally)
-  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
-  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
-  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
-  comp <- comp[, c("component", "NLL")]
-  # comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
-  comp$NLL <- as.numeric(comp$NLL)
-  return(comp)
-}
-sensitivity_summary <- cbind(comp_out(ms_estM1$model),
-                             comp_out(run_90s$model)[, 2],
-                             comp_out(run_recent$model)[, 2])
-colnames(sensitivity_summary) <- c("component", "MS model", "High (90s)", "Low (recent)")
+timevary_summary <- list(run_90s_prior$summary, run_recent_prior$summary) %>%
+  reduce(full_join, by = "component")
+colnames(timevary_summary) <- c("component", "High (90s)", "Low (recent)")
 
 ### Plot population dynamics --------------------------------------------------
 timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
@@ -62,7 +48,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   }
   
   test_biom <- rbind(ceattle_biomass(ms_model, "base cannibalism model", all_years),
-                     ceattle_biomass(run_high, "high (1988-1999)", no_proj) %>% filter(year %in% 1980:1999),
+                     ceattle_biomass(run_high, "high (1988-1999)", no_proj) %>% filter(year %in% 1988:1999),
                      ceattle_biomass(run_low, "low (2005-2019)", no_proj) %>% filter(year %in% 2005:2019))
   
   # Put recruitment together
@@ -77,7 +63,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
     return(R_all)
   }
   R_test <- rbind(ceattle_R(ms_model, "base cannibalism model", all_years),
-                  ceattle_R(run_high, "high (1988-1999)", no_proj) %>% filter(year %in% 1980:1999),
+                  ceattle_R(run_high, "high (1988-1999)", no_proj) %>% filter(year %in% 1988:1999),
                   ceattle_R(run_low, "low (2005-2019)", no_proj) %>% filter(year %in% 2005:2019))
   
   
@@ -132,9 +118,9 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   return(list(all_popdy, rechange_all, popdy_plot))
 }
 
-timing_popdy <- timing_plot_popdy(run_high = run_90s$model, 
-                                  run_low = run_recent$model,
-                                  ms_model = ms_estM1$model,
+timing_popdy <- timing_plot_popdy(run_high = run_90s_prior$model, 
+                                  run_low = run_recent_prior$model,
+                                  ms_model = ms_priorM1$model,
                                   all_years = all_years)
 relative_change <- timing_popdy[[2]]
 timing_popdy[[3]]
@@ -164,17 +150,17 @@ extract_byage2 <- function(quantity, name, years) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_byage2(run_90s$model$quantities$NByage, 
+nbyage_test_all <- rbind(extract_byage2(run_90s_prior$model$quantities$NByage, 
                                         "high (1988-1999)", no_proj) %>% 
-                           filter(year %in% 1980:1999),
-                         extract_byage2(ms_estM1$model$quantities$NByage, 
+                           filter(year %in% 1988:1999),
+                         extract_byage2(ms_priorM1$model$quantities$NByage, 
                                         "base cannibalism model", all_years),
-                         extract_byage2(run_recent$model$quantities$NByage, 
+                         extract_byage2(run_recent_prior$model$quantities$NByage, 
                                         "low (2005-2019)", no_proj) %>% 
                            filter(year %in% 2005:2019))
 
-# Set 15 as accumulation age
-nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+# # Set 15 as accumulation age
+# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
 
 # Plot yearly nbyage
 nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
@@ -185,7 +171,6 @@ test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
   geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
   scale_x_discrete(breaks = seq(1980, 2022, 3)) +
   xlab(" ") + ylab("Age") +
   theme(legend.position = "none") +
@@ -204,17 +189,17 @@ extract_M <- function(run, quantity, name, years) {
   return(total_mortality)
 }
 
-M_all <- rbind(extract_M(run_90s$model, run_90s$model$quantities$M2,
-                         "high (1988-1999)", no_proj) %>% filter(year %in% 1980:1999),
-               extract_M(run_recent$model, run_recent$model$quantities$M2,
+M_all <- rbind(extract_M(run_90s_prior$model, run_90s_prior$model$quantities$M2,
+                         "high (1988-1999)", no_proj) %>% filter(year %in% 1988:1999),
+               extract_M(run_recent_prior$model, run_recent_prior$model$quantities$M2,
                          "low (2005-2019)", no_proj) %>% filter(year %in% 2005:2019),
-               extract_M(ms_estM1$model, ms_estM1$model$quantities$M2, 
+               extract_M(ms_priorM1$model, ms_priorM1$model$quantities$M2, 
                          "base cannibalism model", all_years))
 
 max(M_all$M1_M2)  # check max M for plotting
 timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   geom_tile(aes(fill = M1_M2)) +
-  scale_y_continuous(expand = c(0, 0), breaks=c(1, 3, 5, 7, 9, 11, 13, 15)) +
+  scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.3), breaks = c(0.21, 1, 2)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
@@ -230,24 +215,26 @@ M_byage <- M_all %>%
   summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
 
 M1_all <- rbind(data.frame(model = "base cannibalism model", 
-                           mean = mean(ms_estM1$model$quantities$M1[1, 1, 1:20])),
+                           mean = mean(ms_priorM1$model$quantities$M1[1, 1, 1:20])),
                 data.frame(model = "1988-1999", 
-                           mean = mean(run_90s$model$quantities$M1[1, 1, 1:20])),
+                           mean = mean(run_90s_prior$model$quantities$M1[1, 1, 1:20])),
                 data.frame(model = "2005-2019", 
-                           mean = mean(run_recent$model$quantities$M1[1, 1, 1:20])))
+                           mean = mean(run_recent_prior$model$quantities$M1[1, 1, 1:20])))
 
 
 ### Plot using models with a prior on M1 --------------------------------------
-load("models/ms_priorM1.Rdata")
-load("models/sensitivity/time-varying/run_90s_prior.Rdata")
-load("models/sensitivity/time-varying/run_recent_prior.Rdata")
+# Models with estimated M1
+load("models/ms_estM1.Rdata")
+# Read in different time period models (specified in run_ceattle.R)
+load("models/sensitivity/time-varying/run_90s.Rdata")
+load("models/sensitivity/time-varying/run_recent.Rdata")
 
-timing_popdy_prior <- timing_plot_popdy(run_high = run_90s_prior$model, 
-                                        run_low = run_recent_prior$model,
-                                        ms_model = ms_priorM1$model,
+timing_popdy_estM1 <- timing_plot_popdy(run_high = run_90s$model, 
+                                        run_low = run_recent$model,
+                                        ms_model = ms_estM1$model,
                                         all_years = all_years)
-relative_change_prior <- timing_popdy_prior[[2]]
-timing_popdy_prior[[3]]
+relative_change_prior <- timing_popdy_estM1[[2]]
+timing_popdy_estM1[[3]]
 
 
 ### Save plots (when not experimenting) ---------------------------------------
