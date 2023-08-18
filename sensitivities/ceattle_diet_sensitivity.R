@@ -82,21 +82,68 @@ R_test <- rbind(ceattle_R(models[[1]], names[1]),
                 ceattle_R(models[[4]], names[4]),
                 ceattle_R(models[[5]], names[5]))
 
-# Combine biomass & recruitment and plot
-plot_popdy <- function(biom, R) {
-  all_popdy <- rbind(biom, R)
-  all_popdy$year <- as.numeric(all_popdy$year)
+# Numbers-at-age
+# Helper function for extracting -by-age data from CEATTLE
+extract_byage <- function(result, name, type) {
+  df <- as.data.frame(as.table(result))
+  
+  df <- df[-seq(0, nrow(df), 2), -c(1:2)]
+  levels(df$Var3) <- c(1:20)
+  levels(df$Var4) <- c(years)
+  colnames(df) <- c("age", "year", type)
+  
+  df <- cbind(df, rep(name, nrow(df)))
+  colnames(df)[4] <- "model"
+  
+  return(df)
+}
+
+nbyage_test_all <- rbind(extract_byage(models[[1]]$quantities$NByage, "0.5% cannibalism", "numbers"),
+                         extract_byage(models[[2]]$quantities$NByage, "10% cannibalism", "numbers"),
+                         extract_byage(models[[3]]$quantities$NByage, "50% cannibalism", "numbers"),
+                         extract_byage(models[[4]]$quantities$NByage, "75% cannibalism", "numbers"),
+                         extract_byage(models[[5]]$quantities$NByage, "base cannibalism model", "numbers"))
+
+# Plot yearly nbyage
+nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+# nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
+
+test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
+  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
+  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+  # scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
+  scale_x_discrete(breaks = seq(1980, 2022, 3)) +
+  xlab(" ") + ylab("Age") +
+  theme(legend.position = "none") +
+  facet_wrap(~model, ncol = 2, scales = "free_x")
+test_nbyage_plot
+
+# Calculate annual mean age
+mean_nbyage <- nbyage_test_all %>%
+  group_by(year, model) %>%
+  summarize(value = weighted.mean(age, numbers)) %>%
+  mutate(error = 0) %>%
+  mutate(variable = "Mean Age")
+mean_nbyage <- mean_nbyage[, c("year", "variable", "value", "error", "model")]
+
+### Bring it all together! ----------------------------------------------------
+plot_popdy <- function(biom, R, numbers) {
+  all_popdy <- rbind(biom, R)    # Combine biomass, recruitment
   all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
+  all_popdy <- rbind(all_popdy, numbers)  # add in mean age
+  all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$variable <- factor(all_popdy$variable, 
                                labels = c("SSB (Mt)", "Total Biomass (Mt)", 
-                                          "Recruitment (millions)"))
+                                          "Recruitment (millions)", "Mean Age"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
   
+  # Mean difference between models
   rel_change <- function(model1, model2, stat) {
     df1 <- all_popdy %>% 
       filter(model == model1 & variable == stat)
@@ -137,77 +184,11 @@ plot_popdy <- function(biom, R) {
   return(list(change = rechange_all, plot = popdy_plot))
 }
 
-popdy_test <- plot_popdy(test_biom, R_test)
+popdy_test <- plot_popdy(test_biom, R_test, mean_nbyage)
 
 relative_change_test <- popdy_test$change
 
 popdy_test$plot
-
-
-# # Numbers-at-age for each model run -------------------------------------------
-# # Read in data from no diet CEATTLE run
-# intrasp_nbyage <- read.csv("data/ceattle_intrasp_nbyage.csv")
-# intrasp_nbyage <- cbind(intrasp_nbyage[, -4], rep("base proportion", nrow(intrasp_nbyage)))
-# colnames(intrasp_nbyage)[4] <- "model"
-# 
-# Helper function for extracting -by-age data from CEATTLE
-extract_byage <- function(result, name, type) {
-  df <- as.data.frame(as.table(result))
-  
-  df <- df[-seq(0, nrow(df), 2), -c(1:2)]
-  levels(df$Var3) <- c(1:20)
-  levels(df$Var4) <- c(years)
-  colnames(df) <- c("age", "year", type)
-  
-  df <- cbind(df, rep(name, nrow(df)))
-  colnames(df)[4] <- "model"
-  
-  return(df)
-}
-
-nbyage_test_all <- rbind(extract_byage(run_wt05_prior$model$quantities$NByage, "0.5% cannibalism", "numbers"),
-                         extract_byage(run_wt10_prior$model$quantities$NByage, "10% cannibalism", "numbers"),
-                         extract_byage(run_wt50_prior$model$quantities$NByage, "50% cannibalism", "numbers"),
-                         extract_byage(run_wt75_prior$model$quantities$NByage, "75% cannibalism", "numbers"),
-                         extract_byage(ms_priorM1$model$quantities$NByage, "base cannibalism model", "numbers"))
-
-# # Set 15 as accumulation age
-# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
-
-# Plot yearly nbyage
-nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
-# nbyage_test_all$year <- as.numeric(nbyage_test_all$year)
-
-test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
-  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
-  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  # scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-  scale_x_discrete(breaks = seq(1980, 2022, 3)) +
-  xlab(" ") + ylab("Age") +
-  theme(legend.position = "none") +
-  facet_wrap(~model, ncol = 2, scales = "free_x")
-test_nbyage_plot
-
-
-# ### New plot of popdy and numbers-at-age --------------------------------------
-# Calculate annual mean age
-mean_nbyage <- nbyage_test_all %>%
-  group_by(year, model) %>%
-  summarize(mean = weighted.mean(age, numbers)) %>%
-  ungroup() %>%
-  ggplot(., aes(x=as.numeric(as.character(year)), 
-                y=mean, color = model, linetype = model)) +
-  geom_line() +
-  scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), 
-                        name = "model") +
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  ylim(0, NA) +
-  ylab("mean age") + xlab("year") +
-  labs(color = "model") 
-mean_nbyage
-
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------
 # survey <- read.csv("data/assessment/survey_data.csv")
@@ -286,12 +267,9 @@ M1_all <- rbind(data.frame(model = "0.5%",
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_popdy.png",
-       popdy_test$plot,
-       width=140, height=150, units="mm", dpi=300)
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_nbyage.png", test_nbyage_plot,
        width=220, height=210, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", meanage_popdy_plot,
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png", popdy_test$plot,
        width=140, height=170, units="mm", dpi=300)
 ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_M.png", M_test,
        width=160, height = 250, units = "mm", dpi=300)
