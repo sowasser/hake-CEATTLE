@@ -100,11 +100,10 @@ timing_plot_popdy <- function(run_high, run_low, ms_model, all_years) {
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
-  all_popdy$model <- factor(all_popdy$model, levels = c("high (1988-1999)", "low (2005-2019)", "base cannibalism model"))
+  all_popdy$model <- factor(all_popdy$model, levels = c("low (2005-2019)", "high (1988-1999)", "base cannibalism model"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
-    geom_line(aes(linetype = model)) +
-    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
+    geom_line() +
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
@@ -201,7 +200,7 @@ timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.3), breaks = c(0.21, 1, 2)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 4.6), breaks = c(0.21, 1, 2, 3, 4)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
@@ -238,12 +237,12 @@ timing_popdy_estM1[[3]]
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]], 
-#        width=140, height=150, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
-#        width=150, height=150, units="mm", dpi=300)
-# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
-#        timevary_M, width=140, height = 170, units = "mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_prior.png", timing_popdy_prior[[3]], 
-#        width=140, height=150, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]],
+       width=140, height=150, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
+       width=150, height=150, units="mm", dpi=300)
+ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
+       timevary_M, width=140, height = 170, units = "mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_estM1.png", timing_popdy_estM1[[3]],
+       width=140, height=150, units="mm", dpi=300)
 
