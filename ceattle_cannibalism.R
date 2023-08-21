@@ -517,13 +517,10 @@ ref_points <- cbind.data.frame(metric = c("R0", "SPR at B40"),
                                MS = c((ms_estM1$model$quantities$R0 / 100000),
                                       ms_estM1$model$quantities$SPRlimit))
 
-quantile((ss_estM1$model$quantities$DynamicSB0 / 1000000), probs = c(0.025, 0.5, 0.975))
-quantile((ms_estM1$model$quantities$DynamicSB0 / 1000000), probs = c(0.025, 0.5, 0.975))
-
-# ms_estM1$model$quantities$Flimit # F that gives SPR40%
-# ss_estM1$model$quantities$Flimit # F that gives SPR40%
-# ms_estM1$model$quantities$Ftarget
-# ss_estM1$model$quantities$Ftarget
+ms_priorM1$model$quantities$Flimit # F that gives SPR40%
+ss_priorM1$model$quantities$Flimit # F that gives SPR40%
+ms_estM1$model$quantities$Ftarget
+ss_estM1$model$quantities$Ftarget
 
 
 # ms_run_Fspr <- Rceattle::fit_mod(data_list = ms_estM1$model$data_list,
@@ -546,33 +543,53 @@ quantile((ms_estM1$model$quantities$DynamicSB0 / 1000000), probs = c(0.025, 0.5,
 # 
 # ms_run_Fspr$quantities$SPRlimit #SPR40%
 
-# Relative SSB
-relativeSSB_estM1 <- data.frame(t(ms_estM1$model$quantities$biomassSSB / ms_estM1$model$quantities$DynamicSB0))
-relativeSSB_estM1$year <- rownames(relativeSSB_estM1)
-rownames(relativeSSB_estM1) <- NULL
-relativeSSB_estM1$model <- "estimated M1"
-quantile(relativeSSB_estM1$Hake, probs = c(0.025, 0.5, 0.975))
+# Virgin SSB0 comparison
+SSB0_comparison <- cbind.data.frame(
+  model = c("MS est M1", "MS fix M1", "MS prior M1", 
+            "SS est M1", "SS fix M1", "SS prior M1"),
+  SSB0 = c(mean((ms_estM1$model$quantities$SB0)), 
+           mean((ms_fixM1$model$quantities$SB0)),
+           mean((ms_priorM1$model$quantities$SB0)),
+           mean((ss_estM1$model$quantities$SB0)), 
+           mean((ss_fixM1$model$quantities$SB0)),
+           mean((ss_priorM1$model$quantities$SB0))))
+SSB0_comparison$SSB0 <- round((SSB0_comparison$SSB0 / 1000000), 2)
 
-relativeSSB_fixM1 <- data.frame(t(ms_fixM1$model$quantities$biomassSSB / ms_fixM1$model$quantities$DynamicSB0))
-relativeSSB_fixM1$year <- rownames(relativeSSB_fixM1)
-rownames(relativeSSB_fixM1) <- NULL
-relativeSSB_fixM1$model <- "fixed M1"
+# Relative SSB / depletion ----------------------------------------------------
+relative_SSB <- function(model, label) {
+  df <- data.frame(t(model$quantities$biomassSSB / model$quantities$SB0))
+  df$year <- rownames(df)
+  rownames(df) <- NULL
+  df$model <- label
+  df$year <- as.numeric(df$year)
+  quantile <- quantile(df$Hake, probs = c(0.025, 0.5, 0.975))
+  return(list(df = df, quantile = quantile))
+}
 
-relativeSSB_priorM1 <- data.frame(t(ms_priorM1$model$quantities$biomassSSB / ms_priorM1$model$quantities$DynamicSB0))
-relativeSSB_priorM1$year <- rownames(relativeSSB_priorM1)
-rownames(relativeSSB_priorM1) <- NULL
-relativeSSB_priorM1$model <- "prior M1"
+relativeSSB_ms <- relative_SSB(ms_priorM1$model, "cannibalism")
+relativeSSB_ms$quantile
 
-relativeSSB <- rbind(relativeSSB_estM1, relativeSSB_fixM1, relativeSSB_priorM1)
-colnames(relativeSSB)[1] <- "relativeSSB"
-relativeSSB$year <- as.numeric(relativeSSB$year)
-relativeSSB$model <- factor(relativeSSB$model)
-ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
-  geom_line() +
+relativeSSB_ss <- relative_SSB(ss_priorM1$model, "single-species")
+relativeSSB_ss$quantile
+
+relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
+  ggplot(., aes(x = year, y = Hake, linetype = factor(model), shape = factor(model))) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue") +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  ylab("Relative SSB")
+  ylab("Relative SSB") +
+  ylim(0, NA) +
+  geom_hline(yintercept = 1, color = "red") +
+  geom_hline(yintercept = 0.4, color = "red") +
+  geom_hline(yintercept = 0.1, color = "red") 
+relativeSSB_plot
 
+# Rceattle generated depletion plots - for comparison
+Rceattle::plot_depletionSSB(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
+                            model_names = c("single-species", "cannibalism"))
+Rceattle::plot_depletion(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
+                         model_names = c("single-species", "cannibalism"))
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
@@ -586,3 +603,4 @@ ggplot(relativeSSB, aes(x = year, y = relativeSSB, color = model)) +
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
