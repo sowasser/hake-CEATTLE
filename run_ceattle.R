@@ -169,7 +169,7 @@ save(ms_estM1, file = "models/ms_estM1.Rdata")
 ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           M1 = 1,
                           prior = TRUE,
-                          init = NULL,
+                          init = ss_priorM1$model$estimated_params,
                           msm = 1,
                           estMode = 0)
 ms_priorM1$fit  # check convergence
