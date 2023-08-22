@@ -232,7 +232,7 @@ timing_popdy_estM1 <- timing_plot_popdy(run_high = run_90s$model,
                                         run_low = run_recent$model,
                                         ms_model = ms_estM1$model,
                                         all_years = all_years)
-relative_change_prior <- timing_popdy_estM1[[2]]
+relative_change_estM1 <- timing_popdy_estM1[[2]]
 timing_popdy_estM1[[3]]
 
 
