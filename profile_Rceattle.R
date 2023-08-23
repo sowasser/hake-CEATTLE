@@ -15,12 +15,12 @@ theme_set(ggsidekick::theme_sleek())
 data <- read_data(file = "data/hake_intrasp_230808_a20.xlsx")  # Read in data
 
 # Function updating M1 for each run of the model
-get_profile <- function(M1_change, model, msm) {
+get_profile <- function(new_M1, model, msm) {
   # M1_change <- -0.01
   # model <- ss_estM1$model$estimated_params
   # msm <- 0
   M1_base <- data$M1_base[, 3:22]
-  data$M1_base[, 3:22] <- M1_base + M1_change
+  data$M1_base[, 3:22] <- new_M1
   run <- fit_mod(
     data_list = data,
     inits = model,
@@ -36,10 +36,10 @@ get_profile <- function(M1_change, model, msm) {
 
   # Save the resulting run to losing progress to R bombs!
   if (msm == 0) {save(run, file = paste0("models/profile/ss/run",
-                                         as.character(M1_base[, 1] + M1_change),
+                                         as.character(new_M1),
                                          ".Rdata"))}
   if (msm == 1) {save(run, file = paste0("models/profile/ms/run",
-                                         as.character(M1_base[, 1] + M1_change),
+                                         as.character(new_M1),
                                          ".Rdata"))}
 
   message(run$quantities$jnll)  # print JNLL to console
@@ -47,65 +47,54 @@ get_profile <- function(M1_change, model, msm) {
 }
 
 ### Run profile over M1 -------------------------------------------------------
-# # Load model with estimated M1 & check starting value
-# load("models/ss_estM1.Rdata")
-# startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-# 
-# run0 <- get_profile(0, ss_estM1$model$estimated_params, 0)  # 0.21
-# # SS down
-# run1 <- get_profile(-0.01, ss_estM1$model$estimated_params, 0)  # 0.20
-# run2 <- get_profile(-0.02, ss_estM1$model$estimated_params, 0)  # 0.19
-# run3 <- get_profile(-0.03, ss_estM1$model$estimated_params, 0)  # 0.18
-# run4 <- get_profile(-0.04, ss_estM1$model$estimated_params, 0)  # 0.17
-# run5 <- get_profile(-0.05, ss_estM1$model$estimated_params, 0)  # 0.16
-# run6 <- get_profile(-0.06, ss_estM1$model$estimated_params, 0)  # 0.15
-# run7 <- get_profile(-0.07, ss_estM1$model$estimated_params, 0)  # 0.14
-# run8 <- get_profile(-0.08, ss_estM1$model$estimated_params, 0)  # 0.13
-# run9 <- get_profile(-0.09, ss_estM1$model$estimated_params, 0)  # 0.12
-# run10 <- get_profile(-0.10, ss_estM1$model$estimated_params, 0) # 0.11
-# run11 <- get_profile(-0.11, ss_estM1$model$estimated_params, 0) # 0.10
-# 
-# # SS up
-# run12 <- get_profile(0.01, ss_estM1$model$estimated_params, 0)  # 0.22
-# run13 <- get_profile(0.02, ss_estM1$model$estimated_params, 0)  # 0.23
-# run14 <- get_profile(0.03, ss_estM1$model$estimated_params, 0)  # 0.24
-# run15 <- get_profile(0.04, ss_estM1$model$estimated_params, 0)  # 0.25
-# run16 <- get_profile(0.05, ss_estM1$model$estimated_params, 0)  # 0.26
-# run17 <- get_profile(0.06, ss_estM1$model$estimated_params, 0)  # 0.27
-# run18 <- get_profile(0.07, ss_estM1$model$estimated_params, 0)  # 0.28
-# run19 <- get_profile(0.08, ss_estM1$model$estimated_params, 0)  # 0.29
-# run20 <- get_profile(0.09, ss_estM1$model$estimated_params, 0)  # 0.30
+# Load model with estimated M1 & check starting value
+load("models/ss_estM1.Rdata")
+startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
 
+run0 <- get_profile(startM_ss, ss_estM1$model$estimated_params, 0)  # 0.22
+# SS down
+run1 <- get_profile(0.21, run0$estimated_params, 0)  # 0.21
+run2 <- get_profile(0.20, run1$estimated_params, 0)  # 0.20
+run3 <- get_profile(0.19, run2$estimated_params, 0)  # 0.19
+run4 <- get_profile(0.18, run3$estimated_params, 0)  # 0.18
+run5 <- get_profile(0.17, run4$estimated_params, 0)  # 0.17
+run6 <- get_profile(0.16, run5$estimated_params, 0)  # 0.16
+run7 <- get_profile(0.15, run5$estimated_params, 0)  # 0.15
 
-# # rm(list = ls())  # clear environment to re-set runs
-# # Load model with estimated M1 & check starting value
-# load("models/ms_estM1.Rdata")
-# startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-# 
-# run0 <- get_profile(0, ms_estM1$model$estimated_params, 1)  # 0.21
-# # ms down
-# run1 <- get_profile(-0.01, ms_estM1$model$estimated_params, 1)  # 0.20
-# run2 <- get_profile(-0.02, ms_estM1$model$estimated_params, 1)  # 0.19
-# run3 <- get_profile(-0.03, ms_estM1$model$estimated_params, 1)  # 0.18
-# run4 <- get_profile(-0.04, ms_estM1$model$estimated_params, 1)  # 0.17
-# run5 <- get_profile(-0.05, ms_estM1$model$estimated_params, 1)  # 0.16
-# run6 <- get_profile(-0.06, ms_estM1$model$estimated_params, 1)  # 0.15
-# run7 <- get_profile(-0.07, ms_estM1$model$estimated_params, 1)  # 0.14
-# run8 <- get_profile(-0.08, ms_estM1$model$estimated_params, 1)  # 0.13
-# run9 <- get_profile(-0.09, ms_estM1$model$estimated_params, 1)  # 0.12
-# run10 <- get_profile(-0.10, ms_estM1$model$estimated_params, 1) # 0.11
-# run11 <- get_profile(-0.11, ms_estM1$model$estimated_params, 1) # 0.10
-# 
-# # ms up
-# run12 <- get_profile(0.01, ms_estM1$model$estimated_params, 1)  # 0.22
-# run13 <- get_profile(0.02, ms_estM1$model$estimated_params, 1)  # 0.23
-# run14 <- get_profile(0.03, ms_estM1$model$estimated_params, 1)  # 0.24
-# run15 <- get_profile(0.04, ms_estM1$model$estimated_params, 1)  # 0.25
-# run16 <- get_profile(0.05, ms_estM1$model$estimated_params, 1)  # 0.26
-# run17 <- get_profile(0.06, ms_estM1$model$estimated_params, 1)  # 0.27
-# run18 <- get_profile(0.07, ms_estM1$model$estimated_params, 1)  # 0.28
-# run19 <- get_profile(0.08, ms_estM1$model$estimated_params, 1)  # 0.29
-# run20 <- get_profile(0.09, ms_estM1$model$estimated_params, 1)  # 0.30
+# SS up
+run8 <- get_profile(0.23, run0$estimated_params, 0)  # 0.23
+run9 <- get_profile(0.24, run8$estimated_params, 0)  # 0.24
+run10 <- get_profile(0.25, run9$estimated_params, 0)  # 0.25
+run11 <- get_profile(0.26, run10$estimated_params, 0)  # 0.26
+run12 <- get_profile(0.27, run11$estimated_params, 0)  # 0.27
+run13 <- get_profile(0.28, run12$estimated_params, 0)  # 0.28
+run14 <- get_profile(0.29, run13$estimated_params, 0)  # 0.29
+run15 <- get_profile(0.30, run14$estimated_params, 0)  # 0.30
+
+rm(list = ls())  # clear environment to re-set runs
+# Load model with estimated M1 & check starting value
+load("models/ms_estM1.Rdata")
+startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
+
+run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
+# ms down
+run1 <- get_profile(0.25, run0$estimated_params, 1)  # 0.25
+run2 <- get_profile(0.24, run1$estimated_params, 1)  # 0.24
+run3 <- get_profile(0.23, run2$estimated_params, 1)  # 0.23
+run4 <- get_profile(0.22, run3$estimated_params, 1)  # 0.22
+run5 <- get_profile(0.21, run4$estimated_params, 1)  # 0.21
+run6 <- get_profile(0.20, run5$estimated_params, 1)  # 0.20
+run7 <- get_profile(0.19, run6$estimated_params, 1)  # 0.19
+run8 <- get_profile(0.18, run7$estimated_params, 1)  # 0.18
+run9 <- get_profile(0.17, run8$estimated_params, 1)  # 0.17
+run10 <- get_profile(0.16, run9$estimated_params, 1)  # 0.16
+run11 <- get_profile(0.15, run10$estimated_params, 1)  # 0.15
+
+# ms up
+run12 <- get_profile(0.27, run0$estimated_params, 1)  # 0.27
+run13 <- get_profile(0.28, run12$estimated_params, 1)  # 0.28
+run14 <- get_profile(0.29, run13$estimated_params, 1)  # 0.29
+run15 <- get_profile(0.30, run14$estimated_params, 1)  # 0.30
 
 
 ### Get JNLL for each run and plot --------------------------------------------
