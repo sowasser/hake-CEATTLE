@@ -511,49 +511,48 @@ eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
   xlab("year") + ylab("F")
 eff_plot
 
-ref_points <- cbind.data.frame(metric = c("R0", "SPR at B40"),
-                               SS = c((ss_estM1$model$quantities$R0 / 100000),
-                                      ss_estM1$model$quantities$SPRlimit),
-                               MS = c((ms_estM1$model$quantities$R0 / 100000),
-                                      ms_estM1$model$quantities$SPRlimit))
-
-ms_priorM1$model$quantities$Flimit # F that gives SPR40%
-ss_priorM1$model$quantities$Flimit # F that gives SPR40%
-ms_estM1$model$quantities$Ftarget
-ss_estM1$model$quantities$Ftarget
-
-
-# ms_run_Fspr <- Rceattle::fit_mod(data_list = ms_estM1$model$data_list,
-#                                  inits =  ms_estM1$model$estimated_params, # Initial parameters from ss_run
+# ms_run_Fspr <- Rceattle::fit_mod(data_list = ms_priorM1$model$data_list,
+#                                  inits =  ms_priorM1$model$estimated_params, # Initial parameters from ss_run
 #                                  estimateMode = 2, # Run projection only
-#                                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
-#                                                            FsprLimit = 0.4, # F40%
-#                                                            Ptarget = 0.4, # Target is 40% B0
-#                                                            Plimit = 0.1, # No fishing when SB<SB10
-#                                                            Pstar = 0.45,
-#                                                            Sigma = 0.5),
+#                                  HCR = build_hcr(HCR = 4, # NEFMC HCR
+#                                                  FsprTarget = 0.4, # 0.75 * F40%
+#                                                  FsprLimit = 0.4, # F40%
+#                                                  Fmult = 0.75,
+#                                                  Plimit = 0.2),
+#                                  M1Fun = Rceattle::build_M1(M1_model = 1,
+#                                                             updateM1 = TRUE,
+#                                                             M1_use_prior = TRUE,
+#                                                             M1_prior_mean = 0.2,
+#                                                             M1_prior_sd = .1),
 #                                  msmMode = 1, # Single species mode
 #                                  verbose = 1)
 # 
-# ms_run_Fspr$quantities$DynamicB0 #B0
-# 
-# ms_run_Fspr$quantities$DynamicSB0 #SB0
-# 
+# mean(ms_run_Fspr$quantities$SB0)
+# ms_run_Fspr$quantities$B0 #B0
+# ms_run_Fspr$quantities$SB0 #SB0
 # ms_run_Fspr$quantities$Flimit #F that gives you SPR40%
-# 
 # ms_run_Fspr$quantities$SPRlimit #SPR40%
 
-# Virgin SSB0 comparison
-SSB0_comparison <- cbind.data.frame(
-  model = c("MS est M1", "MS fix M1", "MS prior M1", 
-            "SS est M1", "SS fix M1", "SS prior M1"),
-  SSB0 = c(mean((ms_estM1$model$quantities$SB0)), 
-           mean((ms_fixM1$model$quantities$SB0)),
-           mean((ms_priorM1$model$quantities$SB0)),
-           mean((ss_estM1$model$quantities$SB0)), 
-           mean((ss_fixM1$model$quantities$SB0)),
-           mean((ss_priorM1$model$quantities$SB0))))
-SSB0_comparison$SSB0 <- round((SSB0_comparison$SSB0 / 1000000), 2)
+brp_comparison <- function(model, model_name) {
+  df <- data.frame(c(mean(model$quantities$B0 / 1000000),
+                     mean(model$quantities$SB0 / 1000000),
+                     mean(model$quantities$R0 / 1000000),
+                     model$quantities$Flimit,
+                     model$quantities$SPRlimit))
+  row.names(df) <- c("B0", "SB0", "R0", "Flimit", "SPRlimit")
+  colnames(df) <- model_name
+  df <- round(df, 2)
+  return(df)
+}
+
+brps <- cbind(
+  brp_comparison(model = ss_estM1$model, model_name = "SS est M1"),
+  brp_comparison(model = ss_fixM1$model, model_name = "SS fix M1"),
+  brp_comparison(model = ss_priorM1$model, model_name = "SS prior M1"),
+  brp_comparison(model = ms_estM1$model, model_name = "MS est M1"),
+  brp_comparison(model = ms_fixM1$model, model_name = "MS fix M1"),
+  brp_comparison(model = ms_priorM1$model, model_name = "MS prior M1")
+)
 
 # Relative SSB / depletion ----------------------------------------------------
 relative_SSB <- function(model, label) {
@@ -566,30 +565,33 @@ relative_SSB <- function(model, label) {
   return(list(df = df, quantile = quantile))
 }
 
-relativeSSB_ms <- relative_SSB(ms_priorM1$model, "cannibalism")
-relativeSSB_ms$quantile
-
 relativeSSB_ss <- relative_SSB(ss_priorM1$model, "single-species")
 relativeSSB_ss$quantile
 
+relativeSSB_ms <- relative_SSB(ms_priorM1$model, "cannibalism")
+relativeSSB_ms$quantile
+
 relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
-  ggplot(., aes(x = year, y = Hake, linetype = factor(model), shape = factor(model))) +
-  geom_line(color = "blue") +
-  geom_point(color = "blue") +
+  ggplot(.) +
+  geom_line(aes(x = year, y = Hake, color = factor(model))) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
   ylab("Relative SSB") +
   ylim(0, NA) +
-  geom_hline(yintercept = 1, color = "red") +
-  geom_hline(yintercept = 0.4, color = "red") +
-  geom_hline(yintercept = 0.1, color = "red") 
+  geom_hline(yintercept = 1, color = "gray") +
+  geom_hline(yintercept = 0.4, color = "gray") +
+  annotate("text", x = 1985, y = 0.4, label = "Management target", 
+           vjust = -0.5, size = 2.5, color = "darkgray") +
+  geom_hline(yintercept = 0.1, color = "gray") +
+  annotate("text", x = 1987.5, y = 0.1, label = "Minimum stock size threshold", 
+           vjust = -0.5, size = 2.5, color = "darkgray") 
 relativeSSB_plot
 
-# Rceattle generated depletion plots - for comparison
-Rceattle::plot_depletionSSB(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
-                            model_names = c("single-species", "cannibalism"))
-Rceattle::plot_depletion(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
-                         model_names = c("single-species", "cannibalism"))
+# # Rceattle generated depletion plots - for comparison
+# Rceattle::plot_depletionSSB(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
+#                             model_names = c("single-species", "cannibalism"))
+# Rceattle::plot_depletion(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
+#                          model_names = c("single-species", "cannibalism"))
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
@@ -603,4 +605,4 @@ Rceattle::plot_depletion(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
