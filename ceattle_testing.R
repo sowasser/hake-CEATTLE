@@ -17,7 +17,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230808_a20.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230824.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -82,13 +82,22 @@ ss_model$model$quantities$M1
 
 ms_model <- run_CEATTLE(data = hake_intrasp, 
                         M1 = 1, 
-                        prior = FALSE, 
+                        prior = TRUE, 
                         init = ss_model$model$initial_params, 
                         msm = 1, 
                         estMode = 0)
 ms_model$fit  # check convergence
 ms_model$model$quantities$M1
 
+plot_biomass(Rceattle = list(ss_model$model, ms_model$model), 
+             model_names = c("single-species", "cannibalism"),
+             incl_proj = TRUE, 
+             add_ci = TRUE)
+plot_ssb(Rceattle = list(ss_model$model, ms_model$model), 
+         model_names = c("single-species", "cannibalism"),
+         incl_proj = TRUE, 
+         add_ci = TRUE)
+  
 ### Plot multi-species vs. single-species vs. assessment ----------------------
 start_yr <- ms_model$model$data_list$styr
 end_yr <- 2022

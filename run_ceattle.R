@@ -19,7 +19,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230808_a20.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230824.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -276,14 +276,15 @@ wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 # prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
 # colnames(prop)[3] <- c("observed data")
 # prop_all <- reshape2::melt(prop, id.vars = c("Pred_age", "Prey_age"))
-# 
+# prop_all$Pred_age[prop_all$Pred_age >= 15] <- "15+"
+# prop_all$Pred_age <- factor(as.character(prop_all$Pred_age), 
+#                             levels = c(as.character(1:14), "15+"))
 # stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
 #   geom_bar(stat = "identity", position = "dodge") +
 #   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
 #   ylab("stomach proportion") + xlab("prey age") +
 #   facet_wrap(~Pred_age, ncol = 3)
 # stomach_props
-# 
 # ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
 #        width=140, height=150, units="mm", dpi=300)
 
