@@ -469,7 +469,7 @@ mortality <- function(run, type) {
       group_by(age) %>%
       summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
     
-    return(list(mortality_plot, M_byage, M1))
+    return(list(mortality_plot, M_byage, M1, total_mortality))
   }
 }
 
@@ -478,17 +478,26 @@ ms_est_mort <- mortality(ms_estM1$model, type = "multi-species")
 ms_est_mort[[1]]
 ms_est_mort[[2]]
 ms_est_M1 <- ms_est_mort[[3]]
+ms_est_totM <- ms_est_mort[[4]] %>% 
+  group_by(year) %>%
+  summarize(M1_M2 = sum(M1_M2))
 
 # Cannibalism with fixed M1
 ms_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
 ms_fixed_mort[[1]]
 ms_fixed_mort[[2]]
+ms_fix_totM <- ms_fixed_mort[[4]] %>% 
+  group_by(year) %>%
+  summarize(M1_M2 = sum(M1_M2))
 
 # Cannibalism with prior on M1
 ms_prior_mort <- mortality(ms_priorM1$model, type = "multi-species")
 ms_prior_mort[[1]]
 ms_prior_mort[[2]]
 ms_prior_M1 <- ms_prior_mort[[3]]
+ms_prior_totM <- ms_prior_mort[[4]] %>% 
+  group_by(year) %>%
+  summarize(M1_M2 = sum(M1_M2))
 
 # Single-species with estimated M1
 ss_M1 <- mortality(ss_estM1$model, type = "single-species")
@@ -538,8 +547,9 @@ brp_comparison <- function(model, model_name) {
                      mean(model$quantities$SB0 / 1000000),
                      mean(model$quantities$R0 / 1000000),
                      model$quantities$Flimit,
-                     model$quantities$SPRlimit))
-  row.names(df) <- c("B0", "SB0", "R0", "Flimit", "SPRlimit")
+                     model$quantities$SPRlimit,
+                     model$quantities$SPRtarget))
+  row.names(df) <- c("B0", "SB0", "R0", "Flimit", "SPRlimit", "SPRtarget")
   colnames(df) <- model_name
   df <- round(df, 2)
   return(df)
@@ -596,7 +606,7 @@ relativeSSB_plot
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1prior$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1est$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
@@ -604,5 +614,5 @@ relativeSSB_plot
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
