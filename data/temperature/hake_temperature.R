@@ -53,6 +53,7 @@ CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
   geom_line(linetype="dotted") +
   geom_point() +
+  ylim(0, NA) +
   scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
   ylab("temperature")
 mean_temp_plot
@@ -129,6 +130,7 @@ means$dataset <- factor(means$dataset, levels = c("ROMS", "survey", "kriged, bio
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
   geom_line(aes(color=dataset), linewidth=1, alpha = 0.3) +
+  ylim(0, NA) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
   ylab("mean temperature")
 mean_temp_compared
