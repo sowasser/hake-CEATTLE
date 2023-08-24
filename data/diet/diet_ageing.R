@@ -315,24 +315,24 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 ### Age-length key method for ageing ------------------------------------------
 # # Set up hake age-length key
 # hake_lbin <- c(0, seq(20, 68, by = 2), 999)
-# hake_age_bin <- c(0:14 + 0.5, 99)
-# hake_ages <- 1:15
+# hake_age_bin <- c(0:19 + 0.5, 99)
+# hake_ages <- 1:20
 # 
-# maturity$BIN <- cut(maturity$Length_cm, breaks = hake_lbin)
-# levels(maturity$BIN) <- 1:length(hake_lbin[-1])
+# age_length$BIN <- cut(age_length$length, breaks = hake_lbin)
+# levels(age_length$BIN) <- 1:length(hake_lbin[-1])
 # 
-# maturity$AgeBIN <- cut(maturity$Age, breaks = hake_age_bin)
-# levels(maturity$AgeBIN) <- hake_ages
+# age_length$AgeBIN <- cut(age_length$age, breaks = hake_age_bin)
+# levels(age_length$AgeBIN) <- hake_ages
 # 
-# hake <- maturity[-which(is.na(maturity$AgeBIN)),]
-# hake_table <- with(hake,table(BIN,AgeBIN))
+# hake <- age_length[-which(is.na(age_length$AgeBIN)), ]
+# hake_table <- with(hake, table(BIN,AgeBIN))
 # alk_hake <- prop.table(hake_table, margin=1)
 # alk_hake[is.na(alk_hake)] <- 0
 # 
 # # Save for age_trans_matrix in CEATTLE input excel sheet
 # age_trans_matrix <- t(as.data.frame.matrix(alk_hake))
-# # write.csv(age_trans_matrix, "data/assessment/age_trans_matrix.csv", row.names = FALSE)
-# 
+# write.csv(age_trans_matrix, "data/assessment/age_trans_matrix.csv", row.names = FALSE)
+#
 # # Predator age calculations
 # pred_ages <- alkIndivAge(key = alk_hake,
 #                          formula = age ~ length,
