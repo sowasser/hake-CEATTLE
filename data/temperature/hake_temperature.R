@@ -46,15 +46,15 @@ mean(ROMS_surveyyears$ROMS_survey)
 
 
 # Combine together and sort by year
-CEATTLE_temp <- rbind(summer_ROMS, survey)
+CEATTLE_temp <- rbind(ROMS, survey)
 CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 
 # Plot all mean temperatures 
 mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
-  geom_line(linetype="dotted") +
-  geom_point() +
+  geom_point(size=2) +
+  geom_line(linewidth=1, alpha = 0.3) +
   ylim(0, NA) +
-  scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.45) +  # invert colors
   ylab("temperature")
 mean_temp_plot
 
@@ -120,8 +120,8 @@ temp_weighted <- temp_hake %>% group_by(year) %>%
   summarise(mean_temp = weighted.mean(temp_100_kriged, hake_biomass))
 
 # Combine into 1 dataset with labeled data sources, then plot
-means <- rbind(ROMS[9:40, 1:2], survey_mean, temp_weighted)  # subset to model years
-means <- cbind(means, c(rep("ROMS", length(9:40)),
+means <- rbind(ROMS[, 1:2], survey_mean, temp_weighted)  # subset to model years
+means <- cbind(means, c(rep("ROMS", length(1:41)),
                         rep("survey", 13), 
                         rep("kriged, biomass weighted", 12)))
 colnames(means)[3] <- "dataset"
