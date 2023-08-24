@@ -47,54 +47,54 @@ get_profile <- function(new_M1, model, msm) {
 }
 
 ### Run profile over M1 -------------------------------------------------------
-# Load model with estimated M1 & check starting value
-load("models/ss_estM1.Rdata")
-startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-
-run0 <- get_profile(startM_ss, ss_estM1$model$estimated_params, 0)  # 0.22
-# SS down
-run1 <- get_profile(0.21, run0$estimated_params, 0)  # 0.21
-run2 <- get_profile(0.20, run1$estimated_params, 0)  # 0.20
-run3 <- get_profile(0.19, run2$estimated_params, 0)  # 0.19
-run4 <- get_profile(0.18, run3$estimated_params, 0)  # 0.18
-run5 <- get_profile(0.17, run4$estimated_params, 0)  # 0.17
-run6 <- get_profile(0.16, run5$estimated_params, 0)  # 0.16
-run7 <- get_profile(0.15, run5$estimated_params, 0)  # 0.15
-
-# SS up
-run8 <- get_profile(0.23, run0$estimated_params, 0)  # 0.23
-run9 <- get_profile(0.24, run8$estimated_params, 0)  # 0.24
-run10 <- get_profile(0.25, run9$estimated_params, 0)  # 0.25
-run11 <- get_profile(0.26, run10$estimated_params, 0)  # 0.26
-run12 <- get_profile(0.27, run11$estimated_params, 0)  # 0.27
-run13 <- get_profile(0.28, run12$estimated_params, 0)  # 0.28
-run14 <- get_profile(0.29, run13$estimated_params, 0)  # 0.29
-run15 <- get_profile(0.30, run14$estimated_params, 0)  # 0.30
-
-rm(list = ls())  # clear environment to re-set runs
-# Load model with estimated M1 & check starting value
-load("models/ms_estM1.Rdata")
-startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-
-run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
-# ms down
-run1 <- get_profile(0.25, run0$estimated_params, 1)  # 0.25
-run2 <- get_profile(0.24, run1$estimated_params, 1)  # 0.24
-run3 <- get_profile(0.23, run2$estimated_params, 1)  # 0.23
-run4 <- get_profile(0.22, run3$estimated_params, 1)  # 0.22
-run5 <- get_profile(0.21, run4$estimated_params, 1)  # 0.21
-run6 <- get_profile(0.20, run5$estimated_params, 1)  # 0.20
-run7 <- get_profile(0.19, run6$estimated_params, 1)  # 0.19
-run8 <- get_profile(0.18, run7$estimated_params, 1)  # 0.18
-run9 <- get_profile(0.17, run8$estimated_params, 1)  # 0.17
-run10 <- get_profile(0.16, run9$estimated_params, 1)  # 0.16
-run11 <- get_profile(0.15, run10$estimated_params, 1)  # 0.15
-
-# ms up
-run12 <- get_profile(0.27, run0$estimated_params, 1)  # 0.27
-run13 <- get_profile(0.28, run12$estimated_params, 1)  # 0.28
-run14 <- get_profile(0.29, run13$estimated_params, 1)  # 0.29
-run15 <- get_profile(0.30, run14$estimated_params, 1)  # 0.30
+# # Load model with estimated M1 & check starting value
+# load("models/ss_estM1.Rdata")
+# startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
+# 
+# run0 <- get_profile(startM_ss, ss_estM1$model$estimated_params, 0)  # 0.22
+# # SS down
+# run1 <- get_profile(0.21, run0$estimated_params, 0) 
+# run2 <- get_profile(0.20, run1$estimated_params, 0)  
+# run3 <- get_profile(0.19, run2$estimated_params, 0) 
+# run4 <- get_profile(0.18, run3$estimated_params, 0)  
+# run5 <- get_profile(0.17, run4$estimated_params, 0)  
+# run6 <- get_profile(0.16, run5$estimated_params, 0)  
+# run7 <- get_profile(0.15, run5$estimated_params, 0)  
+# 
+# # SS up
+# run8 <- get_profile(0.23, run0$estimated_params, 0)  
+# run9 <- get_profile(0.24, run8$estimated_params, 0)  
+# run10 <- get_profile(0.25, run9$estimated_params, 0)  
+# run11 <- get_profile(0.26, run10$estimated_params, 0)  
+# run12 <- get_profile(0.27, run11$estimated_params, 0)  
+# run13 <- get_profile(0.28, run12$estimated_params, 0)  
+# run14 <- get_profile(0.29, run13$estimated_params, 0)  
+# run15 <- get_profile(0.30, run14$estimated_params, 0)  
+# 
+# rm(list = ls())  # clear environment to re-set runs
+# # Load model with estimated M1 & check starting value
+# load("models/ms_estM1.Rdata")
+# startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
+# 
+# run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  
+# # ms down
+# run1 <- get_profile(0.25, run0$estimated_params, 1)  
+# run2 <- get_profile(0.24, run1$estimated_params, 1)  
+# run3 <- get_profile(0.23, run2$estimated_params, 1)  
+# run4 <- get_profile(0.22, run3$estimated_params, 1)  
+# run5 <- get_profile(0.21, run4$estimated_params, 1)  
+# run6 <- get_profile(0.20, run5$estimated_params, 1)  
+# run7 <- get_profile(0.19, run6$estimated_params, 1) 
+# run8 <- get_profile(0.18, run7$estimated_params, 1)  
+# run9 <- get_profile(0.17, run8$estimated_params, 1)  
+# run10 <- get_profile(0.16, run9$estimated_params, 1)  
+# run11 <- get_profile(0.15, run10$estimated_params, 1)  
+# 
+# # ms up
+# run12 <- get_profile(0.27, run0$estimated_params, 1)
+# run13 <- get_profile(0.28, run12$estimated_params, 1)  
+# run14 <- get_profile(0.29, run13$estimated_params, 1)  
+# run15 <- get_profile(0.30, run14$estimated_params, 1)  
 
 
 ### Get JNLL for each run and plot --------------------------------------------
@@ -145,14 +145,25 @@ load("models/ms_estM1.Rdata")
 est_points <- cbind.data.frame(model = factor(c("single-species", "cannibalism")),
                                M1 = c(round(ss_estM1$model$quantities$M1[1, 1, 1], digits = 2),
                                       round(ms_estM1$model$quantities$M1[1, 1, 1], digits = 2)),
-                               JNLL = c(0, 0))
+                               JNLL = c(ss_estM1$model$quantities$jnll - min(jnll_all_ss), 
+                                        ms_estM1$model$quantities$jnll - min(jnll_all_ms)))
+
+# add points at prior value
+load("models/ss_priorM1.Rdata")
+load("models/ms_priorM1.Rdata")
+prior_points <- cbind.data.frame(model = factor(c("single-species", "cannibalism")),
+                                 M1 = c(round(ss_priorM1$model$quantities$M1[1, 1, 1], digits = 2),
+                                        round(ms_priorM1$model$quantities$M1[1, 1, 1], digits = 2)),
+                                 JNLL = c(ss_priorM1$model$quantities$jnll - min(jnll_all_ss), 
+                                          ms_priorM1$model$quantities$jnll - min(jnll_all_ms)))
 
 all_profile <- rbind(profile_ss, profile_ms) %>%
   mutate(model = factor(model, levels = c("single-species", "cannibalism")))
 
 profile_plot <- ggplot() +
   geom_line(data = all_profile, aes(x = M1, y = relative_NLL), linewidth = 1) +
-  geom_point(data = est_points, aes(x = M1, y = JNLL, color = model), size = 5) +
+  geom_point(data = est_points, aes(x = M1, y = JNLL, color = model), size = 5, shape = "circle") +
+  geom_point(data = prior_points, aes(x = M1, y = JNLL, color = model), size = 5, shape = "triangle") +
   geom_hline(yintercept = 2, color = "lightgray") +
   # geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model),
   #            linetype = "dashed", linewidth = 1) +
@@ -263,8 +274,8 @@ ssb_all$year <- as.numeric(ssb_all$year)
 ssb_all$model <- factor(ssb_all$model, levels = c("single-species", "cannibalism"))
 ssb_all$M1 <- factor(as.character(ssb_all$M1))
 
-ssb_all_est <- ssb_all %>% filter(model == "single-species" & M1 == 0.26 | 
-                                    model == "cannibalism" & M1 == 0.32)
+ssb_all_est <- ssb_all %>% filter(model == "single-species" & M1 == 0.21 | 
+                                    model == "cannibalism" & M1 == 0.23)
 
 ssb_profile_plot <- ggplot() +
   geom_line(data = ssb_all, aes(x = year, y = SSB, color = M1)) +
