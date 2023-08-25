@@ -277,10 +277,10 @@ wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 
 # # Look at diet proportions
 # prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
-# colnames(prop)[3] <- c("observed data")
+# colnames(prop)[3] <- c("base cannibalism data")
 # prop_all <- reshape2::melt(prop, id.vars = c("Pred_age", "Prey_age"))
 # prop_all$Pred_age[prop_all$Pred_age >= 15] <- "15+"
-# prop_all$Pred_age <- factor(as.character(prop_all$Pred_age), 
+# prop_all$Pred_age <- factor(as.character(prop_all$Pred_age),
 #                             levels = c(as.character(1:14), "15+"))
 # stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
 #   geom_bar(stat = "identity", position = "dodge") +

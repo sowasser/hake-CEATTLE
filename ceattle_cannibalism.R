@@ -335,7 +335,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     filter(Var1 == "A" & Var2 == "A")
   
   suitability <- suitability[, 3:6]
-  suitability$Var3 <- factor(suitability$Var3, labels = c(1:max_age))
+  suitability$Var3 <- as.integer(factor(suitability$Var3, labels = c(1:max_age)))
   suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:max_age)))
   suitability$Var5 <- factor(suitability$Var5, labels = years)
   
@@ -344,7 +344,11 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   suitability$prey_age <- factor(suitability$prey_age)
   suitability <- suitability %>% 
     group_by(pred_age, prey_age) %>%
-    summarize(value = mean(value))
+    summarize(value = mean(value)) %>%
+    filter(pred_age <= 15)
+  suitability$pred_age[suitability$pred_age == 15] <- "15+"
+  suitability$pred_age <- factor(suitability$pred_age,
+                                 levels = c(1:14, "15+"))
   
   suit_plot <- ggplot(suitability, aes(x = pred_age, y = value, fill = prey_age)) +
     geom_bar(stat = "identity", position = "stack") +
