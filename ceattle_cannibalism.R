@@ -272,7 +272,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
+    scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
     labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
