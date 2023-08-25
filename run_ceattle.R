@@ -22,7 +22,7 @@ theme_set(theme_sleek())
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230824.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
-run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
+run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
   data$est_M1 <- M1  
   # data$endyr <- 2019
   run <- fit_mod(data_list = data,
@@ -87,7 +87,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                  # ------------------------------------------------------------
                  initMode = 1,
                  projection_uncertainty = TRUE,
-                 loopnum = 7) 
+                 loopnum = num) 
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -218,14 +218,15 @@ dirichlet_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
 data_90s <- hake_intrasp
 data_90s$UobsWtAge <- dirichlet_90s
 data_90s$styr <- 1980
-data_90s$endyr <- 2019
-data_90s$projyr <- 2019
+data_90s$endyr <- 1999
+data_90s$projyr <- 1999
 run_90s <- run_CEATTLE(data = data_90s,
                        M1 = 1,
                        prior = FALSE,
                        init = NULL,
                        msm = 1,
-                       estMode = 1)
+                       estMode = 1,
+                       num = 1000)
 run_90s$fit  # check convergence
 save(run_90s, file = "models/sensitivity/time-varying/run_90s.Rdata")
 run_90s_prior <- run_CEATTLE(data = data_90s,
@@ -233,7 +234,8 @@ run_90s_prior <- run_CEATTLE(data = data_90s,
                              prior = TRUE,
                              init = NULL,
                              msm = 1,
-                             estMode = 1)
+                             estMode = 1,
+                             num = 1000)
 run_90s_prior$fit  # check convergence
 save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata")
 
@@ -256,7 +258,8 @@ run_recent_prior <- run_CEATTLE(data = data_recent,
                                 prior = TRUE,
                                 init = NULL,
                                 msm = 1,
-                                estMode = 1)
+                                estMode = 1,
+                                num = 100)
 run_recent_prior$fit  # check convergence
 save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.Rdata")
 
