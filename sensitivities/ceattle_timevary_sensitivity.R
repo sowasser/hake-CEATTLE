@@ -200,7 +200,7 @@ timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 5.8), breaks = c(0.21, 1, 2, 3, 4, 5)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 5), breaks = c(0.21, 1, 2, 3, 4, 5)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
@@ -245,4 +245,3 @@ ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
        timevary_M, width=140, height = 170, units = "mm", dpi=300)
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_estM1.png", timing_popdy_estM1[[3]],
        width=140, height=150, units="mm", dpi=300)
-
