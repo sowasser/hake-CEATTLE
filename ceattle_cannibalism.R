@@ -234,7 +234,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   # # Read in data from no diet CEATTLE run
   # nbyage_nodiet <- extract_nbyage(ss_run, "CEATTLE - single species")
-  
+
   # Read in data from SS3 & average beginning & middle of the year
   nbyage_ss3_all <- read.csv(paste0("data/assessment/", assess_yr, "/nbyage.csv")) %>%
     filter(Yr >= start_yr & Yr <= end_yr)
@@ -279,22 +279,22 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     facet_wrap(~model, ncol=1)
   
   # # Difference between both models
-  # nbyage_diff <- nbyage_ss3
-  # nbyage_diff$age <- as.numeric(nbyage_diff$age)
-  # nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
-  # nbyage_diff$model <- "CEATTLE - assessment"
-  # nbyage_diff$year <- factor(nbyage_diff$year)
-  # 
-  # limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
-  # ggplot(nbyage_diff, aes(x=year, y=age)) +
-  #   geom_point(aes(size = numbers, color = numbers)) +
-  #   scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
-  #   scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-  #   geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  #   xlab(" ") + ylab("Age") + 
-  #   labs(size="millions (n)", color="millions (n)") 
-  
-  
+  nbyage_diff <- cbind.data.frame(year = nbyage$year,
+                                  age = as.numeric(nbyage$age),
+                                  numbers = (nbyage$numbers - nbyage_ss3$numbers) / 1000000)
+  nbyage_diff$model <- "CEATTLE - assessment"
+  nbyage_diff$year <- factor(nbyage_diff$year)
+
+  limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
+  nbyage_anomaly <- ggplot(nbyage_diff, aes(x=year, y=age)) +
+    geom_point(aes(size = numbers, color = numbers)) +
+    scale_color_gradientn(colors = pals::brewer.spectral(100), limit = limit) +
+    scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
+    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    xlab(" ") + ylab("Age") +
+    labs(size="millions (n)", color="millions (n)")
+  nbyage_anomaly
+
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
   
@@ -415,7 +415,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   }
   
   return(list(relative_change = rechange_all, popdy = popdy_plot, ratio = ratio_plot, 
-              pop_diff = diff_plot, nbyage = nbyage_plot, survey = survey_plot, 
+              pop_diff = diff_plot, nbyage = nbyage_plot, 
+              nbyage_anomaly = nbyage_anomaly, survey = survey_plot, 
               suit = suit_plot, biombyage = biombyage_plot, 
               b_consumed = b_consumed_plot, yearly_b = yearly_b_plot))
 }
@@ -426,6 +427,7 @@ plots$popdy
 plots$ratio
 plots$pop_diff
 plots$nbyage
+plots$nbyage_anomaly
 plots$survey
 plots$suit
 plots$biombyage
@@ -613,6 +615,7 @@ relativeSSB_plot
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1est$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
+ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=200, height=90, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
