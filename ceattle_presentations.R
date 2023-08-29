@@ -134,10 +134,10 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
-    geom_line() +
+    geom_line(aes(linetype = model)) +
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +  
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) + 
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") + xlab(" ") +
@@ -295,10 +295,10 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   geom_hline(yintercept = 1, color = "gray") +
   geom_hline(yintercept = 0.4, color = "gray") +
   annotate("text", x = 1985, y = 0.4, label = "Management target", 
-           vjust = -0.5, size = 2.5, color = "black") +
+           vjust = -0.5, size = 2.5, color = "gray") +
   geom_hline(yintercept = 0.1, color = "gray") +
   annotate("text", x = 1987.5, y = 0.1, label = "Minimum stock size threshold", 
-           vjust = -0.5, size = 2.5, color = "black") 
+           vjust = -0.5, size = 2.5, color = "gray") 
 relativeSSB_plot
 
 
@@ -346,13 +346,13 @@ spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4))
 
 # Plot consumption rate                 
 temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
-  geom_line(aes(color=variable), linewidth=1) +
+  geom_line(aes(color=variable, linetype = variable), linewidth=1) +
   # Following lines for distinguishing between lit & estimated hake values
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
   xlab("temperature") + ylab("specific rate") +
-  labs(color = "species")
+  labs(color = "species", linetype = "species")
 temp_rate
 
 
@@ -400,13 +400,12 @@ colnames(means)[3] <- "dataset"
 means$dataset <- factor(means$dataset, levels = c("ROMS", "survey", "kriged, biomass weighted"))
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
-  geom_point(aes(color=dataset), size=2) +
+  geom_point(aes(color=dataset, shape = dataset), size=2) +
   geom_line(aes(color=dataset), linewidth=1, alpha = 0.3) +
   ylim(0, NA) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
   ylab("mean temperature")
 mean_temp_compared
-
 
 ### Diet proportion -----------------------------------------------------------
 # Read in full aged dataset
@@ -463,7 +462,7 @@ ggsave(filename="plots/presentations/M.png", ms_prior_mort[[1]],
 ggsave(filename="plots/presentations/relative_SSB.png", relativeSSB_plot, 
        width=150, height=80, units="mm", dpi=300, bg = "transparent")
 ggsave(filename="plots/presentations/temp_consumption.png", temp_rate,
-       bg = "transparent", width=180, height=90, units="mm", dpi=300)
+       bg = "transparent", width=160, height=90, units="mm", dpi=300)
 ggsave(filename="plots/presentations/mean_temp_compared.png", mean_temp_compared,
        bg = "transparent", width=180, height=90, units="mm", dpi=300)
 ggsave(filename = "plots/presentations/cannibalism_overall.png", diet_plot, 
