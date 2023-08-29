@@ -615,7 +615,7 @@ relativeSSB_plot
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1est$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=200, height=90, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=200, height=90, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
