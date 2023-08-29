@@ -13,7 +13,7 @@ library(viridis)
 library(ggview)
 library(ggsidekick)
 # Set ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
 
 ### Load in models - Rdata objects --------------------------------------------
@@ -302,6 +302,155 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
 relativeSSB_plot
 
 
+### Bioenergetics (temp-dependent consumption) --------------------------------
+proxy_params <- read.csv("data/bioenergetics/proxy_bioen_params.csv")
+
+eq_1 <- proxy_params[c(2:4), ]
+eq_2 <- proxy_params[c(1, 5:6), ]
+eq_2$Tco <- as.numeric(eq_2$Tco)
+eq_2$Tcm <- as.numeric(eq_2$Tcm)
+
+### Temperature-dependent consumption -----------------------------------------
+temp_dependent <- function(Qc, Tco, Tcm, temp) {
+  z <- (log(Qc) * (Tcm - Tco)) 
+  y <- (log(Qc) * (Tcm - Tco + 2))
+  
+  x <- (((z^2) * (1 + (1 + (40/y))^0.5)^2) / 400)
+  
+  consumption <- c()
+  for(i in temp) { 
+    V <- ((Tcm - i) / (Tcm - Tco))
+    rate <- ((V^x) * exp(x * (1 - V)))
+    consumption <- c(consumption, rate)
+  }
+  
+  return(consumption)
+}
+
+# Run equation with cod, adult, juvenile pollock parameters & hake estimates
+temp_range <- seq(1, 20, by = 0.1)  # Hake thermal range from survey data
+spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7], temp_range), 
+                       temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7], temp_range), 
+                       temp_dependent(2.5, 8, 14.5, temp_range),  # Hake estimates w/ temp from acoustic series
+                       temp_dependent(2.5, 8, 10.5, temp_range))  # Hake estimates w/ kriged temp
+colnames(spp_temp_wide) <- c("Atlantic cod - fb4", 
+                             "Pollock - fb4", 
+                             "hake - survey temp",
+                             "hake - kriged temp")
+spp_temp <- melt(as.data.frame(spp_temp_wide))
+spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4))
+
+# # Distinguish between literature values & estimated value for Hake (when that's ready)
+# spp_temp <- cbind(spp_temp, ref = c(rep("a", times = (length(temp_range) * 3)), 
+#                                     rep("b", times = length(temp_range))))
+
+# Plot consumption rate                 
+temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
+  geom_line(aes(color=variable), linewidth=1) +
+  # Following lines for distinguishing between lit & estimated hake values
+  # geom_line(aes(color=variable, linetype=ref), size=1) +
+  # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
+  xlab("temperature") + ylab("specific rate") +
+  labs(color = "species")
+temp_rate
+
+
+### Mean temperature ----------------------------------------------------------
+survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
+ROMS <- read.csv("data/temperature/ROMS_mean.csv")
+temp_kriged <- read.csv("data/temperature/temp_100_matched_sophia.csv")
+
+missing_years <- c(1996, 1997, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
+                   2014, 2016, 2018, 2020)
+
+# Find mean from survey
+survey_mean <- survey_temp %>% group_by(year) %>%
+  summarise(mean_temp = mean(temp_100))
+
+survey <- cbind(survey_mean, rep("survey", length(survey_mean$mean_temp)))
+colnames(survey) <- c("year", "mean_temp", "source")
+
+ROMS <- cbind(ROMS, rep("ROMS", length(ROMS$mean_temp)))
+colnames(ROMS) <- c("year", "mean_temp", "source")
+
+# Combine together and sort by year
+CEATTLE_temp <- rbind(ROMS, survey)
+CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
+
+# Only include rows where hake were found
+temp_hake <- temp_kriged %>%
+  filter(hake_biomass > 0)
+
+temp_kriged_mean <- temp_kriged %>% group_by(year) %>%
+  summarise(mean_temp = mean(temp_100_kriged))
+
+temp_hake_mean <- temp_hake %>% group_by(year) %>%
+  summarise(mean_temp = mean(temp_100_kriged))
+
+temp_weighted <- temp_hake %>% group_by(year) %>%
+  summarise(mean_temp = weighted.mean(temp_100_kriged, hake_biomass))
+
+# Combine into 1 dataset with labeled data sources, then plot
+means <- rbind(ROMS[, 1:2], survey_mean, temp_weighted)  # subset to model years
+means <- cbind(means, c(rep("ROMS", length(1:41)),
+                        rep("survey", 13), 
+                        rep("kriged, biomass weighted", 12)))
+colnames(means)[3] <- "dataset"
+means$dataset <- factor(means$dataset, levels = c("ROMS", "survey", "kriged, biomass weighted"))
+
+mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
+  geom_point(aes(color=dataset), size=2) +
+  geom_line(aes(color=dataset), linewidth=1, alpha = 0.3) +
+  ylim(0, NA) +
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
+  ylab("mean temperature")
+mean_temp_compared
+
+
+### Diet proportion -----------------------------------------------------------
+# Read in full aged dataset
+aged_dataset <- read.csv("data/diet/CCTD_FEAT_combined.csv")
+
+# Check numbers-at-age for diet data
+numbers <- aged_dataset %>% 
+  group_by(predator_age) %>%
+  summarize(n = n())
+
+# Set accumulation age back to 15 to deal with low sample sizes
+aged_dataset$predator_age[aged_dataset$predator_age > 15] <- 15
+
+# Create overall intraspecies predation dataset -------------------------------
+# Find the hake proportion for each predator
+aged_wt <- aged_dataset %>%
+  group_by(Predator_ID) %>%
+  mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>%
+  mutate(hake_prey_prop = if_else(prey_name == "Pacific Hake", prey_wt / stomach_wt, 0)) %>%
+  select(Predator_ID, year, predator_age, prey_name, prey_age, hake_prey_prop) %>%
+  distinct() # Remove duplicate rows - same pred ID, multiple hake prey 
+
+# Total number of stomachs
+stomach_n <- aged_wt %>%
+  group_by(predator_age) %>%
+  summarize(sample_size = n())
+
+# Calculate average as sum of proportions per pred/prey age combo / number of stomachs per predator age
+hake_prop <- aged_wt %>%
+  group_by(predator_age, prey_age) %>%
+  summarize(sum_prop = sum(hake_prey_prop)) %>%
+  filter(!is.na(prey_age)) %>%
+  left_join(stomach_n) %>%
+  mutate(wt_prop = sum_prop / sample_size)
+
+# Plot diet data
+diet_plot <- ggplot(hake_prop, aes(x=as.factor(predator_age), y=wt_prop, fill=as.factor(prey_age))) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  xlab("predator hake age") + ylab("diet proportion by weight") +
+  labs(fill = "prey hake age")
+diet_plot
+
 ### Save plots (when not experimenting) ---------------------------------------
 ggsave(filename="plots/presentations/popdyn_M1prior.png", plots$popdy, 
        width=200, height=90, units="mm", dpi=300, bg = "transparent")
@@ -313,3 +462,9 @@ ggsave(filename="plots/presentations/M.png", ms_prior_mort[[1]],
        width = 160, height = 70, units = "mm", dpi=300, bg = "transparent")
 ggsave(filename="plots/presentations/relative_SSB.png", relativeSSB_plot, 
        width=150, height=80, units="mm", dpi=300, bg = "transparent")
+ggsave(filename="plots/presentations/temp_consumption.png", temp_rate,
+       bg = "transparent", width=180, height=90, units="mm", dpi=300)
+ggsave(filename="plots/presentations/mean_temp_compared.png", mean_temp_compared,
+       bg = "transparent", width=180, height=90, units="mm", dpi=300)
+ggsave(filename = "plots/presentations/cannibalism_overall.png", diet_plot, 
+       bg = "transparent", width=200, height=120, units="mm", dpi=300)
