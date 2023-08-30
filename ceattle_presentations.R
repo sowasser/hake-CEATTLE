@@ -530,6 +530,31 @@ predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)
   labs(fill = "prey species") + ylab("stomachs (n)") + xlab(" ")
 predation_yearly
 
+### Hake predators ------------------------------------------------------------
+path <- "data/diet/CCTD/v4/"
+
+# Read in all predator and prey data
+predator <- read.csv(paste0(path, "predator_information_v4.csv"))
+prey_comp <- read.csv(paste0(path, "prey_composition_v4.csv"))
+
+pred_prey <- merge(predator, prey_comp, by = "Predator_ID")
+
+# Calculate highest predation by relative occurrence
+high_n <- pred_prey %>%
+  group_by(Predator_Com_Name, Prey_Com_Name) %>%
+  summarize(n = n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  filter(Prey_Com_Name == "Pacific Hake") %>%
+  arrange(-freq)
+
+# Plot highest predators
+hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = freq)) +
+  geom_bar(position = "dodge", stat = "identity", show.legend = FALSE, fill = "#6921a8") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::label_number(accuracy = 0.01)) +
+  xlab(" ") + ylab("Relative frequency of hake predation") 
+hake_pred_plot
+
 ### Save plots (when not experimenting) ---------------------------------------
 ggsave(filename="plots/presentations/popdyn_M1prior.png", plots$popdy, 
        width=200, height=90, units="mm", dpi=300, bg = "transparent")
@@ -549,3 +574,5 @@ ggsave(filename = "plots/presentations/cannibalism_overall.png", diet_plot,
        bg = "transparent", width=200, height=120, units="mm", dpi=300)
 ggsave(filename = "plots/presentations/hake_cannibalism.png", predation_yearly,
        bg = "transparent", width=190, height=100, units="mm", dpi=300)
+ggsave(filename = "plots/presentations/hake_predators.png", hake_pred_plot, 
+       bg = "transparent", width=170, height=100, units="mm", dpi=300)
