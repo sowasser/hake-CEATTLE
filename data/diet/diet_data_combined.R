@@ -206,7 +206,7 @@ get_inset <- function(df) {
   # Create plot for the inset 
   plot <- ggplot(df, aes(x = factor(month), y = n_all, fill = prop)) +
     geom_bar(stat = "identity") +
-    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12)) +
+    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12), labels = c("Jan", "Dec")) +
     scale_fill_viridis(limits = c(0, 1), begin = 0.1, end = 0.9) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
