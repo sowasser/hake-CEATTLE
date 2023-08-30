@@ -87,7 +87,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:((start_yr-1)-start)), ]
   ss3_R <- ss3_R[-nrow(ss3_R), ]
   
-  # Plot biomass & recruitment ------------------------------------------------
   # Put biomass together
   nodiet_biom <- ceattle_biomass(ss_run, "CEATTLE - single-species")
   
@@ -133,11 +132,12 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
   
+  # Plot popdy ----------------------------------------------------------------
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line(aes(linetype = model)) +
-    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +  
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) + 
+    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.3, color = NA) + 
+    scale_color_viridis(discrete = TRUE, option = "plasma", begin = 0.2) +  
+    scale_fill_viridis(discrete = TRUE, option = "plasma", begin = 0.2) + 
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") + xlab(" ") +
@@ -186,8 +186,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot yearly nbyage
   nbyage_plot <- ggplot(nbyage_all, aes(x=year, y=age)) +
     geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
-    scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+    scale_fill_viridis(option = "plasma", begin = 0.2) +
+    scale_color_viridis(option = "plasma", begin = 0.2) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") + 
@@ -204,7 +204,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
   nbyage_anomaly <- ggplot(nbyage_diff, aes(x=year, y=age)) +
     geom_point(aes(size = numbers, color = numbers)) +
-    scale_color_gradientn(colors = pals::brewer.spectral(100), limit = limit) +
+    scale_color_gradientn(colors = pals::kovesi.diverging_linear_bjr_30_55_c53(100), limit = limit) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") +
@@ -238,7 +238,9 @@ mortality <- function(run, type) {
       geom_tile(aes(fill = M1_M2)) +
       scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) + 
       scale_x_continuous(expand = c(0, 0)) + 
-      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), breaks = c(0.21, 1, 1.5)) +
+      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), 
+                         breaks = c(0.21, 1, 1.5),
+                         option = "plasma", begin = 0.2) +
       geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +
@@ -259,14 +261,6 @@ mortality <- function(run, type) {
 ms_prior_mort <- mortality(ms_priorM1$model, type = "multi-species")
 ms_prior_mort[[1]]
 ms_prior_mort[[2]]
-ms_prior_M1 <- ms_prior_mort[[3]]
-ms_prior_totM <- ms_prior_mort[[4]] %>% 
-  group_by(year) %>%
-  summarize(M1_M2 = sum(M1_M2))
-
-# Single-species with estimated M1
-ss_M1 <- mortality(ss_estM1$model, type = "single-species")
-ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
 ### Relative SSB / depletion --------------------------------------------------
 relative_SSB <- function(model, label) {
@@ -289,7 +283,7 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   ggplot(.) +
   geom_line(aes(x = year, y = Hake, color = factor(model))) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
+  scale_color_viridis(discrete = TRUE, option = "plasma", begin = 0.2, end = 0.6) +
   ylab("Relative SSB") +
   ylim(0, NA) +
   geom_hline(yintercept = 1, color = "gray") +
@@ -350,11 +344,10 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   # Following lines for distinguishing between lit & estimated hake values
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
+  scale_color_viridis(discrete = TRUE, option = "plasma", begin = 0.2) +  
   xlab("temperature") + ylab("specific rate") +
   labs(color = "species", linetype = "species")
 temp_rate
-
 
 ### Mean temperature ----------------------------------------------------------
 survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
@@ -403,7 +396,7 @@ mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset, shape = dataset), size=2) +
   geom_line(aes(color=dataset), linewidth=1, alpha = 0.3) +
   ylim(0, NA) +
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
+  scale_color_viridis(discrete = TRUE, option = "plasma", begin = 0.2) +   
   ylab("mean temperature")
 mean_temp_compared
 
@@ -444,7 +437,7 @@ hake_prop <- aged_wt %>%
 # Plot diet data
 diet_plot <- ggplot(hake_prop, aes(x=as.factor(predator_age), y=wt_prop, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, option = "plasma", begin = 0.2) +
   scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age")
