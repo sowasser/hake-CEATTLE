@@ -41,8 +41,8 @@ years <- 1980:2022
 max_age <- max_age <- ms_priorM1$model$data_list$nages
 models <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, 
                run_wt50_prior$model, run_wt75_prior$model)
-names <- c("base cannibalism model", "0.5% cannibalism", "10% cannibalism", 
-           "50% cannibalism", "75% cannibalism")
+names <- c("Base Cannibalism Model", "0.5% Cannibalism", "10% Cannibalism", 
+           "50% Cannibalism", "75% Cannibalism")
 
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
@@ -98,11 +98,11 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-nbyage_test_all <- rbind(extract_byage(models[[1]]$quantities$NByage, "0.5% cannibalism", "numbers"),
-                         extract_byage(models[[2]]$quantities$NByage, "10% cannibalism", "numbers"),
-                         extract_byage(models[[3]]$quantities$NByage, "50% cannibalism", "numbers"),
-                         extract_byage(models[[4]]$quantities$NByage, "75% cannibalism", "numbers"),
-                         extract_byage(models[[5]]$quantities$NByage, "base cannibalism model", "numbers"))
+nbyage_test_all <- rbind(extract_byage(models[[1]]$quantities$NByage, "0.5% Cannibalism", "numbers"),
+                         extract_byage(models[[2]]$quantities$NByage, "10% Cannibalism", "numbers"),
+                         extract_byage(models[[3]]$quantities$NByage, "50% Cannibalism", "numbers"),
+                         extract_byage(models[[4]]$quantities$NByage, "75% Cannibalism", "numbers"),
+                         extract_byage(models[[5]]$quantities$NByage, "Base Cannibalism Model", "numbers"))
 
 # Plot yearly nbyage
 nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
@@ -156,29 +156,29 @@ plot_popdy <- function(biom, R, numbers) {
     return(c(label, mean_out, SEM, percent))
   }
   
-  rechange_all <- rbind(rel_change("0.5% cannibalism", "base cannibalism model", "SSB (Mt)"),
-                        rel_change("0.5% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
-                        rel_change("0.5% cannibalism", "base cannibalism model", "Recruitment (millions)"),
-                        rel_change("10% cannibalism", "base cannibalism model", "SSB (Mt)"),
-                        rel_change("10% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
-                        rel_change("10% cannibalism", "base cannibalism model", "Recruitment (millions)"),
-                        rel_change("50% cannibalism", "base cannibalism model", "SSB (Mt)"),
-                        rel_change("50% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
-                        rel_change("50% cannibalism", "base cannibalism model", "Recruitment (millions)"),
-                        rel_change("75% cannibalism", "base cannibalism model", "SSB (Mt)"),
-                        rel_change("75% cannibalism", "base cannibalism model", "Total Biomass (Mt)"),
-                        rel_change("75% cannibalism", "base cannibalism model", "Recruitment (millions)"))
+  rechange_all <- rbind(rel_change("0.5% Cannibalism", "Base cannibalism Model", "SSB (Mt)"),
+                        rel_change("0.5% Cannibalism", "Base cannibalism Model", "Total Biomass (Mt)"),
+                        rel_change("0.5% Cannibalism", "Base cannibalism Model", "Recruitment (millions)"),
+                        rel_change("10% Cannibalism", "Base cannibalism Model", "SSB (Mt)"),
+                        rel_change("10% Cannibalism", "Base cannibalism Model", "Total Biomass (Mt)"),
+                        rel_change("10% Cannibalism", "Base cannibalism Model", "Recruitment (millions)"),
+                        rel_change("50% Cannibalism", "Base cannibalism Model", "SSB (Mt)"),
+                        rel_change("50% Cannibalism", "Base cannibalism Model", "Total Biomass (Mt)"),
+                        rel_change("50% Cannibalism", "Base cannibalism Model", "Recruitment (millions)"),
+                        rel_change("75% Cannibalism", "Base cannibalism Model", "SSB (Mt)"),
+                        rel_change("75% Cannibalism", "Base cannibalism Model", "Total Biomass (Mt)"),
+                        rel_change("75% Cannibalism", "Base cannibalism Model", "Recruitment (millions)"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_line(aes(linetype = model)) +
-    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed"), name = "model") +
+    scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed")) +
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     ylim(0, NA) +
-    ylab(" ") +
-    labs(color = "model") +
+    ylab(" ") + xlab("Year") +
+    labs(color = "Model", fill = "Model", linetype = "Model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside")
   return(list(change = rechange_all, plot = popdy_plot))

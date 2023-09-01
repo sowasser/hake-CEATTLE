@@ -26,7 +26,7 @@ hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = f
   geom_bar(position = "dodge", stat = "identity", show.legend = FALSE, fill = "#482577") +
   coord_flip() +
   scale_y_continuous(labels = scales::label_number(accuracy = 0.01)) +
-  xlab(" ") + ylab("Relative frequency of hake predation") 
+  xlab(" ") + ylab("Relative Frequency of Hake Predation") 
 hake_pred_plot
 
 ggsave(filename = "plots/diet/hake_predators.png", hake_pred_plot, 

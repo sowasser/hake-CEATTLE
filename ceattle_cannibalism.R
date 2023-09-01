@@ -182,8 +182,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
-    ylab(" ") +
-    labs(color = "model") +
+    ylab(" ") + xlab("Year") +
+    labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside") 
   
@@ -274,8 +274,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab(" ") + ylab("Age") + 
-    labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
+    xlab("Year") + ylab("Age") + 
+    labs(fill="Millions (n)", size="Millions (n)", color="Millions (n)") +
     facet_wrap(~model, ncol=1)
   
   # # Difference between both models
@@ -291,8 +291,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_gradientn(colors = pals::brewer.spectral(100), limit = limit) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab(" ") + ylab("Age") +
-    labs(size="millions (n)", color="millions (n)")
+    xlab("Year") + ylab("Age") +
+    labs(size="Millions (n)", color="Millions (n)")
   nbyage_anomaly
 
   # Plot comparison to survey index -------------------------------------------

@@ -222,7 +222,7 @@ for(i in 1:length(runs_ms)) {
 comp_all_ms$model <- "cannibalism"
 
 comp_all <- rbind(comp_all_ss, comp_all_ms)
-comp_all$model <- factor(comp_all$model, levels = c("single-species", "cannibalism"))
+comp_all$model <- factor(comp_all$model, levels = c("Single-Species", "Cannibalism"))
 comp_profile_plot <- ggplot() +
   geom_line(data = (comp_all %>% filter(component == "Total NLL")), 
             aes(x = M1, y = NLL, color = component), linewidth = 1) +
@@ -232,7 +232,8 @@ comp_profile_plot <- ggplot() +
              aes(x = M1, y = NLL, shape = component, color = component), size = 2) +
   geom_hline(yintercept = 2, color = "lightgray") +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  ylab("change in negative log likelihood") +
+  ylab("Change in Negative Log Likelihood") +
+  labs(shape = "Component", color = "Component")
   facet_wrap(~model, ncol = 1)
 comp_profile_plot
 

@@ -111,10 +111,10 @@ predation_all <- all_data %>%
 predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  labs(fill = "prey species") + ylab("stomachs (n)")
+  labs(fill = "prey species") + ylab("Stomachs (n)") + xlab("Year")
 predation_yearly
 
-# ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly, 
+# ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly,
 #        bg = "transparent", width=190, height=100, units="mm", dpi=300)
 
 ### Plot timing of sample collection ----------------------------------------
@@ -145,12 +145,12 @@ timing_yearly <- ggplot(time_all_months, aes(x = month, y = n_all, fill = prop))
   geom_bar(stat = "identity") +
   scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
   scale_fill_viridis(limits = c(0, 1), begin = 0.1, end = 0.9) +
-  xlab("sampling month") + ylab(" ") +
-  labs(fill = "cannibalism rate") +
+  xlab("Sampling Month") + ylab(" ") +
+  labs(fill = "Cannibalism Rate") +
   facet_wrap(~ year, ncol = 5)
 timing_yearly
 
-# ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly, 
+# ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly,
 #        bg = "transparent", width=200, height=140, units="mm", dpi=300)
 
 
@@ -179,12 +179,12 @@ annual_rate <- loc_n_all %>%
   ggplot(., aes(x = year, y = n, fill = prop)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis(limits = c(0, 0.4), begin = 0.1, end = 0.9) +
-  ylab("stomachs (n)") +
-  labs(fill = "cannibalism rate")
+  ylab("Stomachs (n)") +
+  labs(fill = "Cannibalism Rate")
 annual_rate
 
-ggsave(filename = "plots/diet/hake_cannibalism_rate.png", annual_rate,
-       bg = "transparent", width=190, height=100, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/hake_cannibalism_rate.png", annual_rate,
+#        bg = "transparent", width=190, height=100, units="mm", dpi=300)
 
 # Create a plot of location of observations by latitude and longitude
 world <- ne_countries(scale = "medium", returnclass = "sf")
@@ -197,7 +197,7 @@ locations <- ggplot(data = world) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
   scale_color_viridis(begin = 0.1, end = 0.9) +
-  xlab(" ") + ylab(" ") + labs(color = "cannibalism rate", size = "stomachs (n)") +
+  xlab(" ") + ylab(" ") + labs(color = "Cannibalism Rate", size = "Stomachs (n)") +
   facet_wrap(~year, ncol = 5)
 
 ### Inset timing plots in yearly location plots -----------------------------
@@ -246,5 +246,5 @@ location_timing <- locations +
   insets
 location_timing
 
-ggsave(filename = "plots/diet/locations_timing.png", location_timing, 
-       bg = "transparent", width=200, height=200, units="mm", dpi=300)
+# ggsave(filename = "plots/diet/locations_timing.png", location_timing,
+#        bg = "transparent", width=200, height=200, units="mm", dpi=300)
