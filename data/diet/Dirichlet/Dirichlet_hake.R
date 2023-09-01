@@ -596,9 +596,9 @@ ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comparison.png", comparison_pl
        bg = "transparent", width=180, height=120, units="mm", dpi=300)
 
 # Neater comparison graph for write-up
-comp2 <- rbind(new_df(ceattle_all, "all years"),
-                    new_df(ceattle_90s, "high (1991-1999)"),
-                    new_df(ceattle_recent, "low (2005-2019)"))
+comp2 <- rbind(new_df(ceattle_all, "All Years"),
+                    new_df(ceattle_90s, "High (1991-1999)"),
+                    new_df(ceattle_recent, "Low (2005-2019)"))
 
 comp2 <- as.data.frame(comp2) 
 comp2$pred_age <- as.factor(comp2$pred_age)
