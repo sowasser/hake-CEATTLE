@@ -50,7 +50,7 @@ get_profile <- function(new_M1, model, msm) {
 # Load model with estimated M1 & check starting value
 # load("models/ss_estM1.Rdata")
 # startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-# 
+#
 # run0 <- get_profile(startM_ss, ss_estM1$model$estimated_params, 0)  # 0.22
 # # SS down
 # run1 <- get_profile(0.21, run0$estimated_params, 0)
@@ -72,11 +72,11 @@ get_profile <- function(new_M1, model, msm) {
 # run15 <- get_profile(0.30, run14$estimated_params, 0)
 # 
 # rm(list = ls())  # clear environment to re-set runs
-# Load model with estimated M1 & check starting value
+# # Load model with estimated M1 & check starting value
 # load("models/ms_estM1.Rdata")
 # startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
 # 
-# run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)
+# run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
 # # ms down
 # run1 <- get_profile(0.25, run0$estimated_params, 1)
 # run2 <- get_profile(0.24, run1$estimated_params, 1)
@@ -198,7 +198,7 @@ comp_out <- function(run) {
   return(comp)
 }
 
-load("models/profile/ss/run0.19.Rdata"); ss_low <- run
+load("models/profile/ss/run0.22.Rdata"); ss_low <- run
 comp_all_ss <- data.frame()
 for(i in 1:length(runs_ss)) {
   load(paste0("models/profile/ss/", runs_ss[i]))
@@ -209,7 +209,7 @@ for(i in 1:length(runs_ss)) {
 }
 comp_all_ss$model <- "Single-Species"
 
-load("models/profile/ms/run0.24.Rdata"); ms_low <- run
+load("models/profile/ms/run0.26.Rdata"); ms_low <- run
 comp_all_ms <- data.frame()
 comp_all_ms <- data.frame()
 for(i in 1:length(runs_ms)) {
@@ -234,6 +234,7 @@ comp_profile_plot <- ggplot() +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   ylab("Change in Negative Log Likelihood") +
   labs(shape = "Component", color = "Component") +
+  ylim(-13.7, 13.7) +
   facet_wrap(~model, ncol = 1)
 comp_profile_plot
 

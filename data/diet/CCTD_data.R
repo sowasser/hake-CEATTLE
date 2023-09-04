@@ -116,7 +116,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
     coord_flip() +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
-    xlab(" ") + ylab(" ") +
+    xlab(" ") +
     facet_wrap(~ variable, scales = "free")
   
   # Plot timing & location of instances of predation of interest

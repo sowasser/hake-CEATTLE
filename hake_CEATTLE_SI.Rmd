@@ -6,7 +6,7 @@ output:
   html_document:
     df_print: paged
 ---
-![**Figure S.1**: Suitability coefficient (prey age preference) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
+![**Figure S.1**: Suitability coefficient (suitability of consumpiton and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
 
 ![**Figure S.2**: Temperature-dependent consumption rate function for Atlantic cod and pollock from Fish Bioenergetics 4 and the values used in the CEATTLE model for hake. Optimal and maximum temperatures for hake were derived from the temperatures recorded during the FEAT hake acoustic-trawl survey and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
 
@@ -40,7 +40,7 @@ output:
 
  &nbsp;  
 
-![**Figure S.10**: Hake prey by occurrence and weight in hake stomachs within the CCTD.](./plots/diet/hake_prey_species.png)
+![**Figure S.10**: Hake prey by occurrence (number of individuals) and weight in hake stomachs within the CCTD.](./plots/diet/hake_prey_species.png)
 
  &nbsp;  
 

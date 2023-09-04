@@ -592,7 +592,7 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   geom_line(aes(x = year, y = Hake, color = factor(model))) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
-  ylab("Relative SSB") +
+  ylab("Relative SSB") + xlab("Year") + labs(color = "Model") +
   ylim(0, NA) +
   geom_hline(yintercept = 1, color = "gray") +
   geom_hline(yintercept = 0.4, color = "gray") +
