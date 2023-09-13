@@ -1,7 +1,7 @@
 #' Comparison of CEATTLE with and without an HCR for the entire projection 
 #' period (out to 2100).
 
-ibrary(Rceattle)
+library(Rceattle)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
@@ -111,8 +111,8 @@ popdy_plot <- ggplot(all_popdy, aes(x=year, y=value,
                                     color = model, fill = model, linetype = HCR)) +
   geom_line() +
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   ylab(" ") + xlab("Year") +

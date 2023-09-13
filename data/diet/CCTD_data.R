@@ -349,7 +349,7 @@ CSL_hake_monthly <- ggplot(CSL_month_n_all, aes(x = Month, y = n_all, fill = pro
   geom_bar(stat = "identity") +
   scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
   scale_fill_viridis(begin = 0.1, end = 0.9) +
-  xlab("sampling month") + ylab(" ") +
+  xlab("sampling month") + ylab("Scat samples (n)") +
   labs(fill = "hake consumption rate") +
   facet_wrap(~ Year, ncol = 4)
 CSL_hake_monthly
