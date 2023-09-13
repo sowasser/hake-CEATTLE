@@ -293,22 +293,22 @@ wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 
 data05 <- hake_intrasp
 data05$UobsWtAge$Stomach_proportion_by_weight <- wt05
-run_wt05 <- run_CEATTLE(data = data05,
-                        M1 = 1,
-                        prior = FALSE,
-                        init = NULL,
-                        msm = 1,
-                        estMode = 0)
-run_wt05$fit
-save(run_wt05, file = "models/sensitivity/diet/run_wt05.Rdata")
-run_wt05_fix <- run_CEATTLE(data = data05,
-                            M1 = 0,
-                            prior = FALSE,
-                            init = NULL,
-                            msm = 1,
-                            estMode = 0)
-run_wt05_fix$fit
-save(run_wt05_fix, file = "models/sensitivity/diet/run_wt05_fix.Rdata")
+# run_wt05 <- run_CEATTLE(data = data05,
+#                         M1 = 1,
+#                         prior = FALSE,
+#                         init = NULL,
+#                         msm = 1,
+#                         estMode = 0)
+# run_wt05$fit
+# save(run_wt05, file = "models/sensitivity/diet/run_wt05.Rdata")
+# run_wt05_fix <- run_CEATTLE(data = data05,
+#                             M1 = 0,
+#                             prior = FALSE,
+#                             init = NULL,
+#                             msm = 1,
+#                             estMode = 0)
+# run_wt05_fix$fit
+# save(run_wt05_fix, file = "models/sensitivity/diet/run_wt05_fix.Rdata")
 run_wt05_prior <- run_CEATTLE(data = data05,
                               M1 = 1,
                               prior = TRUE,
@@ -317,34 +317,34 @@ run_wt05_prior <- run_CEATTLE(data = data05,
                               estMode = 0)
 run_wt05_prior$fit
 save(run_wt05_prior, file = "models/sensitivity/diet/run_wt05_prior.Rdata")
-data05$projyr <- 2019
-run_wt05_noproj <- run_CEATTLE(data = data05,
-                               M1 = 1,
-                               prior = FALSE,
-                               init = NULL,
-                               msm = 1,
-                               estMode = 1)
-run_wt05_noproj$fit
-save(run_wt05_noproj, file = "models/sensitivity/diet/run_wt05_noproj.Rdata")
+# data05$projyr <- 2019
+# run_wt05_noproj <- run_CEATTLE(data = data05,
+#                                M1 = 1,
+#                                prior = FALSE,
+#                                init = NULL,
+#                                msm = 1,
+#                                estMode = 1)
+# run_wt05_noproj$fit
+# save(run_wt05_noproj, file = "models/sensitivity/diet/run_wt05_noproj.Rdata")
 
 data10 <- hake_intrasp
 data10$UobsWtAge$Stomach_proportion_by_weight <- wt10
-run_wt10 <- run_CEATTLE(data = data10,
-                        M1 = 1,
-                        prior = FALSE,
-                        init = NULL,
-                        msm = 1,
-                        estMode = 0)
-run_wt10$fit
-save(run_wt10, file = "models/sensitivity/diet/run_wt10.Rdata")
-run_wt10_fix <- run_CEATTLE(data = data10,
-                            M1 = 0,
-                            prior = FALSE,
-                            init = NULL,
-                            msm = 1,
-                            estMode = 0)
-run_wt10_fix$fit
-save(run_wt10_fix, file = "models/sensitivity/diet/run_wt10_fix.Rdata")
+# run_wt10 <- run_CEATTLE(data = data10,
+#                         M1 = 1,
+#                         prior = FALSE,
+#                         init = NULL,
+#                         msm = 1,
+#                         estMode = 0)
+# run_wt10$fit
+# save(run_wt10, file = "models/sensitivity/diet/run_wt10.Rdata")
+# run_wt10_fix <- run_CEATTLE(data = data10,
+#                             M1 = 0,
+#                             prior = FALSE,
+#                             init = NULL,
+#                             msm = 1,
+#                             estMode = 0)
+# run_wt10_fix$fit
+# save(run_wt10_fix, file = "models/sensitivity/diet/run_wt10_fix.Rdata")
 run_wt10_prior <- run_CEATTLE(data = data10,
                               M1 = 1,
                               prior = TRUE,
@@ -353,34 +353,34 @@ run_wt10_prior <- run_CEATTLE(data = data10,
                               estMode = 0)
 run_wt10_prior$fit
 save(run_wt10_prior, file = "models/sensitivity/diet/run_wt10_prior.Rdata")
-data10$projyr <- 2019
-run_wt10_noproj <- run_CEATTLE(data = data10,
-                               M1 = 1,
-                               prior = FALSE,
-                               init = NULL,
-                               msm = 1,
-                               estMode = 1)
-run_wt10_noproj$fit
-save(run_wt10_noproj, file = "models/sensitivity/diet/run_wt10_noproj.Rdata")
+# data10$projyr <- 2019
+# run_wt10_noproj <- run_CEATTLE(data = data10,
+#                                M1 = 1,
+#                                prior = FALSE,
+#                                init = NULL,
+#                                msm = 1,
+#                                estMode = 1)
+# run_wt10_noproj$fit
+# save(run_wt10_noproj, file = "models/sensitivity/diet/run_wt10_noproj.Rdata")
 
 data50 <- hake_intrasp
 data50$UobsWtAge$Stomach_proportion_by_weight <- wt50
-run_wt50 <- run_CEATTLE(data = data50,
-                        M1 = 1,
-                        prior = FALSE,
-                        init = NULL,
-                        msm = 1,
-                        estMode = 0)
-run_wt50$fit
-save(run_wt50, file = "models/sensitivity/diet/run_wt50.Rdata")
-run_wt50_fix <- run_CEATTLE(data = data50,
-                            M1 = 0,
-                            prior = FALSE,
-                            init = NULL,
-                            msm = 1,
-                            estMode = 0)
-run_wt50_fix$fit
-save(run_wt50_fix, file = "models/sensitivity/diet/run_wt50_fix.Rdata")
+# run_wt50 <- run_CEATTLE(data = data50,
+#                         M1 = 1,
+#                         prior = FALSE,
+#                         init = NULL,
+#                         msm = 1,
+#                         estMode = 0)
+# run_wt50$fit
+# save(run_wt50, file = "models/sensitivity/diet/run_wt50.Rdata")
+# run_wt50_fix <- run_CEATTLE(data = data50,
+#                             M1 = 0,
+#                             prior = FALSE,
+#                             init = NULL,
+#                             msm = 1,
+#                             estMode = 0)
+# run_wt50_fix$fit
+# save(run_wt50_fix, file = "models/sensitivity/diet/run_wt50_fix.Rdata")
 run_wt50_prior <- run_CEATTLE(data = data50,
                               M1 = 1,
                               prior = TRUE,
@@ -389,34 +389,34 @@ run_wt50_prior <- run_CEATTLE(data = data50,
                               estMode = 0)
 run_wt50_prior$fit
 save(run_wt50_prior, file = "models/sensitivity/diet/run_wt50_prior.Rdata")
-data50$projyr <- 2019
-run_wt50_noproj <- run_CEATTLE(data = data50,
-                               M1 = 1,
-                               prior = FALSE,
-                               init = NULL,
-                               msm = 1,
-                               estMode = 1)
-run_wt50_noproj$fit
-save(run_wt50_noproj, file = "models/sensitivity/diet/run_wt50_noproj.Rdata")
+# data50$projyr <- 2019
+# run_wt50_noproj <- run_CEATTLE(data = data50,
+#                                M1 = 1,
+#                                prior = FALSE,
+#                                init = NULL,
+#                                msm = 1,
+#                                estMode = 1)
+# run_wt50_noproj$fit
+# save(run_wt50_noproj, file = "models/sensitivity/diet/run_wt50_noproj.Rdata")
 
 data75 <- hake_intrasp
 data75$UobsWtAge$Stomach_proportion_by_weight <- wt75
-run_wt75 <- run_CEATTLE(data = data75,
-                        M1 = 1,
-                        prior = FALSE,
-                        init = NULL,
-                        msm = 1,
-                        estMode = 0)
-run_wt75$fit
-save(run_wt75, file = "models/sensitivity/diet/run_wt75.Rdata")
-run_wt75_fix <- run_CEATTLE(data = data75,
-                            M1 = 0,
-                            prior = FALSE,
-                            init = NULL,
-                            msm = 1,
-                            estMode = 0)
-run_wt75_fix$fit
-save(run_wt75_fix, file = "models/sensitivity/diet/run_wt75_fix.Rdata")
+# run_wt75 <- run_CEATTLE(data = data75,
+#                         M1 = 1,
+#                         prior = FALSE,
+#                         init = NULL,
+#                         msm = 1,
+#                         estMode = 0)
+# run_wt75$fit
+# save(run_wt75, file = "models/sensitivity/diet/run_wt75.Rdata")
+# run_wt75_fix <- run_CEATTLE(data = data75,
+#                             M1 = 0,
+#                             prior = FALSE,
+#                             init = NULL,
+#                             msm = 1,
+#                             estMode = 0)
+# run_wt75_fix$fit
+# save(run_wt75_fix, file = "models/sensitivity/diet/run_wt75_fix.Rdata")
 run_wt75_prior <- run_CEATTLE(data = data75,
                               M1 = 1,
                               prior = TRUE,
@@ -425,12 +425,12 @@ run_wt75_prior <- run_CEATTLE(data = data75,
                               estMode = 0)
 run_wt75_prior$fit
 save(run_wt75_prior, file = "models/sensitivity/diet/run_wt75_prior.Rdata")
-data75$projyr <- 2019
-run_wt75_noproj <- run_CEATTLE(data = data75,
-                               M1 = 1,
-                               prior = FALSE,
-                               init = NULL,
-                               msm = 1,
-                               estMode = 1)
-run_wt75_noproj$fit
-save(run_wt75_noproj, file = "models/sensitivity/diet/run_wt75_noproj.Rdata")
+# data75$projyr <- 2019
+# run_wt75_noproj <- run_CEATTLE(data = data75,
+#                                M1 = 1,
+#                                prior = FALSE,
+#                                init = NULL,
+#                                msm = 1,
+#                                estMode = 1)
+# run_wt75_noproj$fit
+# save(run_wt75_noproj, file = "models/sensitivity/diet/run_wt75_noproj.Rdata")
