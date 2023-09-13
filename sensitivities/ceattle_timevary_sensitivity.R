@@ -20,7 +20,7 @@ load("models/sensitivity/time-varying/run_90s_prior.Rdata")
 load("models/sensitivity/time-varying/run_recent_prior.Rdata")
 
 # Year ranges
-all_years <- 1980:2022
+all_years <- 1980:2050
 no_proj <- 1980:2019
 
 timevary_fits <- rbind(cbind(model = "MS", ms_priorM1$fit),
@@ -37,34 +37,36 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
   ceattle_biomass <- function(run, name, years) {
     ssb <- (c(run$quantities$biomassSSB) * 2)
     biom <- c(run$quantities$biomass)
-    wide <- as.data.frame(cbind(years, ssb, biom))
+    wide <- as.data.frame(cbind(all_years, ssb, biom))
     colnames(wide) <- c("year", "SSB", "Total Biomass")
     all_biom <- melt(wide, id.vars = "year")
     all_biom2 <- cbind(all_biom,
                        error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
                                  run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]),
-                       model = rep(name))
+                       model = rep(name)) %>%
+      filter(year %in% years)
     return(all_biom2)
   }
   
   test_biom <- rbind(ceattle_biomass(ms_model, "Base Cannibalism Model", all_years),
-                     ceattle_biomass(run_high, "High (1988-1999)", 1981:1999) %>% filter(year %in% 1988:1999),
-                     ceattle_biomass(run_low, "Low (2005-2019)", no_proj) %>% filter(year %in% 2005:2019))
+                     ceattle_biomass(run_high, "High (1988-1999)", 1980:1999),
+                     ceattle_biomass(run_low, "Low (2005-2019)", 2005:2019))
   
   # Put recruitment together
   ceattle_R <- function(run, name, years) {
     R <- c(run$quantities$R)
     error <- c(run$sdrep$sd[which(names(run$sdrep$value) == "R")])
-    R_all <- as.data.frame(cbind(year = years, 
+    R_all <- as.data.frame(cbind(year = all_years, 
                                  variable = rep("Recruitment"),
                                  value = R, 
                                  error = error, 
-                                 model = rep(name)))
+                                 model = rep(name))) %>%
+      filter(year %in% years)
     return(R_all)
   }
   R_test <- rbind(ceattle_R(ms_model, "Base Cannibalism Model", all_years),
-                  ceattle_R(run_high, "High (1988-1999)", 1981:1999) %>% filter(year %in% 1988:1999),
-                  ceattle_R(run_low, "Low (2005-2019)", no_proj) %>% filter(year %in% 2005:2019))
+                  ceattle_R(run_high, "High (1988-1999)", 1980:1999),
+                  ceattle_R(run_low, "Low (2005-2019)", 2005:2019))
   
   
   # Combine biomass & recruitment and plot
@@ -109,6 +111,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
+    xlim(1980, 2022) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
@@ -130,77 +133,76 @@ timing_popdy[[3]]
 # SSB_recent[15] / DynamicB0_recent[15] # 2019 value
 
 
-# Numbers-at-age for each model run -------------------------------------------
-# Read in data from no diet CEATTLE run
+# # Numbers-at-age for each model run -------------------------------------------
+# # Read in data from no diet CEATTLE run
 extract_byage2 <- function(quantity, name, years) {
   df <- as.data.frame(as.table(quantity))
-  
+
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
   levels(df$Var4) <- c(years)
   colnames(df) <- c("age", "year", "numbers")
-  
+
   df <- cbind(df, rep(name, nrow(df)))
   colnames(df)[4] <- "model"
   # years <- as.character(years)
   # df <- df %>% filter(year %in% years)
-  
+
   return(df)
 }
-
-nbyage_test_all <- rbind(extract_byage2(run_90s_prior$model$quantities$NByage, 
-                                        "High (1988-1999)", 1988:2019),
-                         extract_byage2(ms_priorM1$model$quantities$NByage, 
-                                        "Base Cannibalism Model", all_years),
-                         extract_byage2(run_recent_prior$model$quantities$NByage, 
-                                        "Low (2005-2019)", no_proj) %>% 
-                           filter(year %in% 2005:2019))
-
-# # Set 15 as accumulation age
-# nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
-
-# Plot yearly nbyage
-nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
-nbyage_test_all$model <- factor(nbyage_test_all$model, 
-                                levels = c("High (1988-1999)", "Base Cannibalism Model", "Low (2005-2019)"))
-nbyage_test_all$year <- factor(nbyage_test_all$year,
-                               levels = c(all_years))
-
-test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
-  geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
-  scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-  scale_x_discrete(breaks = seq(1980, 2022, 3)) +
-  xlab(" ") + ylab("Age") +
-  theme(legend.position = "none") +
-  facet_wrap(~model, ncol = 1)
-test_nbyage_plot
-
+# 
+# nbyage_test_all <- rbind(extract_byage2(run_90s_prior$model$quantities$NByage, 
+#                                         "High (1988-1999)", 1988:2019),
+#                          extract_byage2(ms_priorM1$model$quantities$NByage, 
+#                                         "Base Cannibalism Model", all_years),
+#                          extract_byage2(run_recent_prior$model$quantities$NByage, 
+#                                         "Low (2005-2019)", no_proj) %>% 
+#                            filter(year %in% 2005:2019))
+# 
+# # # Set 15 as accumulation age
+# # nbyage_test_all$age[as.numeric(nbyage_test_all$age) > 15] <- 15
+# 
+# # Plot yearly nbyage
+# nbyage_test_all$age <- as.numeric(nbyage_test_all$age)
+# nbyage_test_all$model <- factor(nbyage_test_all$model, 
+#                                 levels = c("High (1988-1999)", "Base Cannibalism Model", "Low (2005-2019)"))
+# nbyage_test_all$year <- factor(nbyage_test_all$year,
+#                                levels = c(all_years))
+# 
+# test_nbyage_plot <- ggplot(nbyage_test_all, aes(x=year, y=age)) +
+#   geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
+#   scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
+#   scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
+#   scale_x_discrete(breaks = seq(1980, 2022, 3)) +
+#   xlab(" ") + ylab("Age") +
+#   theme(legend.position = "none") +
+#   facet_wrap(~model, ncol = 1)
+# test_nbyage_plot
 
 ### Plot mortality ------------------------------------------------------------
-extract_M <- function(run, quantity, name, years) {
+extract_M <- function(run, quantity, name) {
   M1 <- run$quantities$M1[1, 1, 1:20]
-  M2 <- extract_byage2(quantity, name, years)
+  M2 <- extract_byage2(quantity, name, all_years)
   total_mortality <- M2 %>%
-    mutate(M1_M2 = M2$numbers + rep(M1, length(years)))
+    mutate(M1_M2 = M2$numbers + rep(M1, length(all_years)))
   total_mortality$age <- as.integer(total_mortality$age)
   total_mortality$year <- as.integer(as.character(total_mortality$year))
   return(total_mortality)
 }
 
 M_all <- rbind(extract_M(run_90s_prior$model, run_90s_prior$model$quantities$M2,
-                         "High (1988-1999)", 1981:1999) %>% filter(year %in% 1988:1999),
+                         "High (1988-1999)") %>% filter(year %in% 1980:1999),
                extract_M(run_recent_prior$model, run_recent_prior$model$quantities$M2,
-                         "Low (2005-2019)", no_proj) %>% filter(year %in% 2005:2019),
+                         "Low (2005-2019)") %>% filter(year %in% 2005:2019),
                extract_M(ms_priorM1$model, ms_priorM1$model$quantities$M2, 
-                         "Base Cannibalism Model", all_years))
+                         "Base Cannibalism Model") %>% filter(year %in% 1980:2022)) 
 
 max(M_all$M1_M2)  # check max M for plotting
 timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
   geom_tile(aes(fill = M1_M2)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_fill_viridis(name = "M1 + M2", limits = c(0, 3.6), breaks = c(0.21, 1, 2, 3, 4)) +
+  scale_fill_viridis(name = "M1 + M2", limits = c(0, 2.7), breaks = c(0.21, 1, 2, 3)) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   coord_equal() +
   ylab("Age") + xlab("Year") +
@@ -221,26 +223,26 @@ M1_all <- rbind(data.frame(model = "Base Cannibalism Model",
                            mean = mean(run_recent_prior$model$quantities$M1[1, 1, 1:20])))
 
 
-### Plot using models with a prior on M1 --------------------------------------
-# Models with estimated M1
-load("models/ms_estM1.Rdata")
-# Read in different time period models (specified in run_ceattle.R)
-load("models/sensitivity/time-varying/run_90s.Rdata")
-load("models/sensitivity/time-varying/run_recent.Rdata")
 
-timing_popdy_estM1 <- timing_plot_popdy(run_high = run_90s$model, 
-                                        run_low = run_recent$model,
-                                        ms_model = ms_estM1$model)
-relative_change_estM1 <- timing_popdy_estM1[[2]]
-timing_popdy_estM1[[3]]
+# # Models with estimated M1 ----------------------------------------------------
+# load("models/ms_estM1.Rdata")
+# # Read in different time period models (specified in run_ceattle.R)
+# load("models/sensitivity/time-varying/run_90s.Rdata")
+# load("models/sensitivity/time-varying/run_recent.Rdata")
+# 
+# timing_popdy_estM1 <- timing_plot_popdy(run_high = run_90s$model, 
+#                                         run_low = run_recent$model,
+#                                         ms_model = ms_estM1$model)
+# relative_change_estM1 <- timing_popdy_estM1[[2]]
+# timing_popdy_estM1[[3]]
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]],
-       width=140, height=150, units="mm", dpi=300)
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
-       width=150, height=150, units="mm", dpi=300)
-ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
-       timevary_M, width=140, height = 170, units = "mm", dpi=300)
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_estM1.png", timing_popdy_estM1[[3]],
-       width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]],
+#        width=140, height=150, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
+#        width=150, height=150, units="mm", dpi=300)
+# ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_M.png",
+#        timevary_M, width=140, height = 170, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy_estM1.png", timing_popdy_estM1[[3]],
+#        width=140, height=150, units="mm", dpi=300)
