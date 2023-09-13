@@ -42,6 +42,7 @@ colnames(model_summary) <- c("component", "SS est M1", "SS fix M1",
 start_yr <- ms_estM1$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
+all_yrs <- ms_estM1$model$data_list$styr:ms_estM1$model$data_list$projyr
 hind_end <- 2019
 assess_yr = "2020"
 max_age <- ms_estM1$model$data_list$nages
@@ -52,7 +53,7 @@ extract_byage <- function(result, name, type) {
   
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
-  levels(df$Var4) <- c(years)
+  levels(df$Var4) <- c(all_yrs)
   colnames(df) <- c("age", "year", type)
   
   df <- cbind(df, rep(name, nrow(df)))
@@ -64,15 +65,15 @@ extract_byage <- function(result, name, type) {
 plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
-    ssb <- (c(run$quantities$biomassSSB) * 2)
-    biom <- c(run$quantities$biomass)
+    ssb <- (c(run$quantities$biomassSSB[, 1:length(start_yr:end_yr)]) * 2)
+    biom <- c(run$quantities$biomass[, 1:length(start_yr:end_yr)])
     biom_sd <- run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]
     wide <- as.data.frame(cbind(years, ssb, biom))
     colnames(wide) <- c("year", "SSB", "Total Biomass")
     all_biom <- melt(wide, id.vars = "year")
     all_biom2 <- cbind(all_biom, 
-                       error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
-                                 run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]), 
+                       error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")][1:length(start_yr:end_yr)], 
+                                 run$sdrep$sd[which(names(run$sdrep$value) == "biomass")][1:length(start_yr:end_yr)]), 
                        model = rep(name, length(all_biom$year)))  
     colnames(all_biom2)[2:3] <- c("type", "value")
     return(all_biom2)
@@ -80,7 +81,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
   nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
-  recruitment <- c(ms_run$quantities$R)
+  recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
   
   # Pull out biomass from stock synthesis & combine, remove pre-1988
   start <- 1966  # start year of SS3 analysis
@@ -95,7 +96,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
   
   # Pull out recruitment
-  nodiet_R <- c(ss_run$quantities$R)
+  nodiet_R <- c(ss_run$quantities$R[, 1:length(start_yr:end_yr)])
   
   # Get recruitment from SS3 files, offset by 1 year
   ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:((start_yr-1)-start)), ]
@@ -110,18 +111,18 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   }
   
   n_row <- length(start_yr:end_yr)
-  rechange_all <- rbind(rel_change(biomass[1:n_row, 3],
-                                   nodiet_biomass[1:n_row, 3],
+  rechange_all <- rbind(rel_change(biomass[biomass$type == "SSB",]$value,
+                                   nodiet_biomass[nodiet_biomass$type == "SSB",]$value,
                                    "cannibalism - no diet, SSB"),
-                        rel_change(biomass[(n_row+1):(2*(n_row)), 3],
-                                   nodiet_biomass[(n_row+1):(2*(n_row)), 3],
+                        rel_change(biomass[biomass$type == "Total Biomass",]$value,
+                                   nodiet_biomass[nodiet_biomass$type == "Total Biomass",]$value,
                                    "cannibalism - no diet, Total"),
                         rel_change(recruitment, nodiet_R,
                                    "cannibalism - no diet, R"),
-                        rel_change(nodiet_biomass[1:n_row, 3],
+                        rel_change(nodiet_biomass[nodiet_biomass$type == "SSB",]$value,
                                    ss3_biom[1:n_row, 3],
                                    "no diet - SS3, SSB"),
-                        rel_change(nodiet_biomass[(n_row+1):(2*(n_row)), 3],
+                        rel_change(nodiet_biomass[nodiet_biomass$type == "Total Biomass",]$value,
                                    ss3_biom[(n_row+1):(2*(n_row)), 3],
                                    "no diet - SS3, Total"),
                         rel_change(nodiet_R,
@@ -147,8 +148,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                variable = rep("Assessment"), 
                                value = ss3_R[, 2],
                                error = ss3_R[, 3]))
-  R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")], 
-                                    ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")])), 
+  R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")][1:length(start_yr:end_yr)], 
+                                    ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")][1:length(start_yr:end_yr)])), 
                  ss3_R)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
@@ -251,6 +252,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
   
   # Combine with nbyage from intrasp run
+  nbyage <- nbyage[nbyage$year %in% 1980:2022,] ## remove extra projection years
   nbyage_all <- rbind(nbyage, nbyage_ss3)
   
   # Find mean numbers-at-age for each year
@@ -258,7 +260,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   nbyage_mean <- nbyage_all %>%
     group_by(year, model) %>%
     summarize(mean = weighted.mean(age, numbers))
-  nbyage_mean$year <- as.numeric(nbyage_mean$year)
+  nbyage_mean$year <- as.numeric(as.character(nbyage_mean$year))
   
   mean_nbyage_plot <- ggplot(nbyage_mean, aes(x = year, y = mean)) +
     geom_line(aes(color = model)) +
@@ -293,7 +295,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab("Year") + ylab("Age") +
     labs(size="Millions (n)", color="Millions (n)")
-  nbyage_anomaly
 
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
@@ -337,12 +338,14 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   suitability <- suitability[, 3:6]
   suitability$Var3 <- as.integer(factor(suitability$Var3, labels = c(1:max_age)))
   suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:max_age)))
-  suitability$Var5 <- factor(suitability$Var5, labels = years)
+  suitability$Var5 <- factor(suitability$Var5, labels = all_yrs)
   
   colnames(suitability) <- c("pred_age", "prey_age", "year", "value")
   suitability <- suitability %>% filter(prey_age < 6)
   suitability$prey_age <- factor(suitability$prey_age)
+  suitability$year <- as.numeric(as.character(suitability$year))
   suitability <- suitability %>% 
+    filter(year <= 2022) %>%
     group_by(pred_age, prey_age) %>%
     summarize(value = mean(value)) %>%
     filter(pred_age <= 15)
@@ -362,6 +365,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Set 15 as accumulation age
   biombyage$age[as.numeric(biombyage$age) > 15] <- 15
   biombyage$age <- as.integer(biombyage$age)
+  biombyage <- biombyage[as.numeric(as.character(biombyage$year)) <= end_yr,]
   
   # Plot yearly biomass by age
   biombyage_plot <- ggplot(biombyage, aes(x=year, y=age)) +
@@ -382,6 +386,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Filter to only ages below 6 (the ages of hake consumed)
   b_consumed <- b_consumed %>% filter(age < 6)
   b_consumed$age <- as.factor(b_consumed$age)
+  b_consumed <- b_consumed[as.numeric(as.character(b_consumed$year)) <= end_yr,]
   
   # Plot yearly biomass consumed by age
   b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=(biomass / 1000000), fill = age)) +
@@ -390,6 +395,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("Biomass consumed (Mt)")
+  b_consumed_plot
   
   # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
   # Add ages together
@@ -454,15 +460,16 @@ mortality <- function(run, type) {
   if(type == "multi-species") {
     M2 <- extract_byage(run$quantities$M2, "multispecies", "M2")
     total_mortality <- M2 %>%
-      mutate(M1_M2 = M2 + rep(M1, length(years)))
+      mutate(M1_M2 = M2 + rep(M1, length(all_yrs)))
     total_mortality$age <- as.integer(total_mortality$age)
     total_mortality$year <- as.integer(as.character(total_mortality$year))
+    total_mortality <- total_mortality[total_mortality$year <= end_yr,]
     
     mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.6)) + 
       geom_tile(aes(fill = M1_M2)) +
       scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) + 
       scale_x_continuous(expand = c(0, 0)) + 
-      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.6), breaks = c(0.21, 1, 1.5)) +
+      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.5), breaks = c(0.21, 1, 1.5)) +
       geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +
@@ -479,22 +486,22 @@ mortality <- function(run, type) {
   }
 }
 
-# Cannibalism with estimated M1
-ms_est_mort <- mortality(ms_estM1$model, type = "multi-species")
-ms_est_mort[[1]]
-ms_est_mort[[2]]
-ms_est_M1 <- ms_est_mort[[3]]
-ms_est_totM <- ms_est_mort[[4]] %>% 
-  group_by(year) %>%
-  summarize(M1_M2 = sum(M1_M2))
-
-# Cannibalism with fixed M1
-ms_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
-ms_fixed_mort[[1]]
-ms_fixed_mort[[2]]
-ms_fix_totM <- ms_fixed_mort[[4]] %>% 
-  group_by(year) %>%
-  summarize(M1_M2 = sum(M1_M2))
+# # Cannibalism with estimated M1
+# ms_est_mort <- mortality(ms_estM1$model, type = "multi-species")
+# ms_est_mort[[1]]
+# ms_est_mort[[2]]
+# ms_est_M1 <- ms_est_mort[[3]]
+# ms_est_totM <- ms_est_mort[[4]] %>% 
+#   group_by(year) %>%
+#   summarize(M1_M2 = sum(M1_M2))
+# 
+# # Cannibalism with fixed M1
+# ms_fixed_mort <- mortality(ms_fixM1$model, type = "multi-species")
+# ms_fixed_mort[[1]]
+# ms_fixed_mort[[2]]
+# ms_fix_totM <- ms_fixed_mort[[4]] %>% 
+#   group_by(year) %>%
+#   summarize(M1_M2 = sum(M1_M2))
 
 # Cannibalism with prior on M1
 ms_prior_mort <- mortality(ms_priorM1$model, type = "multi-species")
@@ -505,17 +512,17 @@ ms_prior_totM <- ms_prior_mort[[4]] %>%
   group_by(year) %>%
   summarize(M1_M2 = sum(M1_M2))
 
-# Single-species with estimated M1
-ss_M1 <- mortality(ss_estM1$model, type = "single-species")
-ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
+# # Single-species with estimated M1
+# ss_M1 <- mortality(ss_estM1$model, type = "single-species")
+# ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
 ### Reference points ----------------------------------------------------------
 # Catch / Fishing effort
 eff <- rbind(data.frame(year = years,
-                        eff = t(ms_fixM1$model$quantities$F_spp),
+                        eff = ms_fixM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
                         model = "cannibalism"),
              data.frame(year = years,
-                        eff = t(ss_fixM1$model$quantities$F_spp),
+                        eff = ss_fixM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
                         model = "single-species"))
 
 eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
@@ -594,6 +601,7 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
   ylab("Relative SSB") + xlab("Year") + labs(color = "Model") +
   ylim(0, NA) +
+  xlim(1980, 2022) +
   geom_hline(yintercept = 1, color = "gray") +
   geom_hline(yintercept = 0.4, color = "gray") +
   annotate("text", x = 1985, y = 0.4, label = "Management target", 

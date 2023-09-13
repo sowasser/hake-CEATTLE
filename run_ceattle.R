@@ -19,7 +19,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230824.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230912.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
@@ -40,8 +40,8 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
                                            FsprLimit = 0.4, # F40%
                                            Ptarget = 0.4, # Target is 40% B0
                                            Plimit = 0.1, # No fishing when SB<SB10
-                                           Pstar = 0.45,
-                                           Sigma = 0.5),
+                                           Pstar = 0.5,
+                                           Sigma = 0),
                  phase = "default",
                  # Update phase to help convergence ---------------------------
                  # phase = list(
@@ -242,7 +242,7 @@ save(run_90s_prior, file = "models/sensitivity/time-varying/run_90s_prior.Rdata"
 dirichlet_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
 data_recent <- hake_intrasp
 data_recent$UobsWtAge <- dirichlet_recent
-data_recent$styr <- 1980
+data_recent$styr <- 
 data_recent$endyr <- 2019
 data_recent$projyr <- 2019
 run_recent <- run_CEATTLE(data = data_recent,
