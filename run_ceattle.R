@@ -41,7 +41,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
                                            Ptarget = 0.4, # Target is 40% B0
                                            Plimit = 0.1, # No fishing when SB<SB10
                                            Pstar = 0.5,
-                                           Sigma = 0),
+                                           Sigma = 0.5),
                  phase = "default",
                  # Update phase to help convergence ---------------------------
                  # phase = list(
