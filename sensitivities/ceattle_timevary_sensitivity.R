@@ -94,6 +94,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
                         rel_change("Low (2005-2019)", "Base Cannibalism Model", "SSB", 2005:2019),
                         rel_change("Low (2005-2019)", "Base Cannibalism Model", "Total Biomass", 2005:2019),
                         rel_change("Low (2005-2019)", "Base Cannibalism Model", "Recruitment", 2005:2019))
+  colnames(rechange_all) <- c("model", "mean", "SEM", "percent")
   
   # Plot population dynamics
   all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
