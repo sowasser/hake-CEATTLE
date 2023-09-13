@@ -102,7 +102,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:((start_yr-1)-start)), ]
   ss3_R <- ss3_R[-nrow(ss3_R), ]
   
-  # Find mean difference between the model runs -------------------------------
+  # Find mean difference between the model runs (for hindcast) ----------------
   rel_change <- function(df1, df2, title) {
     mean_out <- round(mean((df1 / 1000000) - (df2 / 1000000)), 3)
     SEM <- round(sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range)), 3)
@@ -110,23 +110,23 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     return(c(title, mean_out, SEM, percent))
   }
   
-  n_row <- length(start_yr:end_yr)
-  rechange_all <- rbind(rel_change(biomass[biomass$type == "SSB",]$value,
-                                   nodiet_biomass[nodiet_biomass$type == "SSB",]$value,
+  rechange_all <- rbind(rel_change(biomass[biomass$type == "SSB" & biomass$year <= hind_end,]$value,
+                                   nodiet_biomass[nodiet_biomass$type == "SSB" & biomass$year <= hind_end,]$value,
                                    "cannibalism - no diet, SSB"),
-                        rel_change(biomass[biomass$type == "Total Biomass",]$value,
-                                   nodiet_biomass[nodiet_biomass$type == "Total Biomass",]$value,
+                        rel_change(biomass[biomass$type == "Total Biomass" & biomass$year <= hind_end,]$value,
+                                   nodiet_biomass[nodiet_biomass$type == "Total Biomass" & biomass$year <= hind_end,]$value,
                                    "cannibalism - no diet, Total"),
-                        rel_change(recruitment, nodiet_R,
+                        rel_change(recruitment[1:length(start_yr:hind_end)], 
+                                   nodiet_R[1:length(start_yr:hind_end)],
                                    "cannibalism - no diet, R"),
-                        rel_change(nodiet_biomass[nodiet_biomass$type == "SSB",]$value,
-                                   ss3_biom[1:n_row, 3],
+                        rel_change(nodiet_biomass[nodiet_biomass$type == "SSB" & nodiet_biomass$year <= hind_end,]$value,
+                                   ss3_biom[ss3_biom$type == "SSB" & ss3_biom$year <= hind_end,]$value,
                                    "no diet - SS3, SSB"),
-                        rel_change(nodiet_biomass[nodiet_biomass$type == "Total Biomass",]$value,
-                                   ss3_biom[(n_row+1):(2*(n_row)), 3],
+                        rel_change(nodiet_biomass[nodiet_biomass$type == "Total Biomass" & biomass$year <= hind_end,]$value,
+                                   ss3_biom[ss3_biom$type == "Total Biomass" & ss3_biom$year <= hind_end,]$value,
                                    "no diet - SS3, Total"),
-                        rel_change(nodiet_R,
-                                   ss3_R[1:(n_row), 2],
+                        rel_change(nodiet_R[1:length(start_yr:hind_end)],
+                                   ss3_R[1:length(start_yr:hind_end), 2],
                                    "no diet - SS3, R"))
   colnames(rechange_all) <- c("model", "mean difference", "SEM", "percent")
   
