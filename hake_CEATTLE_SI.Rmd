@@ -6,35 +6,37 @@ output:
   html_document:
     df_print: paged
 ---
+
 ![**Figure S.1**: Suitability coefficient (suitability of consumption and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for the CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
 
  &nbsp;  
 
-![**Figure S.2**: Temperature-dependent consumption rate function for Atlantic cod and pollock from Fish Bioenergetics 4 (Deslauriers et al., 2017), and the values used in the CEATTLE model for hake. Optimal and maximum temperatures for hake were derived from the temperatures recorded during the FEAT hake acoustic-trawl survey and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
+![**Figure S.2**: Spawning stock biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with the Pacific Hake/Whiting Treaty '40-10' harvest control rule (HCR) and with no HCR. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
+
+ &nbsp;  
+
+![**Figure S.3**: Temperature-dependent consumption rate function for Atlantic cod and pollock from Fish Bioenergetics 4 (Deslauriers et al., 2017), and the values used in the CEATTLE model for hake. Optimal and maximum temperatures for hake were derived from the temperatures recorded during the FEAT hake acoustic-trawl survey and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
 
  &nbsp;  
  
- ![**Figure S.3**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimates by grid, mean survey temperatures, and mean ROMS temperature.](./plots/temperature/mean_temp_compared.png)
+ ![**Figure S.4**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimates by grid, mean survey temperatures, and mean ROMS temperature.](./plots/temperature/mean_temp_compared.png)
 
  &nbsp;  
 
-![**Figure S.4**: Allometric consumption function using values for Atlantic cod and juvenile and adult pollock from Fish Bioenergetics 4 (Deslauriers et al. 2017) and the values for hake from Francis (1983) where CA = 0.167 and CA / 2 = 0.0835.](./plots/bioenergetics/allometric_mass.png)
+![**Figure S.5**: Allometric consumption function using values for Atlantic cod and juvenile and adult pollock from Fish Bioenergetics 4 (Deslauriers et al. 2017) and the values for hake from Francis (1983) where CA = 0.167 and CA / 2 = 0.0835.](./plots/bioenergetics/allometric_mass.png)
 
  &nbsp;  
 
-![**Figure S.5**: Age vs. length from the assessment of Pacific hake, the ages fitted to CCTD predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake survey (with bounds for ages of 1 and 15 for CEATTLE), and ages from FEAT acoustic-trawl survey data.](./plots/diet/growth_curve.png)
+![**Figure S.6**: Age vs. length from the assessment of Pacific hake, the ages fitted to CCTD predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake survey (with bounds for ages of 1 and 15 for CEATTLE), and ages from FEAT acoustic-trawl survey data.](./plots/diet/growth_curve.png)
 
  &nbsp;  
 
-![**Figure S.6**: Dirichlet-reweighted output for the calculation of mean diet proportions by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
+![**Figure S.7**: Dirichlet-reweighted output for the calculation of mean diet proportions by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
 
  &nbsp;  
  
-![**Figure S.7**: Scaled diet proportions by predator age for sensitivity testing, with observed diet ration scaled to a maxima of 0.5%, 10%, 50%, and 75% cannibalism by weight.](./plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png)
+![**Figure S.8**: Scaled diet proportions by predator age for sensitivity testing, with observed diet ration scaled to a maxima of 0.5%, 10%, 50%, and 75% cannibalism by weight.](./plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png)
  
-  &nbsp;  
-  
-![**Figure S.8**: Residual (M1) and predation (M2) mortality by age and year from CEATTLE for the base diet data, for 1988-1999 with the diet data for that period, and for 2005-2019 with the diet data for that period.](./plots/CEATTLE/cannibalism/Testing/timevarying_M.png)
   
   &nbsp;
  
@@ -44,9 +46,9 @@ output:
 
 ![**Figure S.10**: Dirichlet reweighting output for the calculation of mean diet proportions from records of hake diet in 2005-2019 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_recent.png)
 
- &nbsp;  
-
-![**Figure S.11**: Annual hake prey by weight (top three species) in hake stomachs within the CCTD by year of sampling.](./plots/diet/hake_prey_yearly.png)
+  &nbsp;  
+  
+![**Figure S.11**: Residual (M1) and predation (M2) mortality by age and year from CEATTLE for the base diet data, for 1988-1999 with the diet data for that period, and for 2005-2019 with the diet data for that period.](./plots/CEATTLE/cannibalism/Testing/timevarying_M.png)
 
  &nbsp; 
  
