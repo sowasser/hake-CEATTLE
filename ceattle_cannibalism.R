@@ -16,36 +16,33 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 ### Load in models - Rdata objects --------------------------------------------
-load("models/ss_fixM1.Rdata")
-load("models/ss_estM1.Rdata")
+# load("models/ss_fixM1.Rdata")
+# load("models/ss_estM1.Rdata")
 load("models/ss_priorM1.Rdata")
-load("models/ms_estM1.Rdata")
-load("models/ms_fixM1.Rdata")
+# load("models/ms_estM1.Rdata")
+# load("models/ms_fixM1.Rdata")
 load("models/ms_priorM1.Rdata")
 
 # Compare fits
-model_fits <- rbind(cbind(model = "SS est M1", ss_estM1$fit),
-                    cbind(model = "SS fix M1", ss_fixM1$fit),
+model_fits <- rbind(# cbind(model = "SS est M1", ss_estM1$fit),
+                    # cbind(model = "SS fix M1", ss_fixM1$fit),
                     cbind(model = "SS prior M1", ss_priorM1$fit),
-                    cbind(model = "MS est M1", ms_estM1$fit),
-                    cbind(model = "MS fix M1", ms_fixM1$fit),
+                    # cbind(model = "MS est M1", ms_estM1$fit),
+                    # cbind(model = "MS fix M1", ms_fixM1$fit),
                     cbind(model = "MS prior M1", ms_priorM1$fit))
 
-model_summary <- list(ss_estM1$summary, ss_fixM1$summary, ss_priorM1$summary,
-                      ms_estM1$summary, ms_fixM1$summary, ms_priorM1$summary) %>%
+model_summary <- list(ss_priorM1$summary, ms_priorM1$summary) %>%
   reduce(full_join, by = "component")
-colnames(model_summary) <- c("component", "SS est M1", "SS fix M1", 
-                             "SS prior M1", "MS est M1", "MS fix M1",
-                             "MS prior M1")
+colnames(model_summary) <- c("component", "SS prior M1", "MS prior M1")
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
-start_yr <- ms_estM1$model$data_list$styr
+start_yr <- ms_priorM1$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
-all_yrs <- ms_estM1$model$data_list$styr:ms_estM1$model$data_list$projyr
+all_yrs <- ms_priorM1$model$data_list$styr:ms_priorM1$model$data_list$projyr
 hind_end <- 2019
 assess_yr = "2020"
-max_age <- ms_estM1$model$data_list$nages
+max_age <- ms_priorM1$model$data_list$nages
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -169,7 +166,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$model <- factor(all_popdy$model, 
                             levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type, 
-                           labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+                           labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -440,15 +437,15 @@ plots$biombyage
 plots$b_consumed
 plots$yearly_b
 
-# Plot with fixed M1
-plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
-relative_change_M1fix <- plots_M1fixed$relative_change
-plots_M1fixed$popdy
-
-# Plot with M1 estimated
-plots_M1est <- plot_models(ms_estM1$model, ss_estM1$model)
-relative_change_M1est <- plots_M1est$relative_change
-plots_M1est$popdy
+# # Plot with fixed M1
+# plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
+# relative_change_M1fix <- plots_M1fixed$relative_change
+# plots_M1fixed$popdy
+# 
+# # Plot with M1 estimated
+# plots_M1est <- plot_models(ms_estM1$model, ss_estM1$model)
+# relative_change_M1est <- plots_M1est$relative_change
+# plots_M1est$popdy
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
@@ -509,7 +506,7 @@ ms_prior_mort[[1]]
 ms_prior_mort[[2]]
 ms_prior_M1 <- ms_prior_mort[[3]]
 ms_prior_totM <- ms_prior_mort[[4]] %>% 
-  group_by(year) %>%
+  group_by(age, year) %>%
   summarize(M1_M2 = sum(M1_M2))
 
 # # Single-species with estimated M1
@@ -519,10 +516,10 @@ ms_prior_totM <- ms_prior_mort[[4]] %>%
 ### Reference points ----------------------------------------------------------
 # Catch / Fishing effort
 eff <- rbind(data.frame(year = years,
-                        eff = ms_fixM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
+                        eff = ms_priorM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
                         model = "cannibalism"),
              data.frame(year = years,
-                        eff = ss_fixM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
+                        eff = ss_priorM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
                         model = "single-species"))
 
 eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
@@ -569,11 +566,11 @@ brp_comparison <- function(model, model_name) {
 }
 
 brps <- cbind(
-  brp_comparison(model = ss_estM1$model, model_name = "SS est M1"),
-  brp_comparison(model = ss_fixM1$model, model_name = "SS fix M1"),
+  # brp_comparison(model = ss_estM1$model, model_name = "SS est M1"),
+  # brp_comparison(model = ss_fixM1$model, model_name = "SS fix M1"),
   brp_comparison(model = ss_priorM1$model, model_name = "SS prior M1"),
-  brp_comparison(model = ms_estM1$model, model_name = "MS est M1"),
-  brp_comparison(model = ms_fixM1$model, model_name = "MS fix M1"),
+  # brp_comparison(model = ms_estM1$model, model_name = "MS est M1"),
+  # brp_comparison(model = ms_fixM1$model, model_name = "MS fix M1"),
   brp_comparison(model = ms_priorM1$model, model_name = "MS prior M1")
 )
 
@@ -599,7 +596,7 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   geom_line(aes(x = year, y = Hake, color = factor(model))) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
-  ylab("Relative SSB") + xlab("Year") + labs(color = "Model") +
+  ylab("Relative SB") + xlab("Year") + labs(color = "Model") +
   ylim(0, NA) +
   xlim(1980, 2022) +
   geom_hline(yintercept = 1, color = "gray") +
@@ -611,11 +608,6 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
            vjust = -0.5, size = 2.5, color = "darkgray") 
 relativeSSB_plot
 
-# # Rceattle generated depletion plots - for comparison
-# Rceattle::plot_depletionSSB(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
-#                             model_names = c("single-species", "cannibalism"))
-# Rceattle::plot_depletion(Rceattle = list(ss_priorM1$model, ms_priorM1$model),
-#                          model_names = c("single-species", "cannibalism"))
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
