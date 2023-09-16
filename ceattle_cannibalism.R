@@ -602,10 +602,10 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   geom_hline(yintercept = 1, color = "gray") +
   geom_hline(yintercept = 0.4, color = "gray") +
   annotate("text", x = 1985, y = 0.4, label = "Management target", 
-           vjust = -0.5, size = 2.5, color = "darkgray") +
+           vjust = -0.5, size = 2.5, color = "grey38") +
   geom_hline(yintercept = 0.1, color = "gray") +
   annotate("text", x = 1987.5, y = 0.1, label = "Minimum stock size threshold", 
-           vjust = -0.5, size = 2.5, color = "darkgray") 
+           vjust = -0.5, size = 2.5, color = "grey38") 
 relativeSSB_plot
 
 
