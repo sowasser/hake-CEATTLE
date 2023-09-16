@@ -107,6 +107,9 @@ all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
 all_popdy$min[all_popdy$min < 0] <- 0
 all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
 
+all_popdy$type <- factor(all_popdy$type, 
+                         labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+
 popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, 
                                     color = model, fill = model, linetype = HCR)) +
   geom_line() +

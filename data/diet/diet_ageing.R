@@ -300,7 +300,8 @@ growth_curve <- ggplot(all_ages, aes(x = age, y = length,
                                      color = data, shape = data, alpha = data)) +
   geom_point(size = 3) +
   scale_alpha_discrete(range = c(0.2, 1)) +
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9)
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  xlab("Age") + ylab("Length (cm)")
 growth_curve
 
 ggsave(filename = "plots/diet/growth_curve.png", growth_curve,

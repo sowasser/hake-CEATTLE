@@ -41,8 +41,8 @@ spp_temp_wide <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7], temp_r
                        temp_dependent(2.5, 8, 10.5, temp_range))  # Hake estimates w/ kriged temp
 colnames(spp_temp_wide) <- c("Atlantic cod - fb4", 
                              "Pollock - fb4", 
-                             "hake - survey temp",
-                             "hake - kriged temp")
+                             "Hake - survey temp",
+                             "Hake - kriged temp")
 spp_temp <- melt(as.data.frame(spp_temp_wide))
 spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4))
 
@@ -57,32 +57,32 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
-  xlab("temperature") + ylab("specific rate") +
-  labs(color = "species")
+  xlab("Temperature") + ylab("Specific Rate") +
+  labs(color = "Species")
 temp_rate
 
 ggsave(filename="plots/bioenergetics/temp_consumption.png", temp_rate,
        bg = "transparent", width=180, height=90, units="mm", dpi=300)
 
 
-# Simpler version of the plot
-spp_temp_wide2 <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
-                        temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
-                        temp_dependent(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
-colnames(spp_temp_wide2) <- c("Atlantic cod", 
-                              "Pollock", 
-                              "Pacific hake")
-spp_temp2 <- melt(as.data.frame(spp_temp_wide2))
-spp_temp2 <- cbind(spp_temp2, temp = rep(temp_range, times=3))
-temp_rate2 <- ggplot(spp_temp2, aes(x=temp, y=value)) +
-  geom_line(aes(color=variable), size=1) +
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
-  ylab("specific rate") +
-  labs(color = "species")
-temp_rate2
-
-ggsave(filename="plots/bioenergetics/temp_consumption2.png", temp_rate2,
-       bg = "transparent", width=150, height=70, units="mm", dpi=300)
+# # Simpler version of the plot
+# spp_temp_wide2 <- cbind(temp_dependent(eq_2[1, 5], eq_2[1, 6], eq_2[1, 7]), 
+#                         temp_dependent(eq_2[2, 5], eq_2[2, 6], eq_2[2, 7]), 
+#                         temp_dependent(2.5, 8, 10.5))  # Hake estimates w/ kriged temp
+# colnames(spp_temp_wide2) <- c("Atlantic cod", 
+#                               "Pollock", 
+#                               "Pacific hake")
+# spp_temp2 <- melt(as.data.frame(spp_temp_wide2))
+# spp_temp2 <- cbind(spp_temp2, temp = rep(temp_range, times=3))
+# temp_rate2 <- ggplot(spp_temp2, aes(x=temp, y=value)) +
+#   geom_line(aes(color=variable), size=1) +
+#   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
+#   ylab("specific rate") +
+#   labs(color = "species")
+# temp_rate2
+# 
+# ggsave(filename="plots/bioenergetics/temp_consumption2.png", temp_rate2,
+#        bg = "transparent", width=150, height=70, units="mm", dpi=300)
 
 
 
@@ -104,8 +104,8 @@ spp_mass_wide <- cbind(allometric_mass(eq_2[1, 3], eq_2[1, 4], wt_range),
                        allometric_mass(0.0835, -0.460, wt_range))  # Francis (1983) estimate w/ CA/2  
 colnames(spp_mass_wide) <- c("Atlantic cod - fb4", 
                              "Pollock (adult) - fb4", 
-                             "hake - Francis",
-                             "hake - Francis, CA/2")
+                             "Hake - Francis",
+                             "Hake - Francis, CA/2")
 spp_mass <- melt(as.data.frame(spp_mass_wide))
 spp_mass <- cbind(spp_mass, weight = rep(wt_range, times=4))
 
@@ -120,8 +120,8 @@ mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) + 
-  ylab("specific rate") +
-  labs(color = "species")
+  ylab("Specific Rate") + xlab("Weight (g)") +
+  labs(color = "Species")
 mass_rate
 
 ggsave(filename="plots/bioenergetics/allometric_mass.png", mass_rate,

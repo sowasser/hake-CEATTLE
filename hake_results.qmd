@@ -4,23 +4,23 @@ format:
     reference-doc: custom_template.docx
 ---
 
-![**Figure 1**: Hake stomachs collected during 1988-2019, and the proportion containing Pacific hake.](./plots/diet/hake_cannibalism_rate.png)
+![**Figure 1**: Hake stomachs collected during 1988–2019 and the proportion containing Pacific hake.](./plots/diet/hake_cannibalism_rate.png)
 
-![**Figure 2**: Dirichlet-weighted diet proportions by weight of cannibalism by predator hake age and prey hake age for three periods: all years in the dataset, the period of high observed cannibalism (1991-1999), and the period of low observed cannibalism (2005-2019).](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
+![**Figure 2**: Dirichlet-weighted diet proportions by weight of cannibalism by predator hake age and prey hake age for three periods: all years in the dataset, the period of high observed cannibalism (1991–1999), and the period of low observed cannibalism (2005–2019).](./plots/diet/Dirichlet/Dirichlet_comp_pretty.png)
 
 ![**Figure 3**: Proportion of hake stomachs containing Pacific hake by location and sampling month, by year of sampling.](./plots/diet/locations_timing.png)
 
-![**Figure 4**: Spawning stock biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for Pacific hake from CEATTLE in single-species mode with no predation, from CEATTLE in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/popdyn_M1prior.png)
+![**Figure 4**: Spawning biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for Pacific hake from CEATTLE in single-species mode with no predation, from CEATTLE in cannibalism mode with the average diet data for the entire period, and from the 2020 stock assessment. The vertical, dashed line represents the end of the hindcast (2019) and start of the 3-year forecast period for the 2020 assessment.](./plots/CEATTLE/cannibalism/popdyn_M1prior.png)
 
 ![**Figure 5**: Anomalies in numbers-at-age for the CEATTLE model with the average cannibalism data, compared to the 2020 stock assessment. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/nbyage_anomaly.png)
 
 ![**Figure 6**: Residual (M1) and predation (M2) mortality by age and year for the CEATTLE model with the diet data for the entire period. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/M.png)
 
-![**Figure 7**: Relative spawning stock biomass (SSB), SSB/SB0, for the single-species and cannibalism models. Horizontal lines represent SB0 (1.0), the management target (0.4) and minimum stock size threshold (0.1). ](./plots/CEATTLE/cannibalism/relative_SSB.png)
+![**Figure 7**: Relative spawning biomass (SB), SB/SB0, for the single-species and cannibalism models. Horizontal lines represent SB0 (1.0), the management target (0.4) and minimum stock size threshold (0.1).](./plots/CEATTLE/cannibalism/relative_SSB.png)
 
-![**Figure 8**: Spawning stock biomass (Mt), Total biomass (Mt), recruitment (millions) with 95% confidence interval (shaded region), and mean age, using base cannibalism data and the base data scaled to varying proportions (0.5% to 75%). The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png)
+![**Figure 8**: Spawning biomass (Mt), Total biomass (Mt), recruitment (millions) with 95% confidence interval (shaded region), and mean age, using base cannibalism data and the base data scaled to varying proportions (0.5% to 75%). The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/Testing/sensitivity_meanage_popdy.png)
 
-![**Figure 9**: Spawning stock biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from CEATTLE with the base diet data, with the diet data for the period of high observed cannibalism (1980-1999), and for the period of low cannibalism (2005-2019).](./plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png)
+![**Figure 9**: Spawning biomass (Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence interval (shaded region) for Pacific hake from CEATTLE with the base diet data, with the diet data for the period of high observed cannibalism (1980-1999), and for the period of low cannibalism (2005-2019). The time-series for the varying periods of cannibalism are displayed for only that period.](./plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png)
 
 ![**Figure 10**: Change in the total negative log likelihood (NLL) and likelihood components for the single-species and cannibalism CEATTLE models with fixed values of M1. Horizontal line is at the threshold for significant improvements in likelihood.](./plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png)
 
