@@ -37,7 +37,7 @@ colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
 
 
 # Plot biomass & recruitment in comparison to original diet run ---------------
-years <- 1980:2050
+years <- 1980:2100
 max_age <- max_age <- ms_priorM1$model$data_list$nages
 models <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, 
                run_wt50_prior$model, run_wt75_prior$model)
@@ -134,7 +134,7 @@ plot_popdy <- function(biom, R, numbers) {
   all_popdy <- rbind(all_popdy, numbers)  # add in mean age
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$variable <- factor(all_popdy$variable, 
-                               labels = c("SSB (Mt)", "Total Biomass (Mt)", 
+                               labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", 
                                           "Recruitment (millions)", "Mean Age"))
   
   # Add bounds for error & set 0 as minimum for plotting
