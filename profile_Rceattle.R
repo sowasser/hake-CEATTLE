@@ -76,22 +76,22 @@ rm(list = ls())  # clear environment to re-set runs
 load("models/ms_estM1.Rdata")
 startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
 
-run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.25
+run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
 # ms down
-run1 <- get_profile(0.24, run0$estimated_params, 1)
-run2 <- get_profile(0.23, run1$estimated_params, 1)
-run3 <- get_profile(0.22, run2$estimated_params, 1)
-run4 <- get_profile(0.21, run3$estimated_params, 1)
-run5 <- get_profile(0.20, run4$estimated_params, 1)
-run6 <- get_profile(0.19, run5$estimated_params, 1)
-run7 <- get_profile(0.18, run6$estimated_params, 1)
-run8 <- get_profile(0.17, run7$estimated_params, 1)
-run9 <- get_profile(0.16, run8$estimated_params, 1)
-run10 <- get_profile(0.15, run9$estimated_params, 1)
+run1 <- get_profile(0.25, run0$estimated_params, 1)
+run2 <- get_profile(0.24, run1$estimated_params, 1)
+run3 <- get_profile(0.23, run2$estimated_params, 1)
+run4 <- get_profile(0.22, run3$estimated_params, 1)
+run5 <- get_profile(0.21, run4$estimated_params, 1)
+run6 <- get_profile(0.20, run5$estimated_params, 1)
+run7 <- get_profile(0.19, run6$estimated_params, 1)
+run8 <- get_profile(0.18, run7$estimated_params, 1)
+run9 <- get_profile(0.17, run8$estimated_params, 1)
+run10 <- get_profile(0.16, run9$estimated_params, 1)
+run11 <- get_profile(0.15, run9$estimated_params, 1)
 
 # ms up
-run11 <- get_profile(0.26, run0$estimated_params, 1)
-run12 <- get_profile(0.27, run11$estimated_params, 1)
+run12 <- get_profile(0.27, run0$estimated_params, 1)
 run13 <- get_profile(0.28, run12$estimated_params, 1)
 run14 <- get_profile(0.29, run13$estimated_params, 1)
 run15 <- get_profile(0.30, run14$estimated_params, 1)
@@ -238,8 +238,8 @@ comp_profile_plot <- ggplot() +
   facet_wrap(~model, ncol = 1)
 comp_profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png", 
-       comp_profile_plot, 
+ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png",
+       comp_profile_plot,
        width=150, height=150, units="mm", dpi=300)
 
 ### Plot effect on spawning output --------------------------------------------
@@ -285,7 +285,8 @@ ssb_profile_plot <- ggplot() +
               aes(x = year, y = SSB, ymin=(SSB - error), ymax=(SSB + error), fill = M1), 
               alpha = 0.2, color = NA) + 
   geom_line(data = ssb_all_est, aes(x = year, y = SSB), linewidth = 1) +
-  ylab("Spawning Stock Biomass (Mt)") + xlab("Year") + labs(color = "M1") +
+  xlim(1980, 2022) +
+  ylab("Spawning Biomass (Mt)") + xlab("Year") + labs(color = "M1") +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
   ggsidekick::theme_sleek() +
