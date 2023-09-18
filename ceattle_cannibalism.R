@@ -283,11 +283,13 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                   numbers = (nbyage$numbers - nbyage_ss3$numbers) / 1000000)
   nbyage_diff$model <- "CEATTLE - assessment"
   nbyage_diff$year <- factor(nbyage_diff$year)
-
-  limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
+  
+  # Find midpoint between 0-1 relative to anomaly data for inform color palette
+  mid <- (0 - min(nbyage_diff$numbers)) / (max(nbyage_diff$numbers) - min(nbyage_diff$numbers))
   nbyage_anomaly <- ggplot(nbyage_diff, aes(x=year, y=age)) +
     geom_point(aes(size = numbers, color = numbers)) +
-    scale_color_gradientn(colors = pals::brewer.spectral(100), limit = limit) +
+    scale_color_gradientn(colours = c("#5f4187", "white", "#bbdf27"),
+                          values = c(1.0, mid, 0)) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab("Year") + ylab("Age") +
@@ -374,7 +376,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") 
   
-  ### Plot realized consumption -------------------------------------------------
+  #Plot realized consumption --------------------------------------------------
   # Extract biomass consumed as prey
   b_consumed <- extract_byage(ms_run$quantities$B_eaten_as_prey, 
                               "CEATTLE - cannibalism", "biomass")[, -4]
