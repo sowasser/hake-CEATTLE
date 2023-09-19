@@ -74,6 +74,7 @@ hake_document.log
 *.log
 *.tex
 *.txt
+*.html
 
 # Ignore Microsoft temporary files
 [~][$]*  
