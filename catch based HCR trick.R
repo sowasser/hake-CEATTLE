@@ -6,20 +6,16 @@ library(dplyr)
 # data("BS2017SS") # Single-species data. ?BS2017SS for more information on the data
 # data("BS2017MS") # Multi-species data. Note: the only difference is the residual mortality (M1_base) is lower
 
-data <- read_data("data/hake_intrasp_230927_a15.xlsx")
-
-
+data <- read_data("data/hake_intrasp_230927.xlsx")
 
 ################################################
 # No fishing models - for reference
 ################################################
 # - Single-species
 # Then the model can be fit by setting `msmMode = 0` using the `Rceattle` function:
-# data$fleet_control$proj_F_prop <- c(rep(1,3), rep(0,4))
 ss_run <- Rceattle::fit_mod(data_list = data,
                             inits = NULL, # Initial parameters = 0
                             M1Fun = Rceattle::build_M1(M1_model = 1,
-                                                       updateM1 = TRUE,
                                                        M1_use_prior = TRUE,
                                                        M1_prior_mean = 0.2,
                                                        M1_prior_sd = .1),
@@ -32,15 +28,14 @@ ss_run <- Rceattle::fit_mod(data_list = data,
 
 # - Multi-species
 # For the a multispecies model we from the single species parameters.
-# BS2017MS$fleet_control$proj_F_prop <- c(rep(1,3), rep(0,4))
 ms_run <- Rceattle::fit_mod(data_list = data,
                             inits = ss_run$estimated_params, # Initial parameters from single species ests
                             M1Fun = Rceattle::build_M1(M1_model = 1,
-                                                       updateM1 = TRUE,
                                                        M1_use_prior = TRUE,
                                                        M1_prior_mean = 0.2,
                                                        M1_prior_sd = .1),
                             file = NULL, # Don't save
+                            phase = NULL,
                             estimateMode = 0, # Estimate
                             niter = 3, # 3 iterations around population and predation dynamics
                             random_rec = FALSE, # No random recruitment
@@ -53,11 +48,9 @@ ms_run <- Rceattle::fit_mod(data_list = data,
 ##############################################################################
 # - Single-species
 # Then the model can be fit by setting `msmMode = 0` using the `Rceattle` function:
-# BS2017SS$fleet_control$proj_F_prop <- c(rep(1,3), rep(0,4))
 ss_run_F <- Rceattle::fit_mod(data_list = data,
-                              inits = NULL, # Initial parameters = 0
+                              inits = ss_run$estimated_params, # Initial parameters = 0
                               M1Fun = Rceattle::build_M1(M1_model = 1,
-                                                         updateM1 = TRUE,
                                                          M1_use_prior = TRUE,
                                                          M1_prior_mean = 0.2,
                                                          M1_prior_sd = .1),
@@ -68,16 +61,13 @@ ss_run_F <- Rceattle::fit_mod(data_list = data,
                               ),
                               random_rec = FALSE, # No random recruitment
                               msmMode = 0, # Single species mode
-                              phase = "default",
                               verbose = 1)
 
 # - Multi-species
 # For the a multispecies model we from the single species parameters.
-# BS2017MS$fleet_control$proj_F_prop <- c(rep(1,3), rep(0,4))
 ms_run_F <- Rceattle::fit_mod(data_list = data,
-                              inits = ss_run$estimated_params, # Initial parameters from single species ests
+                              inits = ms_run$estimated_params, # Initial parameters from single species ests
                               M1Fun = Rceattle::build_M1(M1_model = 1,
-                                                         updateM1 = TRUE,
                                                          M1_use_prior = TRUE,
                                                          M1_prior_mean = 0.2,
                                                          M1_prior_sd = .1),
@@ -97,12 +87,10 @@ ms_run_F <- Rceattle::fit_mod(data_list = data,
 ##############################################################################
 # - Single-species
 # Then the model can be fit by setting `msmMode = 0` using the `Rceattle` function:
-# BS2017SS$fleet_control$proj_F_prop <- c(rep(1,3), rep(0,4))
 ss_run_4010_F <- Rceattle::fit_mod(data_list = data,
-                              inits = NULL, # Initial parameters = 0
+                              inits = ss_run$estimated_params, # Initial parameters = 0
                               file = NULL, # Don't save
                               M1Fun = Rceattle::build_M1(M1_model = 1,
-                                                         updateM1 = TRUE,
                                                          M1_use_prior = TRUE,
                                                          M1_prior_mean = 0.2,
                                                          M1_prior_sd = .1),
@@ -115,16 +103,14 @@ ss_run_4010_F <- Rceattle::fit_mod(data_list = data,
                                                         Sigma = 0.5),
                               random_rec = FALSE, # No random recruitment
                               msmMode = 0, # Single species mode
-                              phase = "default",
+                              phase = NULL,
                               verbose = 1)
 
 # - Multi-species
 # For the a multispecies model we from the single species parameters.
-# BS2017MS$fleet_control$proj_F_prop <- c(rep(1,3), rep(0,4))
 ms_run_4010_F <- Rceattle::fit_mod(data_list = data,
-                              inits = ss_run$estimated_params, # Initial parameters from single species ests
+                              inits = ms_run$estimated_params, # Initial parameters from single species ests
                               M1Fun = Rceattle::build_M1(M1_model = 1,
-                                                         updateM1 = TRUE,
                                                          M1_use_prior = TRUE,
                                                          M1_prior_mean = 0.2,
                                                          M1_prior_sd = .1),
@@ -142,10 +128,20 @@ ms_run_4010_F <- Rceattle::fit_mod(data_list = data,
                               suitMode = 0, # empirical suitability
                               verbose = 1)
 
+### Save models ---------------------------------------------------------------
+save(ss_run, file = "models/hcr/ss_run.Rdata")
+save(ms_run, file = "models/hcr/ms_run.Rdata")
+save(ss_run_F, file = "models/hcr/ss_run_F.Rdata")
+save(ms_run_F, file = "models/hcr/ms_run_F.Rdata")
+save(ss_run_4010_F, file = "models/hcr/ss_run_4010_F.Rdata")
+save(ms_run_4010_F, file = "models/hcr/ms_run_4010_F.Rdata")
+
+
 ##############################################################################
 # Project model at 40-10 catch based HCR (see function below)
 ##############################################################################
 ss_run_4010_catch <- catch_hcr(model = ss_run_F)
+ms_run_F$data_list$MSSB0 <- ms_run$quantities$biomassSSB[, ncol(ms_run$quantities$biomassSSB)]
 ms_run_4010_catch <- catch_hcr(model = ms_run_F)
 
 ##############################################################################
@@ -153,18 +149,16 @@ ms_run_4010_catch <- catch_hcr(model = ms_run_F)
 ##############################################################################
 # - Single species
 plot_ssb(list(ss_run, ss_run_F, ss_run_4010_F, ss_run_4010_catch), model_names = c("No F", "F SPR40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
-
+plot_depletion(list(ss_run, ss_run_F, ss_run_4010_F, ss_run_4010_catch), model_names = c("No F", "F SPR40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
 plot_catch(list(ss_run, ss_run_F, ss_run_4010_F, ss_run_4010_catch), model_names = c("No F", "F SPR40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
-
-plot_catch(ss_run_4010_catch, incl_proj = TRUE) # does catch in the projection vary?
+plot_catch(ss_run_F, incl_proj = TRUE) # does catch in the projection vary?
 
 # Multi-species
-plot_ssb(list(ms_run, ms_run_F, ms_run_4010_F, ms_run_4010_catch), model_names = c("No F", "F-40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
-
-plot_catch(list(ms_run, ms_run_F, ms_run_4010_F, ms_run_4010_catch), model_names = c("No F", "F-40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
-
+plot_ssb(list(ms_run, ms_run_F, ms_run_4010_F, ms_run_4010_catch), model_names = c("No F", "F SPR40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
+plot_depletion(list(ms_run, ms_run_F, ms_run_4010_F, ms_run_4010_catch), model_names = c("No F", "F SPR40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
+plot_catch(list(ms_run, ms_run_F, ms_run_4010_F, ms_run_4010_catch), incl_proj = TRUE)
 plot_catch(ms_run_4010_catch, incl_proj = TRUE) # does catch in the projection vary?
-
+plot_depletion(list(ms_run_F, ms_run_4010_F, ms_run_4010_catch), model_names = c("F SPR40%", "40-10 F", "40-10 Catch"), incl_proj = TRUE)
 
 
 #' Project sloping catch-based HCR
@@ -273,7 +267,7 @@ catch_hcr <- function(model = model, ptarget = 0.4, plimit = 0.1, assessment_per
   }
 
   # Run through assessment years
-  for(k in 1:3){
+  for(k in 1:length(assess_yrs)){
 
     # ------------------------------------------------------------
     # 1. GET RECOMMENDED TAC FROM EM-HCR ----
@@ -372,7 +366,7 @@ catch_hcr <- function(model = model, ptarget = 0.4, plimit = 0.1, assessment_per
     model <- fit_mod(
       data_list = model$data_list,
       inits = model$estimated_params,
-      # map =  model$map,
+      map =  model$map,
       bounds = NULL,
       file = NULL,
       estimateMode = ifelse(model$data_list$estimateMode < 3, 1, model$data_list$estimateMode), # Estimate hindcast only if estimating
@@ -410,7 +404,8 @@ catch_hcr <- function(model = model, ptarget = 0.4, plimit = 0.1, assessment_per
       loopnum = 3,
       phase = NULL,
       getsd = FALSE,
-      verbose = 0)
+      verbose = 0,
+      catch_hcr = TRUE)
 
   }
 
@@ -418,4 +413,3 @@ catch_hcr <- function(model = model, ptarget = 0.4, plimit = 0.1, assessment_per
   model$data_list$endyr <- endyr_base
   return(model)
 }
-
