@@ -17,7 +17,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230824.xlsx")
+hake_intrasp <- read_data(file = "data/hake_intrasp_230927.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -102,9 +102,10 @@ plot_ssb(Rceattle = list(ss_model$model, ms_model$model),
 start_yr <- ms_model$model$data_list$styr
 end_yr <- 2022
 years <- start_yr:end_yr
+all_yrs <- ms_model$model$data_list$styr:ms_model$model$data_list$projyr
 hind_end <- 2019
-assess_yr <- "2020"
-max_age <- 20
+assess_yr = "2020"
+max_age <- ms_model$model$data_list$nages
 
 # Helper function for extracting -by-age data from CEATTLE
 extract_byage <- function(result, name, type) {
@@ -112,7 +113,7 @@ extract_byage <- function(result, name, type) {
   
   df <- df[-seq(0, nrow(df), 2), -c(1:2)]
   levels(df$Var3) <- c(1:20)
-  levels(df$Var4) <- c(years)
+  levels(df$Var4) <- c(all_yrs)
   colnames(df) <- c("age", "year", type)
   
   df <- cbind(df, rep(name, nrow(df)))
@@ -124,15 +125,15 @@ extract_byage <- function(result, name, type) {
 plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
-    ssb <- (c(run$quantities$biomassSSB) * 2)
-    biom <- c(run$quantities$biomass)
+    ssb <- (c(run$quantities$biomassSSB[, 1:length(start_yr:end_yr)]) * 2)
+    biom <- c(run$quantities$biomass[, 1:length(start_yr:end_yr)])
     biom_sd <- run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]
     wide <- as.data.frame(cbind(years, ssb, biom))
     colnames(wide) <- c("year", "SSB", "Total Biomass")
     all_biom <- melt(wide, id.vars = "year")
     all_biom2 <- cbind(all_biom, 
-                       error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")], 
-                                 run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]), 
+                       error = c(run$sdrep$sd[which(names(run$sdrep$value) == "biomassSSB")][1:length(start_yr:end_yr)], 
+                                 run$sdrep$sd[which(names(run$sdrep$value) == "biomass")][1:length(start_yr:end_yr)]), 
                        model = rep(name, length(all_biom$year)))  
     colnames(all_biom2)[2:3] <- c("type", "value")
     return(all_biom2)
@@ -140,7 +141,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
   nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
-  recruitment <- c(ms_run$quantities$R)
+  recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
   
   # Pull out biomass from stock synthesis & combine, remove pre-1988
   start <- 1966  # start year of SS3 analysis
@@ -155,38 +156,39 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
   
   # Pull out recruitment
-  nodiet_R <- c(ss_run$quantities$R)
+  nodiet_R <- c(ss_run$quantities$R[, 1:length(start_yr:end_yr)])
   
   # Get recruitment from SS3 files, offset by 1 year
   ss3_R <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:((start_yr-1)-start)), ]
   ss3_R <- ss3_R[-nrow(ss3_R), ]
   
-  # Find mean difference between the model runs -------------------------------
+  # Find mean difference between the model runs (for hindcast) ----------------
   rel_change <- function(df1, df2, title) {
-    mean_out <- mean((df1 / 1000000) - (df2 / 1000000))
-    SEM <- sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range))
-    percent <- mean(((df1 - df2) / df2) * 100) 
+    mean_out <- round(mean((df1 / 1000000) - (df2 / 1000000)), 3)
+    SEM <- round(sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range)), 3)
+    percent <- round(mean(((df1 - df2) / df2) * 100), 3)
     return(c(title, mean_out, SEM, percent))
   }
   
-  n_row <- length(start_yr:end_yr)
-  rechange_all <- rbind(rel_change(biomass[1:n_row, 3],
-                                   nodiet_biomass[1:n_row, 3],
+  rechange_all <- rbind(rel_change(biomass[biomass$type == "SSB" & biomass$year <= hind_end,]$value,
+                                   nodiet_biomass[nodiet_biomass$type == "SSB" & biomass$year <= hind_end,]$value,
                                    "cannibalism - no diet, SSB"),
-                        rel_change(biomass[(n_row+1):(2*(n_row)), 3],
-                                   nodiet_biomass[(n_row+1):(2*(n_row)), 3],
+                        rel_change(biomass[biomass$type == "Total Biomass" & biomass$year <= hind_end,]$value,
+                                   nodiet_biomass[nodiet_biomass$type == "Total Biomass" & biomass$year <= hind_end,]$value,
                                    "cannibalism - no diet, Total"),
-                        rel_change(recruitment, nodiet_R,
+                        rel_change(recruitment[1:length(start_yr:hind_end)], 
+                                   nodiet_R[1:length(start_yr:hind_end)],
                                    "cannibalism - no diet, R"),
-                        rel_change(nodiet_biomass[1:n_row, 3],
-                                   ss3_biom[1:n_row, 3],
+                        rel_change(nodiet_biomass[nodiet_biomass$type == "SSB" & nodiet_biomass$year <= hind_end,]$value,
+                                   ss3_biom[ss3_biom$type == "SSB" & ss3_biom$year <= hind_end,]$value,
                                    "no diet - SS3, SSB"),
-                        rel_change(nodiet_biomass[(n_row+1):(2*(n_row)), 3],
-                                   ss3_biom[(n_row+1):(2*(n_row)), 3],
+                        rel_change(nodiet_biomass[nodiet_biomass$type == "Total Biomass" & biomass$year <= hind_end,]$value,
+                                   ss3_biom[ss3_biom$type == "Total Biomass" & ss3_biom$year <= hind_end,]$value,
                                    "no diet - SS3, Total"),
-                        rel_change(nodiet_R,
-                                   ss3_R[1:(n_row), 2],
+                        rel_change(nodiet_R[1:length(start_yr:hind_end)],
+                                   ss3_R[1:length(start_yr:hind_end), 2],
                                    "no diet - SS3, R"))
+  colnames(rechange_all) <- c("model", "mean difference", "SEM", "percent")
   
   # Plot biomass & recruitment ------------------------------------------------
   # Put biomass together
@@ -206,8 +208,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                variable = rep("Assessment"), 
                                value = ss3_R[, 2],
                                error = ss3_R[, 3]))
-  R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")], 
-                                    ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")])), 
+  R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")][1:length(start_yr:end_yr)], 
+                                    ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")][1:length(start_yr:end_yr)])), 
                  ss3_R)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
@@ -227,7 +229,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$model <- factor(all_popdy$model, 
                             levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type, 
-                           labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+                           labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -241,8 +243,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
-    ylab(" ") +
-    labs(color = "model") +
+    ylab(" ") + xlab("Year") +
+    labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside") 
   
@@ -285,7 +287,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_line() +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+    theme(strip.background = element_blank(), strip.placement = "outside") +
+    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray")  # Add line at end of hindcast
   
   # Plot numbers-at-age -------------------------------------------------------
   nbyage <- extract_byage(ms_run$quantities$NByage, "CEATTLE - cannibalism", "numbers")
@@ -309,6 +312,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   colnames(nbyage_ss3)[2:4] <- c("age", "numbers", "model")
   
   # Combine with nbyage from intrasp run
+  nbyage <- nbyage[nbyage$year %in% 1980:2022,] ## remove extra projection years
   nbyage_all <- rbind(nbyage, nbyage_ss3)
   
   # Find mean numbers-at-age for each year
@@ -316,7 +320,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   nbyage_mean <- nbyage_all %>%
     group_by(year, model) %>%
     summarize(mean = weighted.mean(age, numbers))
-  nbyage_mean$year <- as.numeric(nbyage_mean$year)
+  nbyage_mean$year <- as.numeric(as.character(nbyage_mean$year))
   
   mean_nbyage_plot <- ggplot(nbyage_mean, aes(x = year, y = mean)) +
     geom_line(aes(color = model)) +
@@ -330,28 +334,29 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_point(aes(size = numbers, color = numbers, fill = numbers)) +
     scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
+    scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab(" ") + ylab("Age") + 
-    labs(fill="millions (n)", size="millions (n)", color="millions (n)") +
+    xlab("Year") + ylab("Age") + 
+    labs(fill="Millions (n)", size="Millions (n)", color="Millions (n)") +
     facet_wrap(~model, ncol=1)
   
   # # Difference between both models
-  # nbyage_diff <- nbyage_ss3
-  # nbyage_diff$age <- as.numeric(nbyage_diff$age)
-  # nbyage_diff$numbers <- (nbyage$numbers - nbyage_diff$numbers) / 1000000
-  # nbyage_diff$model <- "CEATTLE - assessment"
-  # nbyage_diff$year <- factor(nbyage_diff$year)
-  # 
-  # limit <- max(abs(nbyage_diff$numbers)) * c(-1, 1)
-  # ggplot(nbyage_diff, aes(x=year, y=age)) +
-  #   geom_point(aes(size = numbers, color = numbers)) +
-  #   scale_color_gradientn(colors = pals::ocean.curl(100), limit = limit) +
-  #   scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
-  #   geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  #   xlab(" ") + ylab("Age") + 
-  #   labs(size="millions (n)", color="millions (n)") 
+  nbyage_diff <- cbind.data.frame(year = nbyage$year,
+                                  age = as.numeric(nbyage$age),
+                                  numbers = (nbyage$numbers - nbyage_ss3$numbers) / 1000000)
+  nbyage_diff$model <- "CEATTLE - assessment"
+  nbyage_diff$year <- factor(nbyage_diff$year)
   
+  # Find midpoint between 0-1 relative to anomaly data for inform color palette
+  mid <- (0 - min(nbyage_diff$numbers)) / (max(nbyage_diff$numbers) - min(nbyage_diff$numbers))
+  nbyage_anomaly <- ggplot(nbyage_diff, aes(x=year, y=age)) +
+    geom_point(aes(size = numbers, color = numbers)) +
+    scale_color_gradientn(colours = c("#5f4187", "white", "#bbdf27"),
+                          values = c(1.0, mid, 0)) +
+    scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
+    geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    xlab("Year") + ylab("Age") +
+    labs(size="Millions (n)", color="Millions (n)")
   
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
@@ -393,16 +398,22 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     filter(Var1 == "A" & Var2 == "A")
   
   suitability <- suitability[, 3:6]
-  suitability$Var3 <- factor(suitability$Var3, labels = c(1:max_age))
+  suitability$Var3 <- as.integer(factor(suitability$Var3, labels = c(1:max_age)))
   suitability$Var4 <- as.integer(factor(suitability$Var4, labels = c(1:max_age)))
-  suitability$Var5 <- factor(suitability$Var5, labels = years)
+  suitability$Var5 <- factor(suitability$Var5, labels = all_yrs)
   
   colnames(suitability) <- c("pred_age", "prey_age", "year", "value")
   suitability <- suitability %>% filter(prey_age < 6)
   suitability$prey_age <- factor(suitability$prey_age)
+  suitability$year <- as.numeric(as.character(suitability$year))
   suitability <- suitability %>% 
+    filter(year <= 2022) %>%
     group_by(pred_age, prey_age) %>%
-    summarize(value = mean(value))
+    summarize(value = mean(value)) %>%
+    filter(pred_age <= 15)
+  suitability$pred_age[suitability$pred_age == 15] <- "15+"
+  suitability$pred_age <- factor(suitability$pred_age,
+                                 levels = c(1:14, "15+"))
   
   suit_plot <- ggplot(suitability, aes(x = pred_age, y = value, fill = prey_age)) +
     geom_bar(stat = "identity", position = "stack") +
@@ -416,6 +427,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Set 15 as accumulation age
   biombyage$age[as.numeric(biombyage$age) > 15] <- 15
   biombyage$age <- as.integer(biombyage$age)
+  biombyage <- biombyage[as.numeric(as.character(biombyage$year)) <= end_yr,]
   
   # Plot yearly biomass by age
   biombyage_plot <- ggplot(biombyage, aes(x=year, y=age)) +
@@ -427,7 +439,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab(" ") + ylab("Age") 
   
-  ### Plot realized consumption -------------------------------------------------
+  #Plot realized consumption --------------------------------------------------
   # Extract biomass consumed as prey
   b_consumed <- extract_byage(ms_run$quantities$B_eaten_as_prey, 
                               "CEATTLE - cannibalism", "biomass")[, -4]
@@ -436,6 +448,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Filter to only ages below 6 (the ages of hake consumed)
   b_consumed <- b_consumed %>% filter(age < 6)
   b_consumed$age <- as.factor(b_consumed$age)
+  b_consumed <- b_consumed[as.numeric(as.character(b_consumed$year)) <= end_yr,]
   
   # Plot yearly biomass consumed by age
   b_consumed_plot <- ggplot(b_consumed, aes(x=year, y=(biomass / 1000000), fill = age)) +
@@ -444,6 +457,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("Biomass consumed (Mt)")
+  b_consumed_plot
   
   # Plot ratio of biomass consumed to approximation of predator biomass (SSB)
   # Add ages together
@@ -469,7 +483,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   }
   
   return(list(relative_change = rechange_all, popdy = popdy_plot, ratio = ratio_plot, 
-              pop_diff = diff_plot, nbyage = nbyage_plot, survey = survey_plot, 
+              pop_diff = diff_plot, nbyage = nbyage_plot, 
+              nbyage_anomaly = nbyage_anomaly, survey = survey_plot, 
               suit = suit_plot, biombyage = biombyage_plot, 
               b_consumed = b_consumed_plot, yearly_b = yearly_b_plot))
 }
@@ -480,11 +495,11 @@ plots$popdy
 plots$ratio
 plots$pop_diff
 plots$nbyage
+plots$nbyage_anomaly
 plots$survey
 plots$suit
 plots$biombyage
 plots$b_consumed
 plots$yearly_b
-
 plot_comp(ss_model$model)
 plot_selectivity(ms_model$model)
