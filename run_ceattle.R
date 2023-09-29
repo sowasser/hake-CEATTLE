@@ -19,7 +19,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230912.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230927.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
