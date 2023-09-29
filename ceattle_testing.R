@@ -20,7 +20,7 @@ theme_set(theme_sleek())
 hake_intrasp <- read_data(file = "data/hake_intrasp_230927.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
-run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
+run_CEATTLE <- function(data, M1, prior, init, msm, estMode, initMode) {
   data$est_M1 <- M1  
   # data$endyr <- 2019
   run <- fit_mod(data_list = data,
@@ -40,8 +40,13 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                                            Plimit = 0.1, # No fishing when SB<SB10
                                            Pstar = 0.45,
                                            Sigma = 0.5),
+                 recFun = build_srr(srr_fun = 1, # Beverton holt
+                                    proj_mean_rec = FALSE,
+                                    srr_est_mode = 2, # Use prior
+                                    srr_prior_mean = 0.777,
+                                    srr_prior_sd = 0.113),
                  phase = "default",
-                 initMode = 1,
+                 initMode = initMode,
                  # random_rec = TRUE,
                  # random_sel = TRUE,
                  projection_uncertainty = TRUE,
@@ -76,7 +81,8 @@ ss_model <- run_CEATTLE(data = hake_intrasp,
                         prior = TRUE, 
                         init = NULL, 
                         msm = 0, 
-                        estMode = 0)
+                        estMode = 0,
+                        initMode = 1)
 ss_model$fit  # check convergence
 ss_model$model$quantities$M1
 
@@ -85,7 +91,8 @@ ms_model <- run_CEATTLE(data = hake_intrasp,
                         prior = TRUE, 
                         init = ss_model$model$initial_params, 
                         msm = 1, 
-                        estMode = 0)
+                        estMode = 0, 
+                        initMode = 0)
 ms_model$fit  # check convergence
 ms_model$model$quantities$M1
 
