@@ -191,14 +191,14 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab("Year") + ylab("Age") +
-    labs(size="Millions (n)", color="Millions (n)")
+    labs(size="Millions (n)", color="Millions (n)") +
+    guides(size = guide_legend(override.aes = list(color="gray")))
   
   return(list(popdy = popdy_plot, nbyage_anomaly = nbyage_anomaly))
 }
 
 plots <- plot_models(ms_priorM1$model, ss_priorM1$model)
 plots$popdy
-plots$nbyage
 plots$nbyage_anomaly
 
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
@@ -266,7 +266,8 @@ relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
   geom_line(aes(x = year, y = Hake, color = factor(model))) +
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   scale_color_viridis(discrete = TRUE, option = "plasma", 
-                      begin = 0.2, end = 0.6, name = "model") +
+                      begin = 0.6, direction = -1, name = "model", 
+                      guide = guide_legend(reverse = TRUE)) +
   ylab("Relative SB") +
   ylim(0, NA) +
   xlim(1980, 2022) +
@@ -878,6 +879,105 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   facet_wrap(~ data)
 comp2_plot
 
+### Plot timing of sample collection ----------------------------------------
+time_n <- all_data %>%
+  group_by(year, month) %>%
+  summarize(n_all = n()) %>%
+  filter(!is.na(year))
+
+time_n_cannibalism <- all_data %>%
+  filter(prey_name == "Pacific Hake") %>%
+  group_by(year, month) %>%
+  summarize(n_cannibalism = n()) %>%
+  filter(!is.na(year)) 
+
+time_n_all <- left_join(time_n, time_n_cannibalism)
+time_n_all$n_cannibalism[is.na(time_n_all$n_cannibalism)] <- 0
+time_n_all$prop <- time_n_all$n_cannibalism / time_n_all$n_all
+time_n_all <- time_n_all %>% arrange(year)
+# time_n_all$month <- factor(time_n_all$month)
+
+data_years <- c(1988:1992, 1995:1999, 2002, 2005, 2007, 2009, 2011:2013, 2015, 2017, 2019)
+all_months <- cbind.data.frame(year = rep(data_years, each = 12),
+                               month = rep(1:12, times = length(data_years)))
+time_all_months <- left_join(all_months, time_n_all)
+time_all_months[is.na(time_all_months)] <- 0
+
+overall_monthly <- time_all_months %>% 
+  group_by(month) %>%
+  summarize(n_all = sum(n_all), n_cannibalism = sum(n_cannibalism)) 
+overall_monthly$prop <- overall_monthly$n_cannibalism / overall_monthly$n_all
+overall_monthly$prop[is.nan(overall_monthly$prop)] <- 0
+
+monthly_rate <- ggplot(overall_monthly, aes(x = month, y = n_all, fill = prop)) +
+  geom_bar(stat = "identity") +
+  scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
+  scale_fill_viridis(option = "plasma", limits = c(0, 0.52), begin = 0.2) +
+  xlab("Sampling Month") + ylab("Stomachs (n)") +
+  labs(fill = "Cannibalism Rate") 
+monthly_rate
+
+### Location and timing plots -------------------------------------------------
+# Create a plot of location of observations by latitude and longitude
+world <- ne_countries(scale = "medium", returnclass = "sf")
+sf_use_s2(FALSE)  # turn off spherical geometry
+
+locations <- ggplot(data = world) +
+  geom_sf(fill = "gray30") +
+  geom_point(data = loc_n_all, aes(x = longitude, y = latitude, color = prop, size = n_all)) +
+  coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
+  scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
+  scale_y_continuous(breaks = seq(35, 55, by = 5)) +
+  scale_color_viridis(option = "plasma", begin = 0.2) +
+  xlab(" ") + ylab(" ") + labs(color = "Cannibalism Rate", size = "Stomachs (n)") +
+  guides(size = guide_legend(override.aes = list(color="gray"))) +
+  facet_wrap(~year, ncol = 7)
+
+# Inset timing plots in yearly location plots 
+# Tutorial here: https://www.blopig.com/blog/2019/08/combining-inset-plots-with-facets-using-ggplot2/
+get_inset <- function(df) {
+  # Create plot for the inset 
+  plot <- ggplot(df, aes(x = factor(month), y = n_all, fill = prop)) +
+    geom_bar(stat = "identity") +
+    scale_x_discrete(limits = factor(1:12), breaks = c(1, 12), labels = c("Jan", "Dec")) +
+    scale_fill_viridis(option = "plasma", limits = c(0, 1), begin = 0.2) +
+    theme(axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.x = element_text(size=rel(0.9)),  # inset axis tick font size
+          plot.background = element_rect(fill='transparent', color=NA)) + # transparent so no overlap w/map
+    theme(legend.position="none") 
+  return(plot)
+}
+
+# Function for defining how the inset will be positioned
+annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) 
+{
+  layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+        geom = ggplot2:::GeomCustomAnn,
+        inherit.aes = TRUE, params = list(grob = grob, 
+                                          xmin = xmin, xmax = xmax, 
+                                          ymin = ymin, ymax = ymax))
+}
+
+inset_plot <- get_inset(time_n_all)  # Actually create insets
+
+# How the insets will be mapped on to the main plots (applying above function)
+insets <- time_all_months %>% 
+  split(f = .$year) %>%
+  purrr::map(~annotation_custom2(
+    grob = ggplotGrob(get_inset(.)), 
+    data = data.frame(year=unique(.$year)),
+    ymin = 30.7, ymax = 40, xmin = -141, xmax = -124))  # position of insets
+
+# Bring everything together - add insets on to main plot (locations, created above)
+location_timing <- locations +
+  coord_sf(xlim = c(-140, -115), ylim = c(31, 56), expand = FALSE) + 
+  scale_x_continuous(breaks = c(-135, -120)) +
+  scale_y_continuous(breaks = c(32, 55)) +
+  insets
+
 ### Hake predators ------------------------------------------------------------
 path <- "data/diet/CCTD/v4/"
 
@@ -913,11 +1013,11 @@ ggsave(filename="plots/presentations/M.png", ms_prior_mort[[1]],
 ggsave(filename="plots/presentations/relative_SSB.png", relativeSSB_plot, 
        width=150, height=80, units="mm", dpi=300, bg = "transparent")
 ggsave(filename="plots/presentations/M1_profile_SSB.png", ssb_profile_plot, 
-       width=140, height=80, units="mm", dpi=300)
+       width=140, height=80, units="mm", dpi=300, bg = "transparent")
 ggsave(filename="plots/presentations/M1_profile_survey.png", survey_profile_plot, 
-       width=140, height=80, units="mm", dpi=300)
+       width=140, height=80, units="mm", dpi=300, bg = "transparent")
 ggsave(filename = "plots/presentations/sensitivity_prop.png", stomach_props,
-       width=270, height=140, units="mm", dpi=300)
+       width=270, height=140, units="mm", dpi=300, bg = "transparent")
 ggsave(filename="plots/presentations/diet_sensitivity.png", diet_sensitivity, 
        width=200, height=90, units="mm", dpi=300, bg = "transparent")
 ggsave(filename="plots/presentations/time_sensitivity.png", time_sensitivity, 
@@ -934,5 +1034,9 @@ ggsave(filename = "plots/presentations/hake_cannibalism_rate.png", annual_rate,
        bg = "transparent", width=190, height=100, units="mm", dpi=300)
 ggsave(filename = "plots/presentations/Dirichlet_comp_pretty.png", comp2_plot, 
        bg = "transparent", width=170, height=50, units="mm", dpi=300)
+ggsave(filename = "plots/presentations/monthly_rate.png", monthly_rate,
+       bg = "transparent", width=190, height=100, units="mm", dpi=300)
+ggsave(filename = "plots/presentations/locations_timing.png", location_timing,
+       bg = "transparent", width=300, height=200, units="mm", dpi=300)
 ggsave(filename = "plots/presentations/hake_predators.png", hake_pred_plot, 
        bg = "transparent", width=170, height=100, units="mm", dpi=300)
