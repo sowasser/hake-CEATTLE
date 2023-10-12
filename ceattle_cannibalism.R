@@ -277,7 +277,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     labs(fill="Millions (n)", size="Millions (n)", color="Millions (n)") +
     facet_wrap(~model, ncol=1)
   
-  # # Difference between both models
+  # Difference between both models
   nbyage_diff <- cbind.data.frame(year = nbyage$year,
                                   age = as.numeric(nbyage$age),
                                   numbers = (nbyage$numbers - nbyage_ss3$numbers) / 1000000)

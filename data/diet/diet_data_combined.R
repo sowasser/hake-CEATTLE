@@ -183,8 +183,8 @@ annual_rate <- loc_n_all %>%
   labs(fill = "Cannibalism Rate")
 annual_rate
 
-# ggsave(filename = "plots/diet/hake_cannibalism_rate.png", annual_rate,
-#        bg = "transparent", width=190, height=100, units="mm", dpi=300)
+ggsave(filename = "plots/diet/hake_cannibalism_rate.png", annual_rate,
+       bg = "transparent", width=190, height=100, units="mm", dpi=300)
 
 # Create a plot of location of observations by latitude and longitude
 world <- ne_countries(scale = "medium", returnclass = "sf")
