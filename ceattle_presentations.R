@@ -1003,6 +1003,41 @@ hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = f
   xlab(" ") + ylab("Relative frequency of hake predation") 
 hake_pred_plot
 
+### Sealion predation monthly -------------------------------------------------
+sealion_hake <- read.csv("data/diet/sealion_hake.csv", header = TRUE)
+
+CSL_hake_monthly <- sealion_hake %>%
+  group_by(Year, Month, type) %>%
+  summarize(n = n()) %>%
+  filter(Year > 1987 & Year < 2020) %>%
+  ungroup()
+CSL_hake_monthly$Month <- factor(CSL_hake_monthly$Month)
+
+CSL_month_n <- sealion_hake %>%
+  group_by(Year, Month) %>%
+  summarize(n_all = n()) %>%
+  filter(!is.na(Year))
+
+CSL_month_n_hake <- sealion_hake %>%
+  filter(type == "Pacific Hake") %>%
+  group_by(Year, Month) %>%
+  summarize(n_hake = n()) %>%
+  filter(!is.na(Year))
+
+CSL_month_n_all <- left_join(CSL_month_n, CSL_month_n_hake)
+CSL_month_n_all$n_hake[is.na(CSL_month_n_all$n_hake)] <- 0
+CSL_month_n_all$prop <- CSL_month_n_all$n_hake / CSL_month_n_all$n_all
+
+# New plot of hake predation rate by year
+CSL_hake_monthly <- ggplot(CSL_month_n_all, aes(x = Month, y = n_all, fill = prop)) +
+  geom_bar(stat = "identity") +
+  scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
+  scale_fill_viridis(option = "plasma", begin = 0.2) +
+  xlab("sampling month") + ylab("Scat samples (n)") +
+  labs(fill = "hake consumption rate") +
+  facet_wrap(~ Year, ncol = 9)
+CSL_hake_monthly
+
 ### Save plots (when not experimenting) ---------------------------------------
 ggsave(filename="plots/presentations/popdyn_M1prior.png", plots$popdy, 
        width=200, height=90, units="mm", dpi=300, bg = "transparent")
@@ -1040,3 +1075,5 @@ ggsave(filename = "plots/presentations/locations_timing.png", location_timing,
        bg = "transparent", width=300, height=200, units="mm", dpi=300)
 ggsave(filename = "plots/presentations/hake_predators.png", hake_pred_plot, 
        bg = "transparent", width=170, height=100, units="mm", dpi=300)
+ggsave(filename = "plots/presentations/csl_monthly.png", CSL_hake_monthly,
+       bg = "transparent", width=300, height=130, units="mm", dpi=300)
