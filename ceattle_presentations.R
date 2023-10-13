@@ -344,12 +344,12 @@ survey_profile_plot <- ggplot() +
                   aes(x = Year, y = Observation,
                       ymin = exp(log(Observation) - 1.96*Log_sd),
                       ymax = exp(log(Observation) + 1.96*Log_sd)),
-                  fatten = 5, color = "white") +
+                  fatten = 5, color = "gray") +
   geom_line(data = srv_all, aes(x = year, y = biomass, color = M1), alpha = 0.8) +
   scale_color_viridis(discrete = TRUE, option = "plasma", begin = 0.2, 
                       guide = guide_legend(reverse = TRUE)) +  
-  geom_line(data = assess_srv, aes(x = Yr, y = Exp), linetype = "dashed", color = "white") +
-  xlab("year") + ylab("Index of Abundance") +
+  geom_line(data = assess_srv, aes(x = Yr, y = Exp), linetype = "dashed", color = "gray") +
+  xlab("Year") + ylab("Index of Abundance") +
   ylim(0, NA) 
 survey_profile_plot
 
