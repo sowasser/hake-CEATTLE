@@ -584,18 +584,14 @@ colnames(spp_temp_wide) <- c("Atlantic cod - fb4",
 spp_temp <- melt(as.data.frame(spp_temp_wide))
 spp_temp <- cbind(spp_temp, temp = rep(temp_range, times=4))
 
-# # Distinguish between literature values & estimated value for Hake (when that's ready)
-# spp_temp <- cbind(spp_temp, ref = c(rep("a", times = (length(temp_range) * 3)), 
-#                                     rep("b", times = length(temp_range))))
-
 # Plot consumption rate                 
 temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
-  geom_line(aes(color=variable, linetype = variable), linewidth=1) +
+  geom_line(aes(color=variable), linewidth=1) +
   # Following lines for distinguishing between lit & estimated hake values
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
   scale_color_viridis(discrete = TRUE, option = "plasma", begin = 0.2) +  
-  xlab("temperature") + ylab("specific rate") +
+  xlab("Temperature") + ylab("Specific Rate") +
   labs(color = "species", linetype = "species")
 temp_rate
 
@@ -856,7 +852,7 @@ new_df <- function(df, name) {
 
 # Neater comparison graph for write-up
 comp2 <- rbind(new_df(ceattle_all, "All Years"),
-               new_df(ceattle_90s, "High (1991-1999)"),
+               new_df(ceattle_90s, "High (1988-1999)"),
                new_df(ceattle_recent, "Low (2005-2019)"))
 
 comp2 <- as.data.frame(comp2) 
@@ -864,7 +860,7 @@ comp2$pred_age <- as.factor(comp2$pred_age)
 comp2$prey_age <- as.numeric(comp2$prey_age)
 comp2$prop <- as.numeric(comp2$prop)
 comp2$data <- factor(comp2$data, 
-                     levels = c("All Years", "High (1991-1999)", "Low (2005-2019)"))
+                     levels = c("All Years", "High (1988-1999)", "Low (2005-2019)"))
 comp2 <- comp2 %>% filter(prey_age <= 5)
 
 comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
