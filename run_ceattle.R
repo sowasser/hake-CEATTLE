@@ -19,7 +19,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230927.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_231226.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
@@ -114,24 +114,24 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
 }
 
 # Run in single-species mode --------------------------------------------------
-ss_fixM1 <- run_CEATTLE(data = hake_intrasp, 
-                        M1 = 0, 
-                        prior = FALSE, 
-                        init = NULL, 
-                        msm = 0, 
-                        estMode = 0)
-ss_fixM1$fit  # check convergence
-save(ss_fixM1, file = "models/ss_fixM1.Rdata")
-
-ss_estM1 <- run_CEATTLE(data = hake_intrasp, 
-                        M1 = 1, 
-                        prior = FALSE, 
-                        init = ss_fixM1[[1]]$estimated_params, 
-                        msm = 0, 
-                        estMode = 0)
-ss_estM1$fit  # check convergence
-ss_estM1$model$quantities$M1
-save(ss_estM1, file = "models/ss_estM1.Rdata")
+# ss_fixM1 <- run_CEATTLE(data = hake_intrasp, 
+#                         M1 = 0, 
+#                         prior = FALSE, 
+#                         init = NULL, 
+#                         msm = 0, 
+#                         estMode = 0)
+# ss_fixM1$fit  # check convergence
+# save(ss_fixM1, file = "models/ss_fixM1.Rdata")
+# 
+# ss_estM1 <- run_CEATTLE(data = hake_intrasp, 
+#                         M1 = 1, 
+#                         prior = FALSE, 
+#                         init = ss_fixM1[[1]]$estimated_params, 
+#                         msm = 0, 
+#                         estMode = 0)
+# ss_estM1$fit  # check convergence
+# ss_estM1$model$quantities$M1
+# save(ss_estM1, file = "models/ss_estM1.Rdata")
 
 ss_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           M1 = 1,
@@ -144,27 +144,27 @@ ss_priorM1$model$quantities$M1
 save(ss_priorM1, file = "models/ss_priorM1.Rdata")
 
 # Run with cannibalism (multi-species mode) -----------------------------------
-ms_fixM1 <- run_CEATTLE(data = hake_intrasp, 
-                        M1 = 0, 
-                        prior = FALSE, 
-                        init = ss_fixM1$model$estimated_params, 
-                        msm = 1, 
-                        estMode = 0)
-ms_fixM1$fit  # check convergence
-save(ms_fixM1, file = "models/ms_fixM1.Rdata")
-
-ms_estM1 <- run_CEATTLE(data = hake_intrasp, 
-                        M1 = 1, 
-                        prior = FALSE, 
-                        init = ms_fixM1$model$estimated_params, 
-                        msm = 1, 
-                        estMode = 0)
-ms_estM1$fit  # check convergence
-ms_estM1$model$quantities$M1
-# # Rceattle diagnostic plots 
-# Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
-# Rceattle::plot_recruitment(ms_estM1$model, add_ci = TRUE, incl_proj = TRUE)
-save(ms_estM1, file = "models/ms_estM1.Rdata")
+# ms_fixM1 <- run_CEATTLE(data = hake_intrasp, 
+#                         M1 = 0, 
+#                         prior = FALSE, 
+#                         init = ss_fixM1$model$estimated_params, 
+#                         msm = 1, 
+#                         estMode = 0)
+# ms_fixM1$fit  # check convergence
+# save(ms_fixM1, file = "models/ms_fixM1.Rdata")
+# 
+# ms_estM1 <- run_CEATTLE(data = hake_intrasp, 
+#                         M1 = 1, 
+#                         prior = FALSE, 
+#                         init = ms_fixM1$model$estimated_params, 
+#                         msm = 1, 
+#                         estMode = 0)
+# ms_estM1$fit  # check convergence
+# ms_estM1$model$quantities$M1
+# # # Rceattle diagnostic plots 
+# # Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
+# # Rceattle::plot_recruitment(ms_estM1$model, add_ci = TRUE, incl_proj = TRUE)
+# save(ms_estM1, file = "models/ms_estM1.Rdata")
 
 ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           M1 = 1,
@@ -176,24 +176,24 @@ ms_priorM1$fit  # check convergence
 ms_priorM1$model$quantities$M1
 save(ms_priorM1, file = "models/ms_priorM1.Rdata")
 
-data_noproj <- hake_intrasp
-data_noproj$projyr <- 2019
-ms_noproj <- run_CEATTLE(data = data_noproj, 
-                         M1 = 1, 
-                         prior = FALSE, 
-                         init = NULL, 
-                         msm = 1, 
-                         estMode = 1)
-ms_noproj$fit  # check convergence
-save(ms_noproj, file = "models/ms_noproj.Rdata")
-ms_priorM1_noproj <- run_CEATTLE(data = data_noproj,
-                                 M1 = 1,
-                                 prior = TRUE,
-                                 init = NULL,
-                                 msm = 1,
-                                 estMode = 1)
-ms_priorM1_noproj$fit  # check convergence
-save(ms_priorM1_noproj, file = "models/ms_priorM1_noproj.Rdata")
+# data_noproj <- hake_intrasp
+# data_noproj$projyr <- 2019
+# ms_noproj <- run_CEATTLE(data = data_noproj, 
+#                          M1 = 1, 
+#                          prior = FALSE, 
+#                          init = NULL, 
+#                          msm = 1, 
+#                          estMode = 1)
+# ms_noproj$fit  # check convergence
+# save(ms_noproj, file = "models/ms_noproj.Rdata")
+# ms_priorM1_noproj <- run_CEATTLE(data = data_noproj,
+#                                  M1 = 1,
+#                                  prior = TRUE,
+#                                  init = NULL,
+#                                  msm = 1,
+#                                  estMode = 1)
+# ms_priorM1_noproj$fit  # check convergence
+# save(ms_priorM1_noproj, file = "models/ms_priorM1_noproj.Rdata")
 
 
 # For future reference: age-blocked mortality at 1, 3, and 3+ -----------------
