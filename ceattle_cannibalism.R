@@ -178,7 +178,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
@@ -203,7 +203,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   ratio_plot <- ggplot(ratio2, aes(x=year, y=value, color=model)) +
     geom_line() +
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("SSB/Biomass")
   
   # Plot the difference between model runs
@@ -225,7 +225,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside") +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray")  # Add line at end of hindcast
+    geom_vline(xintercept = 2020, linetype = 2, colour = "gray")  # Add line at end of hindcast
   
   # Plot numbers-at-age -------------------------------------------------------
   nbyage <- extract_byage(ms_run$quantities$NByage, "CEATTLE - cannibalism", "numbers")
@@ -318,7 +318,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   survey_all$Observation <- survey_all
   
   survey_plot <- ggplot() +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_pointrange(data = init_surv, 
                     aes(x = Year, y = Observation / 1000000,
                         ymin = exp(log(Observation / 1000000) - 1.96*Log_sd),
@@ -409,7 +409,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   yearly_consumed$year <- as.numeric(as.character(yearly_consumed$year))
   yearly_b_plot <- ggplot(yearly_consumed, aes(x = year, y = total_biomass)) +
     geom_line() +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("biomass of prey / SSB")
   
   if(save_data == TRUE) {
