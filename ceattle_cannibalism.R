@@ -640,22 +640,35 @@ plot_grid(plots$popdy, relativeSSB_plot, ncol = 1,
 # Extract index used for derived quantities
 weight_out <- ss_priorM1$model$data_list$wt %>% filter(Wt_index == 2)  
 weight_out <- weight_out[, 5:20]  # only keep needed columns & ages 1-15
-# Shape and prep for plotting
+# Reshape dataframe
 colnames(weight_out) <- c("Year", 1:15)
 weight <- melt(weight_out, id.vars = "Year", variable.name = "Age",
                value.name = "Weight") 
+# Find mean and combine with dataframe @ 2020 so it can be plotted alongside
+weight_mean <- weight %>% 
+  group_by(Age) %>%
+  summarize(mean = mean(Weight))
+weight_mean <- cbind.data.frame(Year = 2020, weight_mean)
+colnames(weight_mean)[3] <- "Weight"
+weight <- rbind.data.frame(weight, weight_mean)
+
+# Plot
 weight$Age <- as.numeric(weight$Age)
 weight$Year <- as.numeric(weight$Year)
-weight <- weight %>%
-  ggplot(., aes(x = Year, y = Age, fill = Weight)) +
+weight_plot <- ggplot(weight, aes(x = Year, y = Age, fill = Weight)) +
   geom_tile() +
-  scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15), labels = c(1, 5, 10, "15+")) + 
-  scale_x_continuous(expand = c(0, 0), breaks=seq(from = 1980, to = 2020, by = 5)) +
+  scale_y_continuous(expand = c(0, 0), 
+                     breaks=c(1, 5, 10, 15), 
+                     labels = c(1, 5, 10, "15+")) + 
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks=c(1980, 1990, 2000, 2010, 2020),
+                     labels = c(1980, 1990, 2000, 2010, "Average")) +
+  geom_vline(xintercept = 2019.5, color = "lightgray") +
   scale_fill_viridis(name = "Weight (kg)", limits = c(0, NA)) +
   coord_equal() +
   ylab("Age") + xlab("Year") +
   theme(panel.border = element_rect(colour = NA, fill = NA))
-weight
+weight_plot
 
 
 ### Save plots (when not experimenting) ---------------------------------------
@@ -672,4 +685,4 @@ weight
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/weight-at-age.png", weight, width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/weight-at-age.png", weight_plot, width = 160, height = 70, units = "mm", dpi=300)
