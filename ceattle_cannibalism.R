@@ -163,19 +163,69 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
+  
+  # Relative SSB / depletion ----------------------------------------------------
+  relative_SSB <- function(model, label) {
+    df <- data.frame(t(model$quantities$biomassSSB / model$quantities$SB0))
+    df$year <- rownames(df)
+    rownames(df) <- NULL
+    df$model <- label
+    df$year <- as.numeric(df$year)
+    return(df)
+  }
+  
+  relSSB <- rbind.data.frame(relative_SSB(ss_run, "CEATTLE - single-species"),
+                             relative_SSB(ms_run, "CEATTLE - cannibalism")) %>%
+    filter(year <= 2022)
+  
+  # Set columns to match popdy dataframe
+  relSSB$error <- 0
+  relSSB$type <- "Relative SB"
+  relSSB <- relSSB[, c(2, 5, 1, 4, 3)]
+  colnames(relSSB)[3] <- "value"
+
+  # Combine and set up for plotting
+  all_popdy <- rbind.data.frame(all_popdy, relSSB)
   all_popdy$model <- factor(all_popdy$model, 
-                            levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+                            levels = c("Assessment", 
+                                       "CEATTLE - single-species", 
+                                       "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type, 
-                           labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+                           labels = c("Spawning Biomass (Mt)", 
+                                      "Total Biomass (Mt)", 
+                                      "Recruitment (millions)",
+                                      "Relative Spawning Biomass"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
   
-  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
-    geom_line() +
-    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
+  # Labels for relative biomass plot 
+  text1 <- cbind.data.frame(text = c("", "", "", "Management target"),
+                            type = c(1, 2, 3, 4),
+                            year = rep(1980), value = rep(0.4))
+  text1$type <- factor(text1$type, labels = c("Spawning Biomass (Mt)", 
+                                              "Total Biomass (Mt)", 
+                                              "Recruitment (millions)",
+                                              "Relative Spawning Biomass"))
+  text2 <- cbind.data.frame(text = c("", "", "", "Minimum stock size threshold"),
+                            type = c(1, 2, 3, 4),
+                            year = rep(1980), value = rep(0.1))
+  text2$type <- factor(text2$type, labels = c("Spawning Biomass (Mt)", 
+                                              "Total Biomass (Mt)", 
+                                              "Recruitment (millions)",
+                                              "Relative Spawning Biomass"))
+            
+  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value)) +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 1), col = "gray") +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 0.4), col = "gray") +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 0.1), col = "gray") +
+    geom_line(aes(color = model)) +
+    geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
     scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
     geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
@@ -183,9 +233,13 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside") 
+    theme(strip.background = element_blank(), strip.placement = "outside") +
+    geom_text(data = text1, aes(label = text), 
+              hjust = 0, vjust = -0.5, size = 2.5, color = "grey38") +
+    geom_text(data = text2, aes(label = text), 
+              hjust = 0, vjust = -0.5, size = 2.5, color = "grey38") 
   
-  # Plot ratio of SSB:Biomass to look for skewness in age composition
+  # Plot ratio of SSB:Biomass to look for skewness in age composition ---------
   ratio <- as.data.frame(cbind(year = years,
                                assessment = ss3_ssb[, 1]/ss3_biomass[, 1],
                                cannibalism = biomass[1:length(years), 3] / 
@@ -206,7 +260,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylab("SSB/Biomass")
   
-  # Plot the difference between model runs
+  # Plot the difference between model runs ------------------------------------
   ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
   ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
   assessment <- all_popdy %>% filter(model == "Assessment")
@@ -576,39 +630,10 @@ brps <- cbind(
   brp_comparison(model = ms_priorM1$model, model_name = "MS prior M1")
 )
 
-# Relative SSB / depletion ----------------------------------------------------
-relative_SSB <- function(model, label) {
-  df <- data.frame(t(model$quantities$biomassSSB / model$quantities$SB0))
-  df$year <- rownames(df)
-  rownames(df) <- NULL
-  df$model <- label
-  df$year <- as.numeric(df$year)
-  quantile <- quantile(df$Hake, probs = c(0.025, 0.5, 0.975))
-  return(list(df = df, quantile = quantile))
-}
 
-relativeSSB_ss <- relative_SSB(ss_priorM1$model, "single-species")
-relativeSSB_ss$quantile
-
-relativeSSB_ms <- relative_SSB(ms_priorM1$model, "cannibalism")
-relativeSSB_ms$quantile
-
-relativeSSB_plot <- rbind(relativeSSB_ms$df, relativeSSB_ss$df) %>%
-  ggplot(.) +
-  geom_line(aes(x = year, y = Hake, color = factor(model))) +
-  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
-  ylab("Relative SB") + xlab("Year") + labs(color = "Model") +
-  ylim(0, NA) +
-  xlim(1980, 2022) +
-  geom_hline(yintercept = 1, color = "gray") +
-  geom_hline(yintercept = 0.4, color = "gray") +
-  annotate("text", x = 1985, y = 0.4, label = "Management target", 
-           vjust = -0.5, size = 2.5, color = "grey38") +
-  geom_hline(yintercept = 0.1, color = "gray") +
-  annotate("text", x = 1987.5, y = 0.1, label = "Minimum stock size threshold", 
-           vjust = -0.5, size = 2.5, color = "grey38") 
-relativeSSB_plot
+# Combine popdy and relative ssb plots together
+plot_grid(plots$popdy, relativeSSB_plot, ncol = 1, 
+          rel_widths = c(1, 0.5), rel_heights = c(1, 0.3))
 
 
 ### Save plots (when not experimenting) ---------------------------------------
