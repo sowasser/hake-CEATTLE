@@ -10,7 +10,7 @@ library(dplyr)
 library(purrr)
 library(ggplot2)
 library(viridis)
-library(ggview)
+# library(ggview)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
@@ -331,7 +331,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     labs(fill="Millions (n)", size="Millions (n)", color="Millions (n)") +
     facet_wrap(~model, ncol=1)
   
-  # Difference between both models
+  # Numbers-at-age anomaly ----------------------------------------------------
   nbyage_diff <- cbind.data.frame(year = nbyage$year,
                                   age = as.numeric(nbyage$age),
                                   numbers = (nbyage$numbers - nbyage_ss3$numbers) / 1000000)
@@ -346,6 +346,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                           values = c(1.0, mid, 0)) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_hline(yintercept = 2.5, color = "gray") +  # line at maturity ogive
     xlab("Year") + ylab("Age") +
     labs(size="Millions (n)", color="Millions (n)")
 
@@ -523,7 +524,7 @@ mortality <- function(run, type) {
       scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) + 
       scale_x_continuous(expand = c(0, 0)) + 
       scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.5), breaks = c(0.21, 1, 1.5)) +
-      geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+      geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
       coord_equal() +
       ylab("Age") + xlab("Year") +
       theme(panel.border = element_rect(colour = NA, fill = NA))
@@ -582,7 +583,7 @@ eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
   geom_line() +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   xlab("year") + ylab("F")
 eff_plot
 
@@ -635,6 +636,27 @@ brps <- cbind(
 plot_grid(plots$popdy, relativeSSB_plot, ncol = 1, 
           rel_widths = c(1, 0.5), rel_heights = c(1, 0.3))
 
+# Plot of empirical weight-at-age data from the assessment --------------------
+# Extract index used for derived quantities
+weight_out <- ss_priorM1$model$data_list$wt %>% filter(Wt_index == 2)  
+weight_out <- weight_out[, 5:20]  # only keep needed columns & ages 1-15
+# Shape and prep for plotting
+colnames(weight_out) <- c("Year", 1:15)
+weight <- melt(weight_out, id.vars = "Year", variable.name = "Age",
+               value.name = "Weight") 
+weight$Age <- as.numeric(weight$Age)
+weight$Year <- as.numeric(weight$Year)
+weight <- weight %>%
+  ggplot(., aes(x = Year, y = Age, fill = Weight)) +
+  geom_tile() +
+  scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15), labels = c(1, 5, 10, "15+")) + 
+  scale_x_continuous(expand = c(0, 0), breaks=seq(from = 1980, to = 2020, by = 5)) +
+  scale_fill_viridis(name = "Weight (kg)", limits = c(0, NA)) +
+  coord_equal() +
+  ylab("Age") + xlab("Year") +
+  theme(panel.border = element_rect(colour = NA, fill = NA))
+weight
+
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
@@ -650,3 +672,4 @@ plot_grid(plots$popdy, relativeSSB_plot, ncol = 1,
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/weight-at-age.png", weight, width = 160, height = 70, units = "mm", dpi=300)
