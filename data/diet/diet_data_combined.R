@@ -180,11 +180,12 @@ annual_rate <- loc_n_all %>%
   geom_bar(stat = "identity") +
   scale_fill_viridis(limits = c(0, 0.4), begin = 0.1, end = 0.9) +
   ylab("Stomachs (n)") +
-  labs(fill = "Cannibalism Rate")
+  labs(fill = "Proportion \nContaining \nHake") +
+  theme(legend.title = element_text(hjust = 0))
 annual_rate
 
 ggsave(filename = "plots/diet/hake_cannibalism_rate.png", annual_rate,
-       bg = "transparent", width=190, height=100, units="mm", dpi=300)
+       bg = "transparent", width=170, height=90, units="mm", dpi=300)
 
 # Create a plot of location of observations by latitude and longitude
 world <- ne_countries(scale = "medium", returnclass = "sf")
@@ -197,7 +198,7 @@ locations <- ggplot(data = world) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
   scale_color_viridis(begin = 0.1, end = 0.9) +
-  xlab(" ") + ylab(" ") + labs(color = "Cannibalism Rate", size = "Stomachs (n)") +
+  xlab(" ") + ylab(" ") + labs(color = "Proportion \nContaining \nHake", size = "Stomachs (n)") +
   facet_wrap(~year, ncol = 5)
 
 ### Inset timing plots in yearly location plots -----------------------------
@@ -247,4 +248,4 @@ location_timing <- locations +
 location_timing
 
 # ggsave(filename = "plots/diet/locations_timing.png", location_timing,
-#        bg = "transparent", width=200, height=200, units="mm", dpi=300)
+#        bg = "transparent", width=170, height=200, units="mm", dpi=300)

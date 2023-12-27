@@ -613,15 +613,15 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   scale_x_discrete(limits = factor(1:15), 
                    breaks = c(1, 5, 10, 15), 
                    labels = c("1", "5", "10", "15+")) +  # add in missing predator ages
-  scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
+  scale_y_continuous(limits = c(0, NA), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  xlab("Predator Hake Age") + ylab("Diet Proportion") +
-  labs(fill = "Prey Hake Age") +
-  facet_wrap(~ data)
+  xlab("Predator Age") + ylab("Diet Proportion") +
+  labs(fill = "Prey \nAge") +
+  facet_wrap(~ data, ncol = 1)
 comp2_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
-       bg = "transparent", width=170, height=50, units="mm", dpi=300)
+       bg = "transparent", width=85, height=150, units="mm", dpi=300)
 
 
 ### Find mean and maximum proportion for each time period ---------------------
