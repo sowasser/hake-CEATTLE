@@ -682,6 +682,10 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
                                cbind.data.frame(time_popdy, 
                                                 Sensitivity = "Time Period")) %>%
   filter(year <= 2022) %>%
+  mutate(model = factor(model, 
+                        levels = c("Max 0.05", "Max 0.1", "Max 0.5", "Max 0.75",
+                                   "Base Cannibalism",
+                                   "High (1988-1999)", "Low (2005-2019)"))) %>%
   ggplot(., aes(x=year, y=value, color = model, fill = model)) +
   geom_line(aes(linetype = model)) +
   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed", "solid", "solid")) +

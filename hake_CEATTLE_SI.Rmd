@@ -7,6 +7,17 @@ output:
     df_print: paged
 ---
 
+![**Figure 1**: Pacific hake stomachs collected during 1988–2019 and the proportion of those stomachs that contained hake.](./plots/diet/hake_cannibalism_rate.png)
+
+![**Figure 6**: Residual (M1) and predation (M2) mortality by age and year for the CEATTLE model with the diet data for the entire period. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/M.png)
+
+![**Figure 6**: Change in the total negative log likelihood (NLL) and likelihood components for the single-species and cannibalism CEATTLE models with fixed values of M1. Horizontal line is at the threshold for significant improvements in likelihood.](./plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png)
+
+
+
+
+
+
 ![**Figure S.1**: Suitability coefficient (suitability of consumption and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for the CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
 
  &nbsp;  
@@ -31,20 +42,20 @@ output:
 
  &nbsp;  
 
-![**Figure S.7**: Dirichlet-reweighted output for the calculation of mean diet proportions by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
+![**Figure S.7**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
 
  &nbsp;  
  
-![**Figure S.8**: Scaled diet proportions by predator age for sensitivity testing, with observed diet ration scaled to a maxima of 0.5%, 10%, 50%, and 75% cannibalism by weight.](./plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png)
+![**Figure S.8**: Scaled diet proportions by predator age for sensitivity testing, with observed cannibalism scaled to a maximum cannibalism proportion by weight of 0.05, 0.1, 0.5, and 0.75.](./plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png)
  
   
   &nbsp;
  
-![**Figure S.9**: Dirichlet-reweighted output for the calculation of mean diet proportions by weight from records of hake diet in 1988-1999 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_90s.png)
+![**Figure S.9**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from records of hake diet in 1988-1999 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_90s.png)
 
  &nbsp;  
 
-![**Figure S.10**: Dirichlet reweighting output for the calculation of mean diet proportions from records of hake diet in 2005-2019 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_recent.png)
+![**Figure S.10**: Dirichlet reweighting output for the calculation of mean diet proportion from records of hake diet in 2005-2019 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_recent.png)
 
   &nbsp;  
   
@@ -57,3 +68,9 @@ output:
  &nbsp; 
 
 ![**Figure S.13**: Annual occurrence of Pacific hake, by sampling month, in California sea lion (Zalophus californianus) scat samples in the California Current Trophic Database (CCTD).](./plots/diet/Non-hake/CSL_hake_monthly.png)
+
+![**Figure 11**: Frequency of hake occurrence in predator species diet samples, relative to the number of samples in the California Current Trophic Database.](./plots/diet/hake_predators.png)
+
+
+
+

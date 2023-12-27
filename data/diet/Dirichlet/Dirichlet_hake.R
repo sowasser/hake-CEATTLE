@@ -443,7 +443,7 @@ run_Dirichlet <- function(data, name) {
   
   # Fix issues from export from the Dirichlet script
   colnames(post_dirichlet) <- c("predator", "prey", "lower95", "upper95", "mode", 
-                                "simple average", "bootstrapped average", "boot_mode",
+                                "Simple Average", "Bootstrapped Average", "boot_mode",
                                 "normalized_mode")
   post_dirichlet <- post_dirichlet[-1, ]
   
@@ -460,14 +460,14 @@ run_Dirichlet <- function(data, name) {
   # Restrict plots to only the hake prey items & the averages
   post_dirichlet_hake <- post_dirichlet_long %>% 
     filter(prey != "other") %>%
-    filter(variable == "simple average" | variable == "bootstrapped average")
+    filter(variable == "Simple Average" | variable == "Bootstrapped Average")
   dirichlet_results <- ggplot(post_dirichlet_hake, aes(x = prey)) +
     geom_errorbar(aes(ymin = lower95, ymax = upper95), 
                   width = .3, position = position_dodge(.9)) +
-    geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.8) +
+    geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 3, alpha = 0.7) +
     scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    xlab("prey age") + ylab("stomach proportion") +
-    scale_y_continuous(labels = scaleFUN) + 
+    xlab("Prey Age") + ylab("Stomach Proportion") +
+    scale_y_continuous(limits = c(-0.05, NA), labels = scaleFUN) + 
     theme(legend.title=element_blank()) +
     facet_wrap(~ predator, ncol = 3)
   

@@ -270,15 +270,17 @@ wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 
 # # Look at diet proportions
 # prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = wt75))
-# colnames(prop)[3] <- c("base cannibalism data")
+# colnames(prop)[3:7] <- c("None", "0.05", "0.1", "0.5", "0.75")
 # prop_all <- reshape2::melt(prop, id.vars = c("Pred_age", "Prey_age"))
-# prop_all$Pred_age[prop_all$Pred_age >= 15] <- "15+"
+# prop_all <- prop_all %>% filter(Pred_age <= 15)
+# prop_all$Pred_age[prop_all$Pred_age == 15] <- "15+"
 # prop_all$Pred_age <- factor(as.character(prop_all$Pred_age),
 #                             levels = c(as.character(1:14), "15+"))
-# stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
-#   geom_bar(stat = "identity", position = "dodge") +
-#   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-#   ylab("stomach proportion") + xlab("prey age") +
+# 
+# stomach_props <- ggplot(prop_all, aes(x=variable, y=value, fill=factor(Prey_age))) +
+#   geom_bar(stat = "identity", position = "stack") +
+#   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+#   ylab("Stomach Proportion") + xlab("Scaling Factor (Maximum)") + labs(fill = "Prey age") +
 #   facet_wrap(~Pred_age, ncol = 3)
 # stomach_props
 # ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
