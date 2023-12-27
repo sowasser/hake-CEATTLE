@@ -327,6 +327,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_hline(yintercept = 2.5, color = "gray") +  # line at maturity ogive
     xlab("Year") + ylab("Age") + 
     labs(fill="Millions", size="Millions", color="Millions") +
     facet_wrap(~model, ncol=1)
@@ -348,7 +349,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_hline(yintercept = 2.5, color = "gray") +  # line at maturity ogive
     xlab("Year") + ylab("Age") +
-    labs(size="Millions", color="Millions")
+    labs(size="Number \n(Millions)", color="Number \n(Millions)")
 
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
@@ -416,20 +417,19 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   biombyage <- extract_byage(ms_run$quantities$biomassByage, 
                              "CEATTLE - cannibalism", "biomass")
   
-  # Set 15 as accumulation age
-  biombyage$age[as.numeric(biombyage$age) > 15] <- 15
   biombyage$age <- as.integer(biombyage$age)
   biombyage <- biombyage[as.numeric(as.character(biombyage$year)) <= end_yr,]
+  biombyage$biomass <- biombyage$biomass / 1000000
   
   # Plot yearly biomass by age
   biombyage_plot <- ggplot(biombyage, aes(x=year, y=age)) +
-    geom_point(aes(size = biomass, color = biomass, fill = biomass)) +
-    scale_fill_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_color_viridis(direction = -1, begin = 0.1, end = 0.9) +
-    scale_y_continuous(breaks = seq(1, 15, 2), labels = c(seq(1, 13, 2), "15+")) +
-    scale_x_discrete(breaks = seq(start_yr, end_yr, 3)) +
+    geom_point(aes(size = biomass, color = biomass)) +
+    scale_color_viridis(direction = -1) +
+    scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
-    xlab(" ") + ylab("Age") 
+    geom_hline(yintercept = 2.5, color = "gray") +  # line at maturity ogive
+    xlab("Year") + ylab("Age") +
+    labs(size="Biomass \n(Mt)", color="Biomass \n(Mt)")
   
   #Plot realized consumption --------------------------------------------------
   # Extract biomass consumed as prey
@@ -493,6 +493,9 @@ plots$suit
 plots$biombyage
 plots$b_consumed
 plots$yearly_b
+
+# Combine nbyage plots togehter -----------------------------------------------
+biom_n_byage <- cowplot::plot_grid(plots$biombyage, plots$nbyage_anomaly, ncol = 1, labels = c("A", "B"))
 
 # # Plot with fixed M1
 # plots_M1fixed <- plot_models(ms_fixM1$model, ss_fixM1$model)
@@ -708,6 +711,7 @@ sens_popdy
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=170, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/biom_n_byage.png", biom_n_byage, width=170, height=170, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
