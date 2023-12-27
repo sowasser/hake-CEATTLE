@@ -127,15 +127,14 @@ mean_nbyage <- nbyage_test_all %>%
 mean_nbyage <- mean_nbyage[, c("year", "variable", "value", "error", "model")]
 
 ### Bring it all together! ----------------------------------------------------
-plot_popdy <- function(biom, R, numbers) {
+plot_popdy <- function(biom, R) {
   all_popdy <- rbind(biom, R)    # Combine biomass, recruitment
   all_popdy$value <- as.numeric(all_popdy$value) / 1000000  # to mt/millions
   all_popdy$error <- as.numeric(all_popdy$error) / 1000000  # to mt/millions
-  all_popdy <- rbind(all_popdy, numbers)  # add in mean age
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$variable <- factor(all_popdy$variable, 
                                labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", 
-                                          "Recruitment (millions)", "Mean Age"))
+                                          "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -184,7 +183,7 @@ plot_popdy <- function(biom, R, numbers) {
   return(list(change = rechange_all, plot = popdy_plot))
 }
 
-popdy_test <- plot_popdy(test_biom, R_test, mean_nbyage)
+popdy_test <- plot_popdy(test_biom, R_test)
 
 relative_change_test <- popdy_test$change
 
