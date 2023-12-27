@@ -328,7 +328,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     scale_x_discrete(breaks = c(1980, 1990, 2000, 2010, 2020)) +
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     xlab("Year") + ylab("Age") + 
-    labs(fill="Millions (n)", size="Millions (n)", color="Millions (n)") +
+    labs(fill="Millions", size="Millions", color="Millions") +
     facet_wrap(~model, ncol=1)
   
   # Numbers-at-age anomaly ----------------------------------------------------
@@ -348,7 +348,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     geom_vline(xintercept = as.character(hind_end), linetype = 2, colour = "gray") +  # Add line at end of hindcast
     geom_hline(yintercept = 2.5, color = "gray") +  # line at maturity ogive
     xlab("Year") + ylab("Age") +
-    labs(size="Millions (n)", color="Millions (n)")
+    labs(size="Millions", color="Millions")
 
   # Plot comparison to survey index -------------------------------------------
   init_surv <- ms_run$data_list$srv_biom %>% filter(Year > 1)  # input survey biomass
@@ -639,11 +639,6 @@ brps <- cbind(
   brp_comparison(model = ms_priorM1$model, model_name = "MS prior M1")
 )
 
-
-# Combine popdy and relative ssb plots together
-plot_grid(plots$popdy, relativeSSB_plot, ncol = 1, 
-          rel_widths = c(1, 0.5), rel_heights = c(1, 0.3))
-
 # Plot of empirical weight-at-age data from the assessment --------------------
 # Extract index used for derived quantities
 weight_out <- ss_priorM1$model$data_list$wt %>% filter(Wt_index == 2)  
@@ -691,8 +686,8 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
   geom_line(aes(linetype = model)) +
   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed", "solid", "solid")) +
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  scale_color_viridis(discrete = TRUE, direction = -1) +  
+  scale_fill_viridis(discrete = TRUE, direction = -1) +  
   geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   xlim(1980, 2022) +
@@ -700,7 +695,7 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
   labs(color = "Model", fill = "Model", linetype = "Model") +
   facet_grid(variable ~ Sensitivity, scales = "free_y", switch = "y") +
   theme(strip.background = element_blank(), strip.placement = "outside") 
-
+sens_popdy
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=200, units="mm", dpi=300)
@@ -708,7 +703,7 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1est$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=200, height=90, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=170, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)

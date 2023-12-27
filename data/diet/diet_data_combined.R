@@ -197,7 +197,7 @@ locations <- ggplot(data = world) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
-  scale_color_viridis(begin = 0.1, end = 0.9) +
+  scale_color_viridis() +
   xlab(" ") + ylab(" ") + labs(color = "Proportion \nContaining \nHake", size = "Stomachs (n)") +
   facet_wrap(~year, ncol = 5)
 
@@ -208,7 +208,7 @@ get_inset <- function(df) {
   plot <- ggplot(df, aes(x = factor(month), y = n_all, fill = prop)) +
     geom_bar(stat = "identity") +
     scale_x_discrete(limits = factor(1:12), breaks = c(1, 12), labels = c("Jan", "Dec")) +
-    scale_fill_viridis(limits = c(0, 1), begin = 0.1, end = 0.9) +
+    scale_fill_viridis(limits = c(0, 1)) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
@@ -247,5 +247,5 @@ location_timing <- locations +
   insets
 location_timing
 
-# ggsave(filename = "plots/diet/locations_timing.png", location_timing,
-#        bg = "transparent", width=170, height=200, units="mm", dpi=300)
+ggsave(filename = "plots/diet/locations_timing.png", location_timing,
+       bg = "transparent", width=170, height=180, units="mm", dpi=300)

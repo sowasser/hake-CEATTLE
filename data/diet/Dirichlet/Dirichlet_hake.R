@@ -555,10 +555,10 @@ write.csv(ceattle_recent, "data/diet/Dirichlet/Dirichlet_recent.csv", row.names 
 ### Compare original proportions to weighted proportions ----------------------
 original <- read.csv("data/diet/diet_for_CEATTLE_original.csv")
 
-# # Read in analyzed data if just fixing plots
-# ceattle_all <- read.csv("data/diet/Dirichlet/Dirichlet_all_years.csv")
-# ceattle_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
-# ceattle_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
+# Read in analyzed data if just fixing plots
+ceattle_all <- read.csv("data/diet/Dirichlet/Dirichlet_all_years.csv")
+ceattle_90s <- read.csv("data/diet/Dirichlet/Dirichlet_90s.csv")
+ceattle_recent <- read.csv("data/diet/Dirichlet/Dirichlet_recent.csv")
 
 new_df <- function(df, name) {
   new <- cbind(pred_age = df$Pred_age, 
@@ -616,7 +616,7 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   scale_y_continuous(limits = c(0, NA), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("Predator Age") + ylab("Diet Proportion") +
-  labs(fill = "Prey \nAge") +
+  labs(fill = "Prey Age") +
   facet_wrap(~ data, ncol = 1)
 comp2_plot
 
