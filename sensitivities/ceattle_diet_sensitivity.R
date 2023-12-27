@@ -41,7 +41,7 @@ years <- 1980:2100
 max_age <- max_age <- ms_priorM1$model$data_list$nages
 models <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, 
                run_wt50_prior$model, run_wt75_prior$model)
-names <- c("Base Cannibalism Model", "0.5% Cannibalism", "10% Cannibalism", 
+names <- c("Base Cannibalism", "0.5% Cannibalism", "10% Cannibalism", 
            "50% Cannibalism", "75% Cannibalism")
 
 # Pull out SSB & overall biomass from CEATTLE runs
@@ -179,15 +179,19 @@ plot_popdy <- function(biom, R) {
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model", linetype = "Model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
-  return(list(change = rechange_all, plot = popdy_plot))
+    theme(strip.background = element_blank(), strip.placement = "outside") 
+  
+  return(list(all = all_popdy, change = rechange_all, plot = popdy_plot))
 }
 
 popdy_test <- plot_popdy(test_biom, R_test)
 
 relative_change_test <- popdy_test$change
 
-popdy_test$plot
+diet_popdy <- popdy_test$plot
+diet_popdy
+
+write.csv(popdy_test$all, file = "sensitivities/diet_popdy.csv", row.names = FALSE)
 
 # ### Compare survey biomass estimate from CEATTLE to true values ---------------
 # survey <- read.csv("data/assessment/survey_data.csv")

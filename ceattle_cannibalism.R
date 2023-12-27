@@ -678,6 +678,29 @@ weight_plot <- ggplot(weight, aes(x = Year, y = Age, fill = Weight)) +
   theme(panel.border = element_rect(colour = NA, fill = NA))
 weight_plot
 
+# Combine sensitivity popdy data and plot together ----------------------------
+diet_popdy <- read.csv("sensitivities/diet_popdy.csv")
+time_popdy <- read.csv("sensitivities/time_popdy.csv")
+
+sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy, 
+                                                Sensitivity = "Diet Proportion"),
+                               cbind.data.frame(time_popdy, 
+                                                Sensitivity = "Time Period")) %>%
+  filter(year <= 2022) %>%
+  ggplot(., aes(x=year, y=value, color = model, fill = model)) +
+  geom_line(aes(linetype = model)) +
+  scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed", "solid", "solid")) +
+  geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
+  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  ylim(0, NA) +
+  xlim(1980, 2022) +
+  ylab(" ") + xlab("Year") +
+  labs(color = "Model", fill = "Model", linetype = "Model") +
+  facet_grid(variable ~ Sensitivity, scales = "free_y", switch = "y") +
+  theme(strip.background = element_blank(), strip.placement = "outside") 
+
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=200, units="mm", dpi=300)
@@ -694,3 +717,4 @@ weight_plot
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/weight-at-age.png", weight_plot, width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/ALL_sens_popdy.png", sens_popdy, width = 170, height = 120, units = "mm", dpi = 300)

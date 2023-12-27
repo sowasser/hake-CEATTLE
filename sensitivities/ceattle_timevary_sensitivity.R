@@ -48,7 +48,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
     return(all_biom2)
   }
   
-  test_biom <- rbind(ceattle_biomass(ms_model, "Base Cannibalism Model", all_years),
+  test_biom <- rbind(ceattle_biomass(ms_model, "Base Cannibalism", all_years),
                      ceattle_biomass(run_high, "High (1988-1999)", 1980:1999),
                      ceattle_biomass(run_low, "Low (2005-2019)", 2005:2019))
   
@@ -64,7 +64,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
       filter(year %in% years)
     return(R_all)
   }
-  R_test <- rbind(ceattle_R(ms_model, "Base Cannibalism Model", all_years),
+  R_test <- rbind(ceattle_R(ms_model, "Base Cannibalism", all_years),
                   ceattle_R(run_high, "High (1988-1999)", 1980:1999),
                   ceattle_R(run_low, "Low (2005-2019)", 2005:2019))
   
@@ -88,12 +88,12 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
     return(c(label, mean_out, SEM, percent))
   }
   
-  rechange_all <- rbind(rel_change("High (1988-1999)", "Base Cannibalism Model", "SSB", 1988:1999),
-                        rel_change("High (1988-1999)", "Base Cannibalism Model", "Total Biomass", 1988:1999),
-                        rel_change("High (1988-1999)", "Base Cannibalism Model", "Recruitment", 1988:1999),
-                        rel_change("Low (2005-2019)", "Base Cannibalism Model", "SSB", 2005:2019),
-                        rel_change("Low (2005-2019)", "Base Cannibalism Model", "Total Biomass", 2005:2019),
-                        rel_change("Low (2005-2019)", "Base Cannibalism Model", "Recruitment", 2005:2019))
+  rechange_all <- rbind(rel_change("High (1988-1999)", "Base Cannibalism", "SSB", 1988:1999),
+                        rel_change("High (1988-1999)", "Base Cannibalism", "Total Biomass", 1988:1999),
+                        rel_change("High (1988-1999)", "Base Cannibalism", "Recruitment", 1988:1999),
+                        rel_change("Low (2005-2019)", "Base Cannibalism", "SSB", 2005:2019),
+                        rel_change("Low (2005-2019)", "Base Cannibalism", "Total Biomass", 2005:2019),
+                        rel_change("Low (2005-2019)", "Base Cannibalism", "Recruitment", 2005:2019))
   colnames(rechange_all) <- c("model", "mean", "SEM", "percent")
   
   # Plot population dynamics
@@ -104,7 +104,7 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
-  all_popdy$model <- factor(all_popdy$model, levels = c("Low (2005-2019)", "High (1988-1999)", "Base Cannibalism Model"))
+  all_popdy$model <- factor(all_popdy$model, levels = c("Low (2005-2019)", "High (1988-1999)", "Base Cannibalism"))
   
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
@@ -117,16 +117,21 @@ timing_plot_popdy <- function(run_high, run_low, ms_model) {
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+    theme(strip.background = element_blank(), strip.placement = "outside") 
 
-  return(list(all_popdy, rechange_all, popdy_plot))
+  return(list(all = all_popdy, change = rechange_all, plot = popdy_plot))
 }
 
 timing_popdy <- timing_plot_popdy(run_high = run_90s_prior$model, 
                                   run_low = run_recent_prior$model,
                                   ms_model = ms_priorM1$model)
-relative_change <- timing_popdy[[2]]
-timing_popdy[[3]]
+
+relative_change <- timing_popdy$change
+
+time_popdy <- timing_popdy$plot
+time_popdy
+
+write.csv(timing_popdy$all, file = "sensitivities/time_popdy.csv", row.names = FALSE)
 
 # # Calculate reference points 
 # DynamicB0_recent <- c(run_recent_noproj$quantities$DynamicB0[1:length(2005:2019)])
@@ -197,7 +202,7 @@ M_all <- rbind(extract_M(run_90s_prior$model, run_90s_prior$model$quantities$M2,
                extract_M(run_recent_prior$model, run_recent_prior$model$quantities$M2,
                          "Low (2005-2019)") %>% filter(year %in% 2005:2019),
                extract_M(ms_priorM1$model, ms_priorM1$model$quantities$M2, 
-                         "Base Cannibalism Model") %>% filter(year %in% 1980:2022)) 
+                         "Base Cannibalism") %>% filter(year %in% 1980:2022)) 
 
 max(M_all$M1_M2)  # check max M for plotting
 timevary_M <- ggplot(M_all, aes(y = age, x = year, zmin = 0, zmax = 1.5)) +
@@ -240,7 +245,7 @@ M1_all <- rbind(data.frame(model = "Base Cannibalism Model",
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy[[3]],
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/timevarying_popdy.png", timing_popdy$plot,
 #        width=140, height=150, units="mm", dpi=300)
 # ggsave(filename = "plots/CEATTLE/cannibalism/Testing/timevarying_nbyage.png", test_nbyage_plot,
 #        width=150, height=150, units="mm", dpi=300)
