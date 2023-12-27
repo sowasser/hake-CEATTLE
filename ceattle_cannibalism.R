@@ -10,7 +10,7 @@ library(dplyr)
 library(purrr)
 library(ggplot2)
 library(viridis)
-# library(ggview)
+library(ggview)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
@@ -566,6 +566,14 @@ ms_prior_totM <- ms_prior_mort[[4]] %>%
   group_by(age, year) %>%
   summarize(M1_M2 = sum(M1_M2))
 
+# Create dataframe for a table of total mortality (rounded and only up to age 6)
+m_tot <- ms_prior_totM %>% 
+  filter(age <= 6) %>%
+  mutate(M1_M2 = round(M1_M2, digits = 2)) %>%
+  dcast(., year ~ age)
+
+write.csv(m_tot, file = "data/CEATTLE/total_M.csv", row.names = FALSE)
+
 # # Single-species with estimated M1
 # ss_M1 <- mortality(ss_estM1$model, type = "single-species")
 # ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
@@ -672,7 +680,7 @@ weight_plot
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=200, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1est$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
