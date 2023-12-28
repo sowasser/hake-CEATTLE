@@ -259,7 +259,7 @@ save(run_recent_prior, file = "models/sensitivity/time-varying/run_recent_prior.
 
 # Variation in diet proportion ------------------------------------------------
 # Pull out data from base intrasp run
-wts <- hake_intrasp$UobsWtAge %>% 
+wts <- hake_intrasp$UobsWtAge %>%
   group_by(Pred_age, Prey_age) %>%
   summarize(wt_prop = mean(Stomach_proportion_by_weight))
 
@@ -284,7 +284,7 @@ wt75 <- rescale_max(wts$wt_prop, to = c(0, 0.75))
 #   facet_wrap(~Pred_age, ncol = 3)
 # stomach_props
 # ggsave(filename = "plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png", stomach_props,
-#        width=140, height=150, units="mm", dpi=300)
+#        width=160, height=170, units="mm", dpi=300)
 
 data05 <- hake_intrasp
 data05$UobsWtAge$Stomach_proportion_by_weight <- wt05

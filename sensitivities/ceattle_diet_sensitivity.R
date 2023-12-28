@@ -41,8 +41,8 @@ years <- 1980:2100
 max_age <- max_age <- ms_priorM1$model$data_list$nages
 models <- list(ms_priorM1$model, run_wt05_prior$model, run_wt10_prior$model, 
                run_wt50_prior$model, run_wt75_prior$model)
-names <- c("Base Cannibalism", "Max Proportion 0.05", "Max Proportion 0.1", 
-           "Max Proportion 0.5", "Max Proportion 0.75")
+names <- c("Base Cannibalism", "Max 0.05", "Max 0.1", 
+           "Max 0.5", "Max 0.75")
 
 # Pull out SSB & overall biomass from CEATTLE runs
 ceattle_biomass <- function(run, name) {
