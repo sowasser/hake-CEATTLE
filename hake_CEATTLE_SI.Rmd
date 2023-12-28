@@ -13,10 +13,6 @@ output:
  &nbsp;  
  
  ![**Figure S.2**: Annual and average empirical weight-at-age of Pacific hake from the 2020 stock assessment.](./plots/weight-at-age.png)
- 
- &nbsp;
- 
- ![Fishing mortality (F) for the single-species and cannibalism CEATTLE models. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/F.png)
 
  &nbsp;
  
@@ -49,18 +45,18 @@ output:
   
   &nbsp;
  
-![**Figure S.10**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from records of hake diet in 1988-1999 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_90s.png)
-
- &nbsp;  
-
-![**Figure S.11**: Dirichlet reweighting output for the calculation of mean diet proportion from records of hake diet in 2005-2019 by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_recent.png)
-
+![**Figure S.10**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight for (A) records of hake diet in 1988-1999 and (B) records of hake diet in 2005-2019, by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_sens.png)
+ 
+ &nbsp; 
+ 
+ ![**Figure S.11**: Fishing mortality (F) for the single-species and cannibalism CEATTLE models. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/F.png)
+ 
  &nbsp; 
  
 ![**Figure S.12**: Spawning biomass (Mt) for the single-species and cannibalism CEATTLE model with fixed values of M1. Black line represents SB derived from the model with M1 fixed at the estimated values for the single-species (0.19) and cannibalism (0.25) models.](./plots/CEATTLE/cannibalism/Testing/M1/M1_profile_SSB.png)
  
- &nbsp; 
-
+ &nbsp;
+ 
 ![**Figure S.13**: California sea lion (Zalophus californianus) scat samples from the California Current Trophic Database (CCTD) and the proportion of samples containing Pacific hake.](./plots/diet/Non-hake/CSL_hake_monthly.png)
 
  &nbsp; 

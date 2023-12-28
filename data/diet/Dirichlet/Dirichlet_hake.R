@@ -512,6 +512,15 @@ dirichlet_recent[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_recent.png", dirichlet_recent[[2]], 
        bg = "transparent", width=160, height=180, units="mm", dpi=300)
 
+# Combine plots together
+plot_high <- dirichlet_90s[[2]] + theme(legend.position = "none")
+plot_low <- dirichlet_recent[[2]] + ylab(" ")
+dir_both <- cowplot::plot_grid(plot_high, plot_low, 
+                               rel_widths = c(1, 1.5), 
+                               labels = c("A", "B"))
+ggsave(filename = "plots/diet/Dirichlet/Dirichlet_sens.png", dir_both, 
+       bg = "transparent", width=210, height=160, units="mm", dpi=300)
+  
 
 ### Re-organize dataframe for CEATTLE -----------------------------------------
 # Merge with data
