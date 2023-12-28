@@ -109,17 +109,18 @@ all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
 
 all_popdy$type <- factor(all_popdy$type, 
                          labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+all_popdy$model <- factor(all_popdy$model, levels = c("Single-species", "Cannibalism"))
 
 popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, 
                                     color = model, fill = model, linetype = HCR)) +
   geom_line() +
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.45) +
-  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
+  geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   ylab(" ") + xlab("Year") +
-  labs(color = "Model", fill = "Model") +
+  labs(color = "CEATTLE Model", fill = "CEATTLE Model") +
   facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
   theme(strip.background = element_blank(), strip.placement = "outside") 
 popdy_plot

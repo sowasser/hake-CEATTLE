@@ -582,20 +582,21 @@ write.csv(m_tot, file = "data/CEATTLE/total_M.csv", row.names = FALSE)
 # ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
 ### Reference points ----------------------------------------------------------
-# Catch / Fishing effort
+# Fishing mortality
 eff <- rbind(data.frame(year = years,
                         eff = ms_priorM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
-                        model = "cannibalism"),
+                        model = "Cannibalism"),
              data.frame(year = years,
                         eff = ss_priorM1$model$quantities$F_spp[1:length(start_yr:end_yr)],
-                        model = "single-species"))
+                        model = "Single-species"))
+eff$model <- factor(eff$model, levels = c("Single-species", "Cannibalism"))
 
 eff_plot <- ggplot(eff, aes(x=year, y=eff, color=model)) +
   geom_line() +
-  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
+  scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
+  scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
   geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
-  xlab("year") + ylab("F")
+  xlab("Year") + ylab("Fishing Mortality") + labs(color = "CEATTLE Model")
 eff_plot
 
 # ms_run_Fspr <- Rceattle::fit_mod(data_list = ms_priorM1$model$data_list,
@@ -695,7 +696,7 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
   scale_color_viridis(discrete = TRUE, direction = -1) +  
   scale_fill_viridis(discrete = TRUE, direction = -1) +  
-  geom_vline(xintercept = 2019, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   xlim(1980, 2022) +
   ylab(" ") + xlab("Year") +
@@ -718,6 +719,6 @@ sens_popdy
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots$b_consumed, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/relative_SSB.png", relativeSSB_plot, width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/F.png", eff_plot, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/weight-at-age.png", weight_plot, width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/Testing/ALL_sens_popdy.png", sens_popdy, width = 170, height = 120, units = "mm", dpi = 300)
