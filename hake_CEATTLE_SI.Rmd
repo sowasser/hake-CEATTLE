@@ -32,7 +32,7 @@ output:
 
  &nbsp;  
 
-![**Figure S.7**: Age vs. length (cm) from the assessment of Pacific hake, the ages fitted to California Current Trophic Database (CCTD) predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake survey (with bounds for ages of 1 and 15) and ages from Pacific hake acoustic-trawl survey data.](./plots/diet/growth_curve.png)
+![**Figure S.7**: Age vs. length (cm) from the 2020 hake stock assessment, the ages fitted to California Current Trophic Database (CCTD) predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake acoustic-trawl survey, and ages from the hake acoustic-trawl survey data.](./plots/diet/growth_curve.png)
 
  &nbsp;  
 

@@ -278,30 +278,30 @@ FEAT_ages <- as.data.frame(rbind(cbind(age = FEAT_hake$predator_age, length = FE
 # Plot fit --------------------------------------------------------------------
 all_ages <- as.data.frame(rbind(cbind(age = age_length$age,
                                       length = age_length$length,
-                                      data = rep("assessment", length(age_length$age))),
+                                      data = rep("Assessment", length(age_length$age))),
                                 cbind(age = new_pred$pred_ages,
                                       length = new_pred$FL_cm,
-                                      data = rep("CCTD predators", length(new_pred$pred_ages))),
+                                      data = rep("CCTD", length(new_pred$pred_ages))),
                                 cbind(age = new_hake_prey$prey_ages,
                                       length = (new_hake_prey$Prey_Length1 / 10),  # prey are in mm
-                                      data = rep("CCTD prey", length(new_hake_prey$prey_ages))),
+                                      data = rep("CCTD", length(new_hake_prey$prey_ages))),
                                 cbind(age = FEAT_hake$predator_age,
                                       length = FEAT_hake$predator_length_cm,
-                                      data = rep("FEAT predators", length(FEAT_hake$predator_age))),
+                                      data = rep("Hake Survey", length(FEAT_hake$predator_age))),
                                 cbind(age = FEAT_hake$prey_ages,
                                       length = FEAT_hake$measure_value,
-                                      data = rep("FEAT prey", length(FEAT_hake$prey_ages)))))
-all_ages$age <- as.numeric(all_ages$age)
+                                      data = rep("Hake Survey", length(FEAT_hake$prey_ages)))))
 all_ages$length <- as.numeric(all_ages$length)
+all_ages$data <- factor(all_ages$data, levels = c("Assessment", "CCTD", "Hake Survey"))
+all_ages$age <- factor(all_ages$age, levels = 1:20)
 
 all_ages <- na.omit(all_ages)
 
-growth_curve <- ggplot(all_ages, aes(x = age, y = length, 
-                                     color = data, shape = data, alpha = data)) +
-  geom_point(size = 3) +
+growth_curve <- ggplot(all_ages, aes(x = age, y = length, color = data)) +
+  geom_boxplot(position = "dodge") +
   scale_alpha_discrete(range = c(0.2, 1)) +
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-  xlab("Age") + ylab("Length (cm)")
+  xlab("Age") + ylab("Length (cm)") + labs(color = "Source")
 growth_curve
 
 ggsave(filename = "plots/diet/growth_curve.png", growth_curve,
