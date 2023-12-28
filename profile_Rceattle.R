@@ -12,89 +12,89 @@ library(dplyr)
 # Set ggplot theme
 theme_set(ggsidekick::theme_sleek())
 
-data <- read_data(file = "data/hake_intrasp_230912.xlsx")  # Read in data
+data <- read_data(file = "data/hake_intrasp_231226.xlsx")  # Read in data
 
 # Function updating M1 for each run of the model
-get_profile <- function(new_M1, model, msm) {
-  # M1_change <- -0.01
-  # model <- ss_estM1$model$estimated_params
-  # msm <- 0
-  M1_base <- data$M1_base[, 3:22]
-  data$M1_base[, 3:22] <- new_M1
-  run <- fit_mod(
-    data_list = data,
-    inits = model,
-    msmMode = msm,
-    M1Fun = Rceattle::build_M1(M1_model = 0,
-                               updateM1 = TRUE,
-                               M1_use_prior = FALSE),
-    estimateMode = 1,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-    phase = "default",
-    initMode = 1,
-    loopnum = 7
-  )
-
-  # Save the resulting run to losing progress to R bombs!
-  if (msm == 0) {save(run, file = paste0("models/profile/ss/run",
-                                         as.character(new_M1),
-                                         ".Rdata"))}
-  if (msm == 1) {save(run, file = paste0("models/profile/ms/run",
-                                         as.character(new_M1),
-                                         ".Rdata"))}
-
-  message(run$quantities$jnll)  # print JNLL to console
-  return(run)
-}
-
-### Run profile over M1 -------------------------------------------------------
-# Load model with estimated M1 & check starting value
-load("models/ss_estM1.Rdata")
-startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-
-run0 <- get_profile(startM_ss, ss_estM1$model$estimated_params, 0)  # 0.22
-# SS down
-run1 <- get_profile(0.21, run0$estimated_params, 0)
-run2 <- get_profile(0.20, run1$estimated_params, 0)
-run3 <- get_profile(0.19, run2$estimated_params, 0)
-run4 <- get_profile(0.18, run3$estimated_params, 0)
-run5 <- get_profile(0.17, run4$estimated_params, 0)
-run6 <- get_profile(0.16, run5$estimated_params, 0)
-run7 <- get_profile(0.15, run5$estimated_params, 0)
-
-# SS up
-run8 <- get_profile(0.23, run0$estimated_params, 0)
-run9 <- get_profile(0.24, run8$estimated_params, 0)
-run10 <- get_profile(0.25, run9$estimated_params, 0)
-run11 <- get_profile(0.26, run10$estimated_params, 0)
-run12 <- get_profile(0.27, run11$estimated_params, 0)
-run13 <- get_profile(0.28, run12$estimated_params, 0)
-run14 <- get_profile(0.29, run13$estimated_params, 0)
-run15 <- get_profile(0.30, run14$estimated_params, 0)
-
-rm(list = ls())  # clear environment to re-set runs
-# Load model with estimated M1 & check starting value
-load("models/ms_estM1.Rdata")
-startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
-
-run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
-# ms down
-run1 <- get_profile(0.25, run0$estimated_params, 1)
-run2 <- get_profile(0.24, run1$estimated_params, 1)
-run3 <- get_profile(0.23, run2$estimated_params, 1)
-run4 <- get_profile(0.22, run3$estimated_params, 1)
-run5 <- get_profile(0.21, run4$estimated_params, 1)
-run6 <- get_profile(0.20, run5$estimated_params, 1)
-run7 <- get_profile(0.19, run6$estimated_params, 1)
-run8 <- get_profile(0.18, run7$estimated_params, 1)
-run9 <- get_profile(0.17, run8$estimated_params, 1)
-run10 <- get_profile(0.16, run9$estimated_params, 1)
-run11 <- get_profile(0.15, run9$estimated_params, 1)
-
-# ms up
-run12 <- get_profile(0.27, run0$estimated_params, 1)
-run13 <- get_profile(0.28, run12$estimated_params, 1)
-run14 <- get_profile(0.29, run13$estimated_params, 1)
-run15 <- get_profile(0.30, run14$estimated_params, 1)
+# get_profile <- function(new_M1, model, msm) {
+#   # M1_change <- -0.01
+#   # model <- ss_estM1$model$estimated_params
+#   # msm <- 0
+#   M1_base <- data$M1_base[, 3:22]
+#   data$M1_base[, 3:22] <- new_M1
+#   run <- fit_mod(
+#     data_list = data,
+#     inits = model,
+#     msmMode = msm,
+#     M1Fun = Rceattle::build_M1(M1_model = 0,
+#                                updateM1 = TRUE,
+#                                M1_use_prior = FALSE),
+#     estimateMode = 1,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+#     phase = "default",
+#     initMode = 1,
+#     loopnum = 7
+#   )
+# 
+#   # Save the resulting run to losing progress to R bombs!
+#   if (msm == 0) {save(run, file = paste0("models/profile/ss/run",
+#                                          as.character(new_M1),
+#                                          ".Rdata"))}
+#   if (msm == 1) {save(run, file = paste0("models/profile/ms/run",
+#                                          as.character(new_M1),
+#                                          ".Rdata"))}
+# 
+#   message(run$quantities$jnll)  # print JNLL to console
+#   return(run)
+# }
+# 
+# ### Run profile over M1 -------------------------------------------------------
+# # Load model with estimated M1 & check starting value
+# load("models/ss_estM1.Rdata")
+# startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
+# 
+# run0 <- get_profile(startM_ss, ss_estM1$model$estimated_params, 0)  # 0.22
+# # SS down
+# run1 <- get_profile(0.21, run0$estimated_params, 0)
+# run2 <- get_profile(0.20, run1$estimated_params, 0)
+# run3 <- get_profile(0.19, run2$estimated_params, 0)
+# run4 <- get_profile(0.18, run3$estimated_params, 0)
+# run5 <- get_profile(0.17, run4$estimated_params, 0)
+# run6 <- get_profile(0.16, run5$estimated_params, 0)
+# run7 <- get_profile(0.15, run5$estimated_params, 0)
+# 
+# # SS up
+# run8 <- get_profile(0.23, run0$estimated_params, 0)
+# run9 <- get_profile(0.24, run8$estimated_params, 0)
+# run10 <- get_profile(0.25, run9$estimated_params, 0)
+# run11 <- get_profile(0.26, run10$estimated_params, 0)
+# run12 <- get_profile(0.27, run11$estimated_params, 0)
+# run13 <- get_profile(0.28, run12$estimated_params, 0)
+# run14 <- get_profile(0.29, run13$estimated_params, 0)
+# run15 <- get_profile(0.30, run14$estimated_params, 0)
+# 
+# rm(list = ls())  # clear environment to re-set runs
+# # Load model with estimated M1 & check starting value
+# load("models/ms_estM1.Rdata")
+# startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
+# 
+# run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
+# # ms down
+# run1 <- get_profile(0.25, run0$estimated_params, 1)
+# run2 <- get_profile(0.24, run1$estimated_params, 1)
+# run3 <- get_profile(0.23, run2$estimated_params, 1)
+# run4 <- get_profile(0.22, run3$estimated_params, 1)
+# run5 <- get_profile(0.21, run4$estimated_params, 1)
+# run6 <- get_profile(0.20, run5$estimated_params, 1)
+# run7 <- get_profile(0.19, run6$estimated_params, 1)
+# run8 <- get_profile(0.18, run7$estimated_params, 1)
+# run9 <- get_profile(0.17, run8$estimated_params, 1)
+# run10 <- get_profile(0.16, run9$estimated_params, 1)
+# run11 <- get_profile(0.15, run9$estimated_params, 1)
+# 
+# # ms up
+# run12 <- get_profile(0.27, run0$estimated_params, 1)
+# run13 <- get_profile(0.28, run12$estimated_params, 1)
+# run14 <- get_profile(0.29, run13$estimated_params, 1)
+# run15 <- get_profile(0.30, run14$estimated_params, 1)
 
 
 ### Get JNLL for each run and plot --------------------------------------------
@@ -223,6 +223,14 @@ comp_all_ms$model <- "Cannibalism"
 
 comp_all <- rbind(comp_all_ss, comp_all_ms)
 comp_all$model <- factor(comp_all$model, levels = c("Single-Species", "Cannibalism"))
+
+comp_all$component[comp_all$component == "Survey biomass"] <- "Survey"
+comp_all$component[comp_all$component == "Age/length composition data"] <- "Age"
+comp_all$component[comp_all$component == "Selectivity deviates"] <- "Sel"
+comp_all$component[comp_all$component == "Recruitment deviates"] <- "Rec"
+comp_all$component[comp_all$component == "Initial abundance deviates"] <- "Init"
+comp_all$component[comp_all$component == "Fishing mortality deviates"] <- "F"
+
 comp_profile_plot <- ggplot() +
   geom_line(data = (comp_all %>% filter(component == "Total NLL")), 
             aes(x = M1, y = NLL, color = component), linewidth = 1) +
@@ -240,7 +248,7 @@ comp_profile_plot
 
 ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png",
        comp_profile_plot,
-       width=150, height=150, units="mm", dpi=300)
+       width=85, height=100, units="mm", dpi=300)
 
 ### Plot effect on spawning output --------------------------------------------
 ssb_all_ss <- data.frame()
