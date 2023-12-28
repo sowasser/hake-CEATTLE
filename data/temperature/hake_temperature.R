@@ -122,17 +122,17 @@ temp_weighted <- temp_hake %>% group_by(year) %>%
 # Combine into 1 dataset with labeled data sources, then plot
 means <- rbind(ROMS[, 1:2], survey_mean, temp_weighted)  # subset to model years
 means <- cbind(means, c(rep("ROMS", length(1:41)),
-                        rep("survey", 13), 
-                        rep("kriged, biomass weighted", 12)))
+                        rep("Survey", 13), 
+                        rep("Kriged, biomass-weighted", 12)))
 colnames(means)[3] <- "dataset"
-means$dataset <- factor(means$dataset, levels = c("ROMS", "survey", "kriged, biomass weighted"))
+means$dataset <- factor(means$dataset, levels = c("ROMS", "Survey", "Kriged, biomass-weighted"))
 
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
   geom_line(aes(color=dataset), linewidth=1, alpha = 0.3) +
   ylim(0, NA) +
   scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
-  ylab("mean temperature")
+  ylab("Mean Temperature") + ylab("Year") + labs(color = "Dataset")
 mean_temp_compared
 
 ggsave(filename="plots/temperature/mean_temp_compared.png", mean_temp_compared,

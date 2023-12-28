@@ -410,8 +410,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   suit_plot <- ggplot(suitability, aes(x = pred_age, y = value, fill = prey_age)) +
     geom_bar(stat = "identity", position = "stack") +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, name = "prey age") +
-    xlab("predator age") + ylab("suitability") 
+    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, name = "Prey Age") +
+    xlab("Predator Age") + ylab("Suitability") 
   
   # Biomass-at-age for each model run -----------------------------------------
   biombyage <- extract_byage(ms_run$quantities$biomassByage, 
@@ -720,5 +720,5 @@ sens_popdy
 # ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots$yearly_b, width=140, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/F.png", eff_plot, width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/weight-at-age.png", weight_plot, width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/weight-at-age.png", weight_plot, width = 180, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/Testing/ALL_sens_popdy.png", sens_popdy, width = 170, height = 120, units = "mm", dpi = 300)
