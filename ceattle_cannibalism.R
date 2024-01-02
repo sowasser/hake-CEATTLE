@@ -103,7 +103,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   rel_change <- function(df1, df2, title) {
     mean_out <- round(mean((df1 / 1000000) - (df2 / 1000000)), 3)
     SEM <- round(sd((df1 / 1000000) - (df2 / 1000000)) / sqrt(length(range)), 3)
-    percent <- round(mean(((df1 - df2) / df2) * 100), 3)
+    percent <- round(mean(((df1 - df2) / df1) * 100), 3)
     return(c(title, mean_out, SEM, percent))
   }
   
@@ -569,6 +569,9 @@ ms_prior_totM <- ms_prior_mort[[4]] %>%
   group_by(age, year) %>%
   summarize(M1_M2 = sum(M1_M2))
 
+ms_totM_age1 <- ms_prior_totM %>%
+  filter(age == 1)
+
 # Create dataframe for a table of total mortality (rounded and only up to age 6)
 m_tot <- ms_prior_totM %>% 
   filter(age <= 6) %>%
@@ -642,6 +645,9 @@ brps <- cbind(
   # brp_comparison(model = ms_fixM1$model, model_name = "MS fix M1"),
   brp_comparison(model = ms_priorM1$model, model_name = "MS prior M1")
 )
+
+data.frame(t(ms_priorM1$model$quantities$biomassSSB / ms_priorM1$model$quantities$SB0))
+data.frame(t(ss_priorM1$model$quantities$biomassSSB / ss_priorM1$model$quantities$SB0))
 
 # Plot of empirical weight-at-age data from the assessment --------------------
 # Extract index used for derived quantities
