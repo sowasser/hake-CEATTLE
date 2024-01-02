@@ -81,3 +81,7 @@ hake_document.log
 
 # Ignore specific data files
 BS2017SS.xlsx
+
+data/diet/other diet.xlsx
+
+data/scenarios.xlsx
