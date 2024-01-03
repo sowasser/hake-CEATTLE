@@ -696,6 +696,10 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
                         levels = c("Max 0.05", "Max 0.1", "Max 0.5", "Max 0.75",
                                    "Base Cannibalism",
                                    "High (1988-1999)", "Low (2005-2019)"))) %>%
+  mutate(variable = factor(variable, 
+                           levels = c("Spawning Biomass (Mt)", 
+                                      "Total Biomass (Mt)", 
+                                      "Recruitment (millions)"))) %>%
   ggplot(., aes(x=year, y=value, color = model, fill = model)) +
   geom_line(aes(linetype = model)) +
   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed", "solid", "solid")) +
@@ -713,8 +717,6 @@ sens_popdy
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=200, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1fixed.png", plots_M1fixed$popdy, width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1est.png", plots_M1est$popdy, width=140, height=150, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=170, height=80, units="mm", dpi=300)
