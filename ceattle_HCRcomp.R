@@ -13,9 +13,9 @@ theme_set(theme_sleek())
 
 # ### Run and fit the CEATTLE model ---------------------------------------------
 # # Read in CEATTLE data from the excel file
-# hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230912.xlsx")
+# hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_240102.xlsx")
 # run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
-#   data$est_M1 <- M1  
+#   data$est_M1 <- M1
 #   data$projyr <- 2100
 #   # data$endyr <- 2019
 #   run <- fit_mod(data_list = data,
@@ -35,23 +35,23 @@ theme_set(theme_sleek())
 #                  # random_rec = TRUE,
 #                  # random_sel = TRUE,
 #                  projection_uncertainty = TRUE,
-#                  loopnum = 7) 
+#                  loopnum = 7)
 #   return(run)
 # }
 # 
-# ss_noHCR <- run_CEATTLE(data = hake_intrasp, 
-#                         M1 = 1, 
-#                         prior = TRUE, 
-#                         init = NULL, 
-#                         msm = 0, 
+# ss_noHCR <- run_CEATTLE(data = hake_intrasp,
+#                         M1 = 1,
+#                         prior = TRUE,
+#                         init = NULL,
+#                         msm = 0,
 #                         estMode = 0)
 # save(ss_model, file = "models/ss_noHCR.Rdata")
 # 
-# ms_noHCR <- run_CEATTLE(data = hake_intrasp, 
-#                         M1 = 1, 
-#                         prior = TRUE, 
-#                         init = ss_model$model$initial_params, 
-#                         msm = 1, 
+# ms_noHCR <- run_CEATTLE(data = hake_intrasp,
+#                         M1 = 1,
+#                         prior = TRUE,
+#                         init = ss_model$model$initial_params,
+#                         msm = 1,
 #                         estMode = 0)
 # save(ms_model, file = "models/ms_noHCR.Rdata")
 
@@ -80,8 +80,8 @@ ceattle_biomass <- function(run, name, HCR) {
 
 biomass <- rbind.data.frame(ceattle_biomass(ss_priorM1$model, "Single-species", "40-10"),
                             ceattle_biomass(ms_priorM1$model, "Cannibalism", "40-10"),
-                            ceattle_biomass(ss_model$model, "Single-species", "None"),
-                            ceattle_biomass(ms_model$model, "Cannibalism", "None"))
+                            ceattle_biomass(ss_model$model, "Single-species", "No Fishing"),
+                            ceattle_biomass(ms_model$model, "Cannibalism", "No Fishing"))
 
 ceattle_rec <- function(run, name, HCR) {
   rec <- c(run$quantities$R)
@@ -97,8 +97,8 @@ ceattle_rec <- function(run, name, HCR) {
 
 recruitment <- rbind.data.frame(ceattle_rec(ss_priorM1$model, "Single-species", "40-10"),
                                 ceattle_rec(ms_priorM1$model, "Cannibalism", "40-10"),
-                                ceattle_rec(ss_model$model, "Single-species", "None"),
-                                ceattle_rec(ms_model$model, "Cannibalism", "None"))
+                                ceattle_rec(ss_model$model, "Single-species", "No Fishing"),
+                                ceattle_rec(ms_model$model, "Cannibalism", "No Fishing"))
 
 all_popdy <- rbind.data.frame(biomass, recruitment)
 
