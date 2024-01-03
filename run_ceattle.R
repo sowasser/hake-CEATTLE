@@ -307,7 +307,7 @@ data05$UobsWtAge$Stomach_proportion_by_weight <- wt05
 run_wt05_prior <- run_CEATTLE(data = data05,
                               M1 = 1,
                               prior = TRUE,
-                              init = NULL,
+                              init = ms_priorM1$model$estimated_params,
                               msm = 1,
                               estMode = 0)
 run_wt05_prior$fit
@@ -343,7 +343,7 @@ data10$UobsWtAge$Stomach_proportion_by_weight <- wt10
 run_wt10_prior <- run_CEATTLE(data = data10,
                               M1 = 1,
                               prior = TRUE,
-                              init = NULL,
+                              init = ms_priorM1$model$estimated_params,
                               msm = 1,
                               estMode = 0)
 run_wt10_prior$fit
@@ -379,7 +379,7 @@ data50$UobsWtAge$Stomach_proportion_by_weight <- wt50
 run_wt50_prior <- run_CEATTLE(data = data50,
                               M1 = 1,
                               prior = TRUE,
-                              init = NULL,
+                              init = run_wt75_prior$model$estimated_params,
                               msm = 1,
                               estMode = 0)
 run_wt50_prior$fit
@@ -415,7 +415,7 @@ data75$UobsWtAge$Stomach_proportion_by_weight <- wt75
 run_wt75_prior <- run_CEATTLE(data = data75,
                               M1 = 1,
                               prior = TRUE,
-                              init = NULL,
+                              init = run_wt10_prior$model$estimated_params,
                               msm = 1,
                               estMode = 0)
 run_wt75_prior$fit
@@ -424,7 +424,7 @@ save(run_wt75_prior, file = "models/sensitivity/diet/run_wt75_prior.Rdata")
 # run_wt75_noproj <- run_CEATTLE(data = data75,
 #                                M1 = 1,
 #                                prior = FALSE,
-#                                init = NULL,
+#                                init = ms_priorM1$model$estimated_params,
 #                                msm = 1,
 #                                estMode = 1)
 # run_wt75_noproj$fit
