@@ -12,7 +12,7 @@ library(dplyr)
 # Set ggplot theme
 theme_set(ggsidekick::theme_sleek())
 
-data <- read_data(file = "data/hake_intrasp_231226.xlsx")  # Read in data
+data <- read_data(file = "data/hake_intrasp_240102.xlsx")  # Read in data
 
 # Function updating M1 for each run of the model
 # get_profile <- function(new_M1, model, msm) {

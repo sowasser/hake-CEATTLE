@@ -16,7 +16,7 @@ output:
 
  &nbsp;
  
-![**Figure S.3**: Spawning biomass (SB; Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with the Pacific Hake/Whiting Treaty ‘40-10’ harvest control rule (HCR) and with no HCR. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
+![**Figure S.3**: Spawning biomass (SB; Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with the Pacific Hake/Whiting Treaty ‘40-10’ harvest control rule (HCR) and with no fishing. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
 
  &nbsp;  
 
