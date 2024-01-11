@@ -45,15 +45,17 @@ theme_set(theme_sleek())
 #                         init = NULL,
 #                         msm = 0,
 #                         estMode = 0)
-# save(ss_model, file = "models/ss_noHCR.Rdata")
+# save(ss_noHCR, file = "models/ss_noHCR.Rdata")
 # 
 # ms_noHCR <- run_CEATTLE(data = hake_intrasp,
 #                         M1 = 1,
 #                         prior = TRUE,
-#                         init = ss_model$model$initial_params,
+#                         init = ss_noHCR$model$initial_params,
 #                         msm = 1,
 #                         estMode = 0)
-# save(ms_model, file = "models/ms_noHCR.Rdata")
+# ms_noHCR$quantities$jnll
+# ms_noHCR$opt$objective
+# save(ms_noHCR, file = "models/ms_noHCR.Rdata")
 
 ### Load in already-run models ------------------------------------------------
 load("models/ss_priorM1.Rdata")
@@ -80,8 +82,8 @@ ceattle_biomass <- function(run, name, HCR) {
 
 biomass <- rbind.data.frame(ceattle_biomass(ss_priorM1$model, "Single-species", "40-10"),
                             ceattle_biomass(ms_priorM1$model, "Cannibalism", "40-10"),
-                            ceattle_biomass(ss_model$model, "Single-species", "No Fishing"),
-                            ceattle_biomass(ms_model$model, "Cannibalism", "No Fishing"))
+                            ceattle_biomass(ss_noHCR, "Single-species", "No Fishing"),
+                            ceattle_biomass(ms_noHCR, "Cannibalism", "No Fishing"))
 
 ceattle_rec <- function(run, name, HCR) {
   rec <- c(run$quantities$R)
@@ -97,8 +99,8 @@ ceattle_rec <- function(run, name, HCR) {
 
 recruitment <- rbind.data.frame(ceattle_rec(ss_priorM1$model, "Single-species", "40-10"),
                                 ceattle_rec(ms_priorM1$model, "Cannibalism", "40-10"),
-                                ceattle_rec(ss_model$model, "Single-species", "No Fishing"),
-                                ceattle_rec(ms_model$model, "Cannibalism", "No Fishing"))
+                                ceattle_rec(ss_noHCR, "Single-species", "No Fishing"),
+                                ceattle_rec(ms_noHCR, "Cannibalism", "No Fishing"))
 
 all_popdy <- rbind.data.frame(biomass, recruitment)
 

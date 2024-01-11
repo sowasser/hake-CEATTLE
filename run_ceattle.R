@@ -5,9 +5,6 @@
 
 # Reinstall Rceattle if needed
 # remove.packages("Rceattle")
-# remove.packages("00LOCK-Rceattle")
-# pak::pkg_install("grantdadams/Rceattle")
-# remotes::install_github("grantdadams/Rceattle")
 # devtools::install_github("grantdadams/Rceattle", ref = "dev")
 library(Rceattle)
 library(dplyr)
@@ -20,6 +17,10 @@ theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_240102.xlsx")
+
+load("models/old/ms_priorM1.Rdata")
+old <- ms_priorM1$model
+
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
@@ -156,7 +157,7 @@ save(ss_priorM1, file = "models/ss_priorM1.Rdata")
 # ms_estM1 <- run_CEATTLE(data = hake_intrasp,
 #                         M1 = 1,
 #                         prior = FALSE,
-#                         init = ms_fixM1$model$estimated_params,
+#                         init = ss_estM1$model$estimated_params,
 #                         msm = 1,
 #                         estMode = 0)
 # ms_estM1$fit  # check convergence
@@ -379,7 +380,7 @@ data50$UobsWtAge$Stomach_proportion_by_weight <- wt50
 run_wt50_prior <- run_CEATTLE(data = data50,
                               M1 = 1,
                               prior = TRUE,
-                              init = run_wt75_prior$model$estimated_params,
+                              init = run_wt10_prior$model$estimated_params,
                               msm = 1,
                               estMode = 0)
 run_wt50_prior$fit
@@ -415,7 +416,7 @@ data75$UobsWtAge$Stomach_proportion_by_weight <- wt75
 run_wt75_prior <- run_CEATTLE(data = data75,
                               M1 = 1,
                               prior = TRUE,
-                              init = run_wt10_prior$model$estimated_params,
+                              init = run_wt50_prior$model$estimated_params,
                               msm = 1,
                               estMode = 0)
 run_wt75_prior$fit
