@@ -15,38 +15,38 @@ theme_set(ggsidekick::theme_sleek())
 data <- read_data(file = "data/hake_intrasp_240102.xlsx")  # Read in data
 
 # Function updating M1 for each run of the model
-# get_profile <- function(new_M1, model, msm) {
-#   # M1_change <- -0.01
-#   # model <- ss_estM1$model$estimated_params
-#   # msm <- 0
-#   M1_base <- data$M1_base[, 3:22]
-#   data$M1_base[, 3:22] <- new_M1
-#   run <- fit_mod(
-#     data_list = data,
-#     inits = model,
-#     msmMode = msm,
-#     M1Fun = Rceattle::build_M1(M1_model = 0,
-#                                updateM1 = TRUE,
-#                                M1_use_prior = FALSE),
-#     estimateMode = 1,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-#     phase = "default",
-#     initMode = 1,
-#     loopnum = 7
-#   )
-# 
-#   # Save the resulting run to losing progress to R bombs!
-#   if (msm == 0) {save(run, file = paste0("models/profile/ss/run",
-#                                          as.character(new_M1),
-#                                          ".Rdata"))}
-#   if (msm == 1) {save(run, file = paste0("models/profile/ms/run",
-#                                          as.character(new_M1),
-#                                          ".Rdata"))}
-# 
-#   message(run$quantities$jnll)  # print JNLL to console
-#   return(run)
-# }
-# 
-# ### Run profile over M1 -------------------------------------------------------
+get_profile <- function(new_M1, model, msm) {
+  # M1_change <- -0.01
+  # model <- ss_estM1$model$estimated_params
+  # msm <- 0
+  M1_base <- data$M1_base[, 3:22]
+  data$M1_base[, 3:22] <- new_M1
+  run <- fit_mod(
+    data_list = data,
+    inits = model,
+    msmMode = msm,
+    M1Fun = Rceattle::build_M1(M1_model = 0,
+                               updateM1 = TRUE,
+                               M1_use_prior = FALSE),
+    estimateMode = 1,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+    phase = "default",
+    initMode = 1,
+    loopnum = 7
+  )
+
+  # Save the resulting run to losing progress to R bombs!
+  if (msm == 0) {save(run, file = paste0("models/profile/ss/run",
+                                         as.character(new_M1),
+                                         ".Rdata"))}
+  if (msm == 1) {save(run, file = paste0("models/profile/ms/run",
+                                         as.character(new_M1),
+                                         ".Rdata"))}
+
+  message(run$quantities$jnll)  # print JNLL to console
+  return(run)
+}
+
+### Run profile over M1 -------------------------------------------------------
 # # Load model with estimated M1 & check starting value
 # load("models/ss_estM1.Rdata")
 # startM_ss <- round(exp(ss_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
@@ -70,13 +70,14 @@ data <- read_data(file = "data/hake_intrasp_240102.xlsx")  # Read in data
 # run13 <- get_profile(0.28, run12$estimated_params, 0)
 # run14 <- get_profile(0.29, run13$estimated_params, 0)
 # run15 <- get_profile(0.30, run14$estimated_params, 0)
-# 
+
 # rm(list = ls())  # clear environment to re-set runs
 # # Load model with estimated M1 & check starting value
 # load("models/ms_estM1.Rdata")
 # startM_ms <- round(exp(ms_estM1$model$initial_params$ln_M1)[1, 1, 1], digits = 2)
 # 
 # run0 <- get_profile(startM_ms, ms_estM1$model$estimated_params, 1)  # 0.26
+# 
 # # ms down
 # run1 <- get_profile(0.25, run0$estimated_params, 1)
 # run2 <- get_profile(0.24, run1$estimated_params, 1)
@@ -88,7 +89,7 @@ data <- read_data(file = "data/hake_intrasp_240102.xlsx")  # Read in data
 # run8 <- get_profile(0.18, run7$estimated_params, 1)
 # run9 <- get_profile(0.17, run8$estimated_params, 1)
 # run10 <- get_profile(0.16, run9$estimated_params, 1)
-# run11 <- get_profile(0.15, run9$estimated_params, 1)
+# run11 <- get_profile(0.15, run10$estimated_params, 1)
 # 
 # # ms up
 # run12 <- get_profile(0.27, run0$estimated_params, 1)
@@ -98,9 +99,6 @@ data <- read_data(file = "data/hake_intrasp_240102.xlsx")  # Read in data
 
 
 ### Get JNLL for each run and plot --------------------------------------------
-# Clear environment and load models back in
-rm(list = ls())  
-
 # Single species
 runs_ss <- list.files(path = "models/profile/ss")  # List of all model runs
 
@@ -160,19 +158,19 @@ prior_points <- cbind.data.frame(model = factor(c("single-species", "cannibalism
 all_profile <- rbind(profile_ss, profile_ms) %>%
   mutate(model = factor(model, levels = c("single-species", "cannibalism")))
 
-profile_plot <- ggplot() +
-  geom_line(data = all_profile, aes(x = M1, y = relative_NLL), linewidth = 1) +
-  geom_point(data = est_points, aes(x = M1, y = JNLL, color = model), size = 5, shape = "circle") +
-  geom_point(data = prior_points, aes(x = M1, y = JNLL, color = model), size = 5, shape = "triangle") +
-  geom_hline(yintercept = 2, color = "lightgray") +
-  # geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model),
-  #            linetype = "dashed", linewidth = 1) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.5) +
-  ylab("JNLL") + labs(color = "M1 estimate") +
-  # scale_x_continuous(breaks = seq(0.15, 0.35, 0.01)) +  # all scale markers for investigating
-  ggsidekick::theme_sleek() +
-  facet_wrap(~model)
-profile_plot
+# profile_plot <- ggplot() +
+#   geom_line(data = all_profile, aes(x = M1, y = relative_NLL), linewidth = 1) +
+#   geom_point(data = est_points, aes(x = M1, y = JNLL, color = model), size = 5, shape = "circle") +
+#   geom_point(data = prior_points, aes(x = M1, y = JNLL, color = model), size = 5, shape = "triangle") +
+#   geom_hline(yintercept = 2, color = "lightgray") +
+#   # geom_vline(data = est_M1, mapping = aes(xintercept = value, color = model),
+#   #            linetype = "dashed", linewidth = 1) +
+#   scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.5) +
+#   ylab("JNLL") + labs(color = "M1 estimate") +
+#   # scale_x_continuous(breaks = seq(0.15, 0.35, 0.01)) +  # all scale markers for investigating
+#   ggsidekick::theme_sleek() +
+#   facet_wrap(~model)
+# profile_plot
 
 # ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_profile.png",
 #        profile_plot,
