@@ -32,8 +32,11 @@ model_fits <- rbind(# cbind(model = "SS est M1", ss_estM1$fit),
                     cbind(model = "MS prior M1", ms_priorM1$fit))
 
 model_summary <- list(ss_priorM1$summary, ms_priorM1$summary) %>%
-  reduce(full_join, by = "component")
+  reduce(full_join, by = "component") 
+model_summary$NLL.x <- round(model_summary$NLL.x, digits = 1)
+model_summary$NLL.y <- round(model_summary$NLL.y, digits = 1)
 colnames(model_summary) <- c("component", "SS prior M1", "MS prior M1")
+
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
 start_yr <- ms_priorM1$model$data_list$styr
@@ -714,6 +717,11 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
   facet_grid(variable ~ Sensitivity, scales = "free_y", switch = "y") +
   theme(strip.background = element_blank(), strip.placement = "outside") 
 sens_popdy
+
+
+# Predicted annual diet composition? ------------------------------------------
+ms_priorM1$model$quantities$diet_prop_weight_hat
+
 
 ### Save plots (when not experimenting) ---------------------------------------
 # ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=200, units="mm", dpi=300)
