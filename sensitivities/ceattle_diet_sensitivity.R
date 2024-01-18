@@ -33,6 +33,10 @@ sensitivity_fit <- rbind(cbind(model = "wt05", run_wt05_prior$fit),
 sensitivity_summary <- list(run_wt05_prior$summary, run_wt10_prior$summary, 
                             run_wt50_prior$summary, run_wt75_prior$summary) %>%
   reduce(full_join, by = "component")
+sensitivity_summary$NLL.x <- round(sensitivity_summary$NLL.x, digits = 1)
+sensitivity_summary$NLL.y <- round(sensitivity_summary$NLL.y, digits = 1)
+sensitivity_summary$NLL.x.x <- round(sensitivity_summary$NLL.x.x, digits = 1)
+sensitivity_summary$NLL.y.y <- round(sensitivity_summary$NLL.y.y, digits = 1)
 colnames(sensitivity_summary) <- c("component", "wt05", "wt10", "wt50", "wt75")
 
 

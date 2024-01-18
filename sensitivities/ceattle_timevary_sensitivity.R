@@ -29,6 +29,8 @@ timevary_fits <- rbind(cbind(model = "MS", ms_priorM1$fit),
 
 timevary_summary <- list(run_90s_prior$summary, run_recent_prior$summary) %>%
   reduce(full_join, by = "component")
+timevary_summary$NLL.x <- round(timevary_summary$NLL.x, digits = 1)
+timevary_summary$NLL.y <- round(timevary_summary$NLL.y, digits = 1)
 colnames(timevary_summary) <- c("component", "High (90s)", "Low (recent)")
 
 ### Plot population dynamics --------------------------------------------------
