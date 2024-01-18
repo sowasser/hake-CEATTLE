@@ -775,9 +775,9 @@ sample_size <- read.csv("data/diet/diet_for_CEATTLE_yearly.csv")[, c("Pred_age",
   theme(legend.position = "none")
 sample_size
 
-comp_sample_plot <- cowplot::plot_grid(sample_size, diet_compared,
-                                       rel_widths = c(1, 2.1))
-comp_sample_plot
+predict_diet_plot <- cowplot::plot_grid(sample_size, diet_compared,
+                                        rel_widths = c(1, 2.1))
+predict_diet_plot
 
 
 ### Save plots (when not experimenting) ---------------------------------------
@@ -795,3 +795,4 @@ comp_sample_plot
 # ggsave(filename="plots/CEATTLE/cannibalism/F.png", eff_plot, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/weight-at-age.png", weight_plot, width = 180, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/Testing/ALL_sens_popdy.png", sens_popdy, width = 170, height = 120, units = "mm", dpi = 300)
+# ggsave(filename="plots/CEATTLE/predicted_diet_comparison.png", predict_diet_plot, width = 230, height = 280, units = "mm", dpi = 300)
