@@ -729,17 +729,18 @@ levels(pred_diet$Var4) <- c(1:20)
 levels(pred_diet$Var5) <- c(all_yrs)
 
 pred_diet <- pred_diet[, -(1:2)]
-colnames(pred_diet) <- c("Pred_age", "Prey_age", "Year", "Stomach_proportion_by_weight")
+colnames(pred_diet) <- c("Pred_age", "Prey_age", "Year", "proportion")
 pred_diet <- pred_diet %>% 
   mutate(Year = as.numeric(as.character(Year))) %>%
   filter(Year < 2020) %>%  # remove projection
-  mutate(Type = "predicted")  # add label column
+  mutate(Type = "Predicted")  # add label column
 
 # Read in annual diet proportions 
 # TODO: double check that these are ok!
 annual_diet <- read.csv("data/diet/diet_for_CEATTLE_yearly.csv")[, c("Pred_age", "Prey_age", "Year",
                                                                      "Stomach_proportion_by_weight")]
-annual_diet$Type <- "observed"
+annual_diet$Type <- "Observed"
+colnames(annual_diet)[4] <- "proportion"
 
 # Plot together
 diet_compared <- rbind.data.frame(pred_diet, annual_diet) %>%
@@ -749,12 +750,34 @@ diet_compared <- rbind.data.frame(pred_diet, annual_diet) %>%
   filter(Pred_age < 16) %>%  # remove predators above age 15 (as it's a plus group)
   mutate(Prey_age = factor(Prey_age),
          Pred_age = factor(Pred_age)) %>%
-  ggplot(., aes(x=Year, y=Stomach_proportion_by_weight, fill = Prey_age)) +
+  ggplot(., aes(x=Year, y=proportion, fill = Prey_age)) +
     geom_bar(stat = "identity", position = "stack") +
     scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    ylab("diet proportion") + labs(fill = "Prey Age") +
+    ylab("Diet Proportion by Weight") + labs(fill = "Prey Age") +
     facet_grid(Pred_age ~ Type)
 diet_compared
+
+# Read in number of samples & plot
+sample_size <- read.csv("data/diet/diet_for_CEATTLE_yearly.csv")[, c("Pred_age", "Prey_age", "Year",
+                                                                     "Sample_size")] %>%
+  mutate(Type = rep("Sample Size")) %>%
+  mutate(Prey_age = as.numeric(Prey_age),
+         Pred_age = as.numeric(Pred_age)) %>%
+  filter(Prey_age < 6) %>%  # remove prey above age 5 (no predation on those ages)
+  filter(Pred_age < 16) %>%  # remove predators above age 15 (as it's a plus group)
+  mutate(Prey_age = factor(Prey_age),
+         Pred_age = factor(Pred_age)) %>%
+  ggplot(., aes(x=Year, y=Sample_size, fill = Prey_age)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  ylab("Number of Prey Items") + labs(fill = "Prey Age") +
+  facet_grid(Pred_age ~ Type) +
+  theme(legend.position = "none")
+sample_size
+
+comp_sample_plot <- cowplot::plot_grid(sample_size, diet_compared,
+                                       rel_widths = c(1, 2.1))
+comp_sample_plot
 
 
 ### Save plots (when not experimenting) ---------------------------------------
