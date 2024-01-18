@@ -12,30 +12,32 @@ output:
     df_print: paged
 ---
 
-![**Figure S.1**: Suitability coefficient (suitability of consumption and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for the CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
+![**Figure S.1**: Age vs. length (cm) from the 2020 hake stock assessment, the ages fitted to California Current Trophic Database (CCTD) predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake acoustic-trawl survey, and ages from the hake acoustic-trawl survey data.](./plots/diet/growth_curve.png)
+
+![**Figure S.2**: Number of hake prey (sample size), observed proportion of cannibalism by weight in hake stomachs, and the predicted diet proportion by weight from the cannibalism CEATTLE model by predator age, as rows, prey ages, and year.](./plots/CEATTLE/predicted_diet_comparison.png)
+
+![**Figure S.3**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
+
+![**Figure S.4**: Suitability coefficient (suitability of consumption and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for the CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
+
+![**Figure S.5**: Annual and average empirical weight-at-age of Pacific hake from the 2020 stock assessment.](./plots/weight-at-age.png)
+
+![**Figure S.6**: Spawning biomass (SB; Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with the Pacific Hake/Whiting Treaty ‘40-10’ harvest control rule (HCR) and with no fishing. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
+
+![**Figure S.7**: Temperature-dependent consumption rate function for Atlantic cod and pollock from Fish Bioenergetics 4 (Deslauriers et al., 2017), and the values used in the CEATTLE model for hake. Optimal and maximum temperatures for hake were derived from the temperatures recorded during the FEAT hake acoustic-trawl survey and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
  
-![**Figure S.2**: Annual and average empirical weight-at-age of Pacific hake from the 2020 stock assessment.](./plots/weight-at-age.png)
+![**Figure S.8**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimates by grid, mean survey temperatures, and mean ROMS temperature.](./plots/temperature/mean_temp_compared.png)
 
-![**Figure S.3**: Spawning biomass (SB; Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with the Pacific Hake/Whiting Treaty ‘40-10’ harvest control rule (HCR) and with no fishing. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
-
-![**Figure S.4**: Temperature-dependent consumption rate function for Atlantic cod and pollock from Fish Bioenergetics 4 (Deslauriers et al., 2017), and the values used in the CEATTLE model for hake. Optimal and maximum temperatures for hake were derived from the temperatures recorded during the FEAT hake acoustic-trawl survey and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
+![**Figure S.9**: Allometric consumption function using values for Atlantic cod and juvenile and adult pollock from Fish Bioenergetics 4 (Deslauriers et al. 2017) and the values for hake from Francis (1983) where C~A~ = 0.167 and C~A~ / 2 = 0.0835.](./plots/bioenergetics/allometric_mass.png)
  
-![**Figure S.5**: Yearly mean kriged temperatures overall, mean kriged temperatures weighted by hake biomass estimates by grid, mean survey temperatures, and mean ROMS temperature.](./plots/temperature/mean_temp_compared.png)
-
-![**Figure S.6**: Allometric consumption function using values for Atlantic cod and juvenile and adult pollock from Fish Bioenergetics 4 (Deslauriers et al. 2017) and the values for hake from Francis (1983) where CA = 0.167 and CA / 2 = 0.0835.](./plots/bioenergetics/allometric_mass.png)
-
-![**Figure S.7**: Age vs. length (cm) from the 2020 hake stock assessment, the ages fitted to California Current Trophic Database (CCTD) predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake acoustic-trawl survey, and ages from the hake acoustic-trawl survey data.](./plots/diet/growth_curve.png)
-
-![**Figure S.8**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
+![**Figure S.10**: Scaled diet proportions by predator age for sensitivity testing, with observed cannibalism scaled to a maximum cannibalism proportion by weight of 0.05, 0.1, 0.5, and 0.75.](./plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png)
  
-![**Figure S.9**: Scaled diet proportions by predator age for sensitivity testing, with observed cannibalism scaled to a maximum cannibalism proportion by weight of 0.05, 0.1, 0.5, and 0.75.](./plots/CEATTLE/cannibalism/Testing/sensitivity_prop.png)
+![**Figure S.11**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight for (A) records of hake diet in 1988-1999 and (B) records of hake diet in 2005-2019, by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_sens.png)
+
+![**Figure S.12**: Fishing mortality (F) for the single-species and cannibalism CEATTLE models. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/F.png)
  
-![**Figure S.10**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight for (A) records of hake diet in 1988-1999 and (B) records of hake diet in 2005-2019, by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_sens.png)
+![**Figure S.13**: Spawning biomass (Mt) for the single-species and cannibalism CEATTLE model with fixed values of M1. Black line represents SB derived from the model with M1 fixed at the estimated values for the single-species (0.19) and cannibalism (0.25) models.](./plots/CEATTLE/cannibalism/Testing/M1/M1_profile_SSB.png)
 
-![**Figure S.11**: Fishing mortality (F) for the single-species and cannibalism CEATTLE models. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/F.png)
- 
-![**Figure S.12**: Spawning biomass (Mt) for the single-species and cannibalism CEATTLE model with fixed values of M1. Black line represents SB derived from the model with M1 fixed at the estimated values for the single-species (0.19) and cannibalism (0.25) models.](./plots/CEATTLE/cannibalism/Testing/M1/M1_profile_SSB.png)
+![**Figure S.14**: California sea lion (*Zalophus californianus*) scat samples from the California Current Trophic Database (CCTD) and the proportion of samples containing Pacific hake.](./plots/diet/Non-hake/CSL_hake_monthly.png)
 
-![**Figure S.13**: California sea lion (Zalophus californianus) scat samples from the California Current Trophic Database (CCTD) and the proportion of samples containing Pacific hake.](./plots/diet/Non-hake/CSL_hake_monthly.png)
-
-![**Figure S.14**: Frequency of hake occurrence in predator species diet samples, relative to the number of samples in the California Current Trophic Database.](./plots/diet/hake_predators.png)
+![**Figure S.15**: Frequency of hake occurrence in predator species diet samples, relative to the number of samples in the California Current Trophic Database.](./plots/diet/hake_predators.png)
