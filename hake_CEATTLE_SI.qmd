@@ -12,13 +12,13 @@ output:
     df_print: paged
 ---
 
-![**Figure S.1**: Age vs. length (cm) from the 2020 hake stock assessment, the ages fitted to California Current Trophic Database (CCTD) predators and prey using a von Bertalanffy growth curve parameterized with the length-at-age data from the hake acoustic-trawl survey, and ages from the hake acoustic-trawl survey data.](./plots/diet/growth_curve.png)
+![**Figure S.1**: Suitability coefficient (suitability of consumption and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for the CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
 
-![**Figure S.2**: Number of hake prey (sample size), observed proportion of cannibalism by weight in hake stomachs, and the predicted diet proportion by weight from the cannibalism CEATTLE model by predator age, as rows, prey ages, and year.](./plots/CEATTLE/predicted_diet_comparison.png)
+![**Figure S.2**: Age vs. length (cm) from the 2020 hake stock assessment, the ages fitted to California Current Trophic Database (CCTD) predators and prey using a von Bertalanffy growth curve parameterized using the length-at-age data from the hake acoustic-trawl survey, and ages from the hake acoustic-trawl survey data.](./plots/diet/growth_curve.png)
 
-![**Figure S.3**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from all records of hake depredation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
+![**Figure S.3**: Number of hake prey (sample size), observed proportion of cannibalism by weight in hake stomachs, and the predicted diet proportion by weight from the cannibalism CEATTLE model by predator age, as rows, prey ages, and year.](./plots/CEATTLE/predicted_diet_comparison.png)
 
-![**Figure S.4**: Suitability coefficient (suitability of consumption and preferred age of prey) derived from the observed proportion of prey-at-age in the stomachs of predators-at-age for the CEATTLE model with cannibalism.](./plots/CEATTLE/cannibalism/suitability.png)
+![**Figure S.4**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from all records of hake predation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
 
 ![**Figure S.5**: Annual and average empirical weight-at-age of Pacific hake from the 2020 stock assessment.](./plots/weight-at-age.png)
 
