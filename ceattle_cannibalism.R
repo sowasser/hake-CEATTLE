@@ -91,7 +91,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                        type = rep("Total Biomass"))
   ss3_biom <- as.data.frame(cbind(year = rep(years, 2), 
                                   rbind(ss3_ssb, ss3_biomass),
-                                  model = rep("Assessment")))
+                                  model = "2020 Assessment"))
   colnames(ss3_biom)[2:3] <- c("value", "error")
   ss3_biom <- ss3_biom[, c(1, 4, 2, 3, 5)]
   
@@ -145,7 +145,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   R <- melt(R_wide, id.vars = "year")
   # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
   ss3_R <- as.data.frame(cbind(year = years, 
-                               variable = rep("Assessment"), 
+                               variable = "2020 Assessment", 
                                value = ss3_R[, 2],
                                error = ss3_R[, 3]))
   R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")][1:length(start_yr:end_yr)], 
@@ -190,7 +190,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Combine and set up for plotting
   all_popdy <- rbind.data.frame(all_popdy, relSSB)
   all_popdy$model <- factor(all_popdy$model, 
-                            levels = c("Assessment", 
+                            levels = c("2020 Assessment", 
                                        "CEATTLE - single-species", 
                                        "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type, 
@@ -250,7 +250,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                single_species = nodiet_biom[1:length(years), 3] / 
                                  nodiet_biom[(length(years)+1):(length(years)*2), 3]))
   
-  colnames(ratio) <- c("year", "Assessment", "CEATTLE - cannibalism", 
+  colnames(ratio) <- c("year", "2020 Assessment", "CEATTLE - cannibalism", 
                        "CEATTLE - single-species")
   ratio2 <- melt(ratio, id.vars = "year", variable.name = "model")
   ratio2$model <- factor(ratio2$model, levels = c("Assessment", 
@@ -266,7 +266,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   # Plot the difference between model runs ------------------------------------
   ceattle_intrasp <- all_popdy %>% filter(model == "CEATTLE - cannibalism")
   ceattle_nodiet <- all_popdy %>% filter(model == "CEATTLE - single-species")
-  assessment <- all_popdy %>% filter(model == "Assessment")
+  assessment <- all_popdy %>% filter(model == "2020 Assessment")
   
   diff_intrasp <- rbind(cbind.data.frame(year = years,
                                          type = ceattle_intrasp$type,
@@ -370,10 +370,10 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   
   survey <- read.csv(paste0("data/assessment/", assess_yr, "/survey_simple.csv"))
   colnames(survey) <- c("year", "biomass", "log_sd")
-  survey <- cbind(survey, model = "Assessment")
+  survey <- cbind(survey, model = "2020 Assessment")
   
   survey_all <- rbind(intrasp_srv, nodiet_srv, survey)
-  survey_all$model <- factor(survey_all$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+  survey_all$model <- factor(survey_all$model, levels = c("2020 Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
   survey_all$Observation <- survey_all
   
   survey_plot <- ggplot() +
