@@ -63,6 +63,8 @@ extract_byage <- function(result, name, type) {
 }
 
 plot_models <- function(ms_run, ss_run, save_data = FALSE) {
+  # ms_run <- ms_priorM1$model
+  # ss_run <- ss_priorM1$model
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB[, 1:length(start_yr:end_yr)]) * 2)
@@ -168,6 +170,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$error <- as.numeric(all_popdy$error)
   
   # Relative SSB / depletion ----------------------------------------------------
+  dynB0_ss3 <- as.data.frame(read.table(paste0("data/assessment/", assess_yr, "/dyn_B0.txt")))[, 2]
+  dynB0_ss3 <- mean(dynB0_ss3) / 1000000
   relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:43],
                                               year = years, 
                                               model = "CEATTLE - single-species"),
@@ -175,7 +179,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                                               year = years, 
                                               model = "CEATTLE - cannibalism"),
                              cbind.data.frame(depletion = all_popdy[all_popdy$type == "SSB" & 
-                                                                      all_popdy$model == "2020 Assessment", ]$value / (1.8 * 2),
+                                                                      all_popdy$model == "2020 Assessment", ]$value / (dynB0_ss3),
                                               year = years,
                                               model = "2020 Assessment"))
     
@@ -741,8 +745,7 @@ annual_diet <- read.csv("data/diet/diet_for_CEATTLE_yearly.csv")[, c("Pred_age",
                                                                      "Stomach_proportion_by_weight")]
 annual_diet$Type <- "Observed"
 colnames(annual_diet)[4] <- "proportion"
-
-# Plot together
+ 
 diet_compared <- rbind.data.frame(pred_diet, annual_diet) %>%
   mutate(Prey_age = as.numeric(Prey_age),
          Pred_age = as.numeric(Pred_age)) %>%
@@ -781,7 +784,7 @@ predict_diet_plot
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=180, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=180, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=170, height=80, units="mm", dpi=300)
