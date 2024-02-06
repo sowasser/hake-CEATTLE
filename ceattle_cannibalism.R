@@ -205,22 +205,6 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
-  
-  # Labels for relative biomass plot 
-  text1 <- cbind.data.frame(text = c("", "", "", "Management target"),
-                            type = c(1, 2, 3, 4),
-                            year = rep(1980), value = rep(0.4))
-  text1$type <- factor(text1$type, labels = c("Spawning Biomass (Mt)", 
-                                              "Total Biomass (Mt)", 
-                                              "Recruitment (millions)",
-                                              "Relative Spawning Biomass"))
-  text2 <- cbind.data.frame(text = c("", "", "", "Minimum stock size threshold"),
-                            type = c(1, 2, 3, 4),
-                            year = rep(1980), value = rep(0.1))
-  text2$type <- factor(text2$type, labels = c("Spawning Biomass (Mt)", 
-                                              "Total Biomass (Mt)", 
-                                              "Recruitment (millions)",
-                                              "Relative Spawning Biomass"))
             
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value)) +
     geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
@@ -240,11 +224,7 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside") +
-    geom_text(data = text1, aes(label = text), 
-              hjust = 0, vjust = -0.5, size = 2.5, color = "grey38") +
-    geom_text(data = text2, aes(label = text), 
-              hjust = 0, vjust = -0.5, size = 2.5, color = "grey38") 
+    theme(strip.background = element_blank(), strip.placement = "outside") 
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition ---------
   ratio <- as.data.frame(cbind(year = years,
