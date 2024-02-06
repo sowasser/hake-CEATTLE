@@ -691,8 +691,14 @@ sens_popdy <- rbind.data.frame(cbind.data.frame(diet_popdy,
   geom_line(aes(linetype = model)) +
   scale_linetype_manual(values=c("solid", "solid", "solid", "solid", "dashed", "solid", "solid")) +
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
-  scale_color_viridis(discrete = TRUE, direction = -1) +  
-  scale_fill_viridis(discrete = TRUE, direction = -1) +  
+  scale_color_manual(values = c("#78D6AEFF", "#38AAACFF", "#357BA2FF", "#40498EFF", 
+                                "gray20", 
+                                "#781C6DFF", "#ED6925FF")) +
+  scale_fill_manual(values = c("#78D6AEFF", "#38AAACFF", "#357BA2FF", "#40498EFF", 
+                               "gray20", 
+                               "#781C6DFF", "#ED6925FF")) +
+  # scale_color_viridis(discrete = TRUE, direction = -1) +  
+  # scale_fill_viridis(discrete = TRUE, direction = -1) +  
   geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   xlim(1980, 2022) +
