@@ -168,25 +168,23 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   all_popdy$error <- as.numeric(all_popdy$error)
   
   # Relative SSB / depletion ----------------------------------------------------
-  relative_SSB <- function(model, label) {
-    df <- data.frame(t(model$quantities$biomassSSB / model$quantities$SB0))
-    df$year <- rownames(df)
-    rownames(df) <- NULL
-    df$model <- label
-    df$year <- as.numeric(df$year)
-    return(df)
-  }
-  
-  relSSB <- rbind.data.frame(relative_SSB(ss_run, "CEATTLE - single-species"),
-                             relative_SSB(ms_run, "CEATTLE - cannibalism")) %>%
-    filter(year <= 2022)
-  
+  relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:43],
+                                              year = years, 
+                                              model = "CEATTLE - single-species"),
+                             cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:43],
+                                              year = years, 
+                                              model = "CEATTLE - cannibalism"),
+                             cbind.data.frame(depletion = all_popdy[all_popdy$type == "SSB" & 
+                                                                      all_popdy$model == "2020 Assessment", ]$value / (1.8 * 2),
+                                              year = years,
+                                              model = "2020 Assessment"))
+    
   # Set columns to match popdy dataframe
   relSSB$error <- 0
   relSSB$type <- "Relative SB"
   relSSB <- relSSB[, c(2, 5, 1, 4, 3)]
   colnames(relSSB)[3] <- "value"
-
+  
   # Combine and set up for plotting
   all_popdy <- rbind.data.frame(all_popdy, relSSB)
   all_popdy$model <- factor(all_popdy$model, 
@@ -227,6 +225,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
                aes(yintercept = 0.4), col = "gray") +
     geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
                aes(yintercept = 0.1), col = "gray") +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 1.3), col = "white") +  # hack to control y-axis limits for relSSB facet
     geom_line(aes(color = model)) +
     geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
     scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
