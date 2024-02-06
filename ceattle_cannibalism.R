@@ -612,9 +612,9 @@ eff_plot
 # ms_run_Fspr$quantities$SPRlimit #SPR40%
 
 brp_comparison <- function(model, model_name) {
-  df <- data.frame(c(mean(model$quantities$B0 / 1000000),
-                     mean(model$quantities$SB0 / 1000000),
-                     mean(model$quantities$R0 / 1000000),
+  df <- data.frame(c((model$quantities$B0[121] / 1000000),
+                     (model$quantities$SB0[121] / 1000000),
+                     (model$quantities$R0 / 1000000),
                      model$quantities$Flimit,
                      model$quantities$SPRlimit,
                      model$quantities$SPRtarget))
