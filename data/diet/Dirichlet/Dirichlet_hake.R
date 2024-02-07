@@ -630,7 +630,7 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
 comp2_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
-       bg = "transparent", width=85, height=150, units="mm", dpi=300)
+       width=85, height=150, units="mm", dpi=300)
 
 
 ### Find mean and maximum proportion for each time period ---------------------

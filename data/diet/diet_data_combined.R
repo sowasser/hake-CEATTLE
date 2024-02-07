@@ -248,4 +248,4 @@ location_timing <- locations +
 location_timing
 
 ggsave(filename = "plots/diet/locations_timing.png", location_timing,
-       bg = "transparent", width=170, height=180, units="mm", dpi=300)
+       width=170, height=180, units="mm", dpi=300)
