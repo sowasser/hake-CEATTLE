@@ -6,8 +6,8 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
-theme_set(theme_sleek_transparent())
+source("~/Desktop/Local/ggsidekick/R/theme_sleek.R")
+theme_set(theme_sleek())
 
 ### Update data, run Dirichlet ------------------------------------------------
 run_Dirichlet <- function(data, name) {
@@ -602,7 +602,7 @@ comparison_plot <- ggplot(comparison, aes(x=pred_age, y=prop, fill=factor(prey_a
 comparison_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comparison.png", comparison_plot, 
-       bg = "transparent", width=180, height=120, units="mm", dpi=300)
+       width=180, height=120, units="mm", dpi=300)
 
 # Neater comparison graph for write-up
 comp2 <- rbind(new_df(ceattle_all, "All Years"),
