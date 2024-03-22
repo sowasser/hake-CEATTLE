@@ -616,9 +616,10 @@ brp_comparison <- function(model, model_name) {
                      (model$quantities$SB0[121] / 1000000),
                      (model$quantities$R0 / 1000000),
                      model$quantities$Ftarget,
+                     model$quantities$proj_F,
                      model$quantities$SPRlimit,
                      model$quantities$SPRtarget))
-  row.names(df) <- c("B0", "SB0", "R0", "Ftarget", "SPRlimit", "SPRtarget")
+  row.names(df) <- c("B0", "SB0", "R0", "Ftarget", "Fproj", "SPRlimit", "SPRtarget")
   colnames(df) <- model_name
   df <- round(df, 2)
   return(df)

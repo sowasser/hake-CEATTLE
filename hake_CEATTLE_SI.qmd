@@ -20,9 +20,9 @@ output:
 
 ![**Figure S.4**: Dirichlet-reweighted output for the calculation of mean diet proportion by weight from all records of hake predation by predator age (box) and prey age (column). Black bars represent 95% confidence intervals.](./plots/diet/Dirichlet/Dirichlet_all_years.png)
 
-![**Figure S.5**: Annual and average empirical weight-at-age of Pacific hake from the 2020 stock assessment.](./plots/weight-at-age.png)
+![**Figure S.5**: Annual and average empirical weight-at-age of Pacific hake from the 2020 stock assessment. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/weight-at-age.png)
 
-![**Figure S.6**: Spawning biomass (SB; Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with the Pacific Hake/Whiting Treaty ‘40-10’ harvest control rule (HCR) and with no fishing. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
+![**Figure S.6**: Spawning biomass (SB; Mt), total biomass (Mt), and age-1 recruitment (millions) with 95% confidence intervals (shaded region) for the CEATTLE model with no predation and from the CEATTLE model in cannibalism mode, projected to 2100 with projected fishing mortality (F~proj~) and with no fishing. The vertical line represents the end of the hindcast (2019) for the 2020 assessment.](./plots/CEATTLE/cannibalism/HCR_comparison.png)
 
 ![**Figure S.7**: Temperature-dependent consumption rate function for Atlantic cod and pollock from Fish Bioenergetics 4 (Deslauriers et al., 2017), and the values used in the CEATTLE model for hake. Optimal and maximum temperatures for hake were derived from the temperatures recorded during the FEAT hake acoustic-trawl survey and for kriged, grided temperatures where hake were present.](./plots/bioenergetics/temp_consumption.png)
  
