@@ -64,6 +64,7 @@ load("models/ss_noHCR.Rdata")
 load("models/ms_noHCR.Rdata")
 
 years <- ms_priorM1$model$data_list$styr:ms_priorM1$model$data_list$projyr
+
 ceattle_biomass <- function(run, name, HCR) {
   ssb <- c(run$quantities$biomassSSB * 2)
   biom <- c(run$quantities$biomass)
@@ -89,11 +90,11 @@ ceattle_rec <- function(run, name, HCR) {
   rec <- c(run$quantities$R)
   error <- c(run$sdrep$sd[which(names(run$sdrep$value) == "R")])
   rec_out <- cbind.data.frame(year = years,
-                           type = "Recruitment",
-                           value = rec,
-                           error = error,
-                           model = name,
-                           HCR = HCR)
+                              type = "Recruitment",
+                              value = rec,
+                              error = error,
+                              model = name,
+                              HCR = HCR)
   return(rec_out)
 }
 
@@ -102,7 +103,23 @@ recruitment <- rbind.data.frame(ceattle_rec(ss_priorM1$model, "Single-species", 
                                 ceattle_rec(ss_noHCR, "Single-species", "No Fishing"),
                                 ceattle_rec(ms_noHCR, "Cannibalism", "No Fishing"))
 
+# ceattle_f <- function(run, name, HCR) {
+#   f <- c(run$quantities$F_spp)
+#   f_out <- cbind.data.frame(year = years,
+#                             type = "F",
+#                             value = f,
+#                             error = 0,
+#                             model = name,
+#                             HCR = HCR)
+# }
+# 
+# f <- rbind.data.frame(ceattle_f(ss_priorM1$model, "Single-species", "40-10"),
+#                       ceattle_f(ms_priorM1$model, "Cannibalism", "40-10"),
+#                       ceattle_f(ss_noHCR, "Single-species", "No Fishing"),
+#                       ceattle_f(ms_noHCR, "Cannibalism", "No Fishing"))
+
 all_popdy <- rbind.data.frame(biomass, recruitment)
+
 
 # Add bounds for error & set 0 as minimum for plotting
 all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -119,10 +136,11 @@ popdy_plot <- ggplot(all_popdy, aes(x=year, y=value,
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c(bquote(F[proj]), "No Fishing")) +
   geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   ylab(" ") + xlab("Year") +
-  labs(color = "CEATTLE Model", fill = "CEATTLE Model") +
+  labs(color = "CEATTLE Model", fill = "CEATTLE Model", linetype = "Fishing Mortality") +
   facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
   theme(strip.background = element_blank(), strip.placement = "outside") 
 popdy_plot
