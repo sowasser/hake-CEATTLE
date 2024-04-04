@@ -38,6 +38,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
+                                           DynamicHCR = FALSE,
                                            FsprLimit = 0.4, # F40%
                                            Ptarget = 0.4, # Target is 40% B0
                                            Plimit = 0.1, # No fishing when SB<SB10
@@ -115,24 +116,24 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode, num = 7) {
 }
 
 # Run in single-species mode --------------------------------------------------
-# ss_fixM1 <- run_CEATTLE(data = hake_intrasp,
-#                         M1 = 0,
-#                         prior = FALSE,
-#                         init = NULL,
-#                         msm = 0,
-#                         estMode = 0)
-# ss_fixM1$fit  # check convergence
-# save(ss_fixM1, file = "models/ss_fixM1.Rdata")
-# 
-# ss_estM1 <- run_CEATTLE(data = hake_intrasp,
-#                         M1 = 1,
-#                         prior = FALSE,
-#                         init = ss_fixM1[[1]]$estimated_params,
-#                         msm = 0,
-#                         estMode = 0)
-# ss_estM1$fit  # check convergence
-# ss_estM1$model$quantities$M1
-# save(ss_estM1, file = "models/ss_estM1.Rdata")
+ss_fixM1 <- run_CEATTLE(data = hake_intrasp,
+                        M1 = 0,
+                        prior = FALSE,
+                        init = NULL,
+                        msm = 0,
+                        estMode = 0)
+ss_fixM1$fit  # check convergence
+save(ss_fixM1, file = "models/ss_fixM1.Rdata")
+
+ss_estM1 <- run_CEATTLE(data = hake_intrasp,
+                        M1 = 1,
+                        prior = FALSE,
+                        init = ss_fixM1[[1]]$estimated_params,
+                        msm = 0,
+                        estMode = 0)
+ss_estM1$fit  # check convergence
+ss_estM1$model$quantities$M1
+save(ss_estM1, file = "models/ss_estM1.Rdata")
 
 ss_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           M1 = 1,
@@ -145,27 +146,27 @@ ss_priorM1$model$quantities$M1
 save(ss_priorM1, file = "models/ss_priorM1.Rdata")
 
 # Run with cannibalism (multi-species mode) -----------------------------------
-# ms_fixM1 <- run_CEATTLE(data = hake_intrasp,
-#                         M1 = 0,
-#                         prior = FALSE,
-#                         init = ss_fixM1$model$estimated_params,
-#                         msm = 1,
-#                         estMode = 0)
-# ms_fixM1$fit  # check convergence
-# save(ms_fixM1, file = "models/ms_fixM1.Rdata")
-# 
-# ms_estM1 <- run_CEATTLE(data = hake_intrasp,
-#                         M1 = 1,
-#                         prior = FALSE,
-#                         init = ss_estM1$model$estimated_params,
-#                         msm = 1,
-#                         estMode = 0)
-# ms_estM1$fit  # check convergence
-# ms_estM1$model$quantities$M1
-# # # Rceattle diagnostic plots
-# # Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
-# # Rceattle::plot_recruitment(ms_estM1$model, add_ci = TRUE, incl_proj = TRUE)
-# save(ms_estM1, file = "models/ms_estM1.Rdata")
+ms_fixM1 <- run_CEATTLE(data = hake_intrasp,
+                        M1 = 0,
+                        prior = FALSE,
+                        init = ss_fixM1$model$estimated_params,
+                        msm = 1,
+                        estMode = 0)
+ms_fixM1$fit  # check convergence
+save(ms_fixM1, file = "models/ms_fixM1.Rdata")
+
+ms_estM1 <- run_CEATTLE(data = hake_intrasp,
+                        M1 = 1,
+                        prior = FALSE,
+                        init = ss_estM1$model$estimated_params,
+                        msm = 1,
+                        estMode = 0)
+ms_estM1$fit  # check convergence
+ms_estM1$model$quantities$M1
+# # Rceattle diagnostic plots
+# Rceattle::plot_biomass(ms_estM1$model, add_ci = TRUE)
+# Rceattle::plot_recruitment(ms_estM1$model, add_ci = TRUE, incl_proj = TRUE)
+save(ms_estM1, file = "models/ms_estM1.Rdata")
 
 ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           M1 = 1,
@@ -175,7 +176,7 @@ ms_priorM1 <- run_CEATTLE(data = hake_intrasp,
                           estMode = 0)
 ms_priorM1$fit  # check convergence
 ms_priorM1$model$quantities$M1
-save(ms_priorM1, file = "models/ms_priorM1.Rdata")
+save(ms_priorM1, file = "models/ms_priorM1_newHCR.Rdata")
 
 # data_noproj <- hake_intrasp
 # data_noproj$projyr <- 2019
