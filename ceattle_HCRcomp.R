@@ -45,6 +45,8 @@ theme_set(theme_sleek())
 #                         init = NULL,
 #                         msm = 0,
 #                         estMode = 0)
+# ss_noHCR$quantities$jnll
+# ss_noHCR$opt$objective
 # save(ss_noHCR, file = "models/ss_noHCR.Rdata")
 # 
 # ms_noHCR <- run_CEATTLE(data = hake_intrasp,
@@ -136,7 +138,7 @@ popdy_plot <- ggplot(all_popdy, aes(x=year, y=value,
   geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) + 
   scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
   scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.5) +
-  scale_linetype_manual(values = c("solid", "dashed"), labels = c(bquote(F[proj]), "No Fishing")) +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("40-10 HCR", "No Fishing")) +
   geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
   ylim(0, NA) +
   ylab(" ") + xlab("Year") +
