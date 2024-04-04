@@ -158,16 +158,16 @@ plot_popdy <- function(biom, R) {
     return(c(label, mean_out, SEM, percent))
   }
   
-  rechange_all <- rbind(rel_change(names[2], names[1], "SSB (Mt)"),
+  rechange_all <- rbind(rel_change(names[2], names[1], "Spawning Biomass (Mt)"),
                         rel_change(names[2], names[1], "Total Biomass (Mt)"),
                         rel_change(names[2], names[1], "Recruitment (millions)"),
-                        rel_change(names[3], names[1], "SSB (Mt)"),
+                        rel_change(names[3], names[1], "Spawning Biomass (Mt)"),
                         rel_change(names[3], names[1], "Total Biomass (Mt)"),
                         rel_change(names[3], names[1], "Recruitment (millions)"),
-                        rel_change(names[4], names[1], "SSB (Mt)"),
+                        rel_change(names[4], names[1], "Spawning Biomass (Mt)"),
                         rel_change(names[4], names[1], "Total Biomass (Mt)"),
                         rel_change(names[4], names[1], "Recruitment (millions)"),
-                        rel_change(names[5], names[1], "SSB (Mt)"),
+                        rel_change(names[5], names[1], "Spawning Biomass (Mt)"),
                         rel_change(names[5], names[1], "Total Biomass (Mt)"),
                         rel_change(names[5], names[1], "Recruitment (millions)"))
   
