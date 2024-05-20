@@ -245,9 +245,9 @@ comp_profile_plot <- ggplot() +
   facet_wrap(~model, ncol = 1)
 comp_profile_plot
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/M1/M1_comp_profile.png",
+ggsave(filename="~/Desktop/M1_comp_profile.tiff",
        comp_profile_plot,
-       width=85, height=100, units="mm", dpi=300)
+       width=85, height=100, units="mm", dpi=500)
 
 ### Plot effect on spawning output --------------------------------------------
 ssb_all_ss <- data.frame()

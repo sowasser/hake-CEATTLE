@@ -629,8 +629,8 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   facet_wrap(~ data, ncol = 1)
 comp2_plot
 
-ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
-       width=85, height=150, units="mm", dpi=300)
+ggsave(filename = "~/Desktop/Dirichlet_comp_pretty.tiff", comp2_plot, 
+       width=85, height=150, units="mm", dpi=500)
 
 
 ### Find mean and maximum proportion for each time period ---------------------

@@ -247,5 +247,5 @@ location_timing <- locations +
   insets
 location_timing
 
-ggsave(filename = "plots/diet/locations_timing.png", location_timing,
-       width=170, height=180, units="mm", dpi=300)
+ggsave(filename = "~/Desktop/locations_timing.tiff", location_timing,
+       width=170, height=180, units="mm", dpi=500)
