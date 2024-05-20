@@ -571,6 +571,11 @@ write.csv(m_tot, file = "data/CEATTLE/total_M.csv", row.names = FALSE)
 # ss_M1 <- mortality(ss_estM1$model, type = "single-species")
 # ss_prior_M1 <- mortality(ss_priorM1$model, type = "single-species")
 
+# Save M2 from model (for use in hake assessment explorations)
+M2 <- extract_byage(ms_priorM1$model$quantities$M2, "multispecies", "M2")[, -4] %>%
+  filter(age %in% c(1:5))
+write.csv(M2, file = "M2/M2_base.csv", row.names = FALSE)
+
 ### Reference points ----------------------------------------------------------
 # Fishing mortality
 eff <- rbind(data.frame(year = years,
@@ -771,11 +776,11 @@ predict_diet_plot
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn_M1prior.png", plots$popdy, width=170, height=180, units="mm", dpi=300)
+ggsave(filename="~/Desktop/popdyn_M1prior.tiff", plots$popdy, width=170, height=180, units="mm", dpi=500)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots$ratio, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots$nbyage, width=160, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/nbyage_anomaly.png", plots$nbyage_anomaly, width=170, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biom_n_byage.png", biom_n_byage, width=170, height=170, units="mm", dpi=300)
+ggsave(filename="~/Desktop/biom_n_byage.tiff", biom_n_byage, width=170, height=170, units="mm", dpi=500)
 # ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots$survey, width=200, height=120, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots$suit, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots$biombyage, width=160, height=80, units="mm", dpi=300)
@@ -784,5 +789,5 @@ predict_diet_plot
 # ggsave(filename="plots/CEATTLE/cannibalism/M.png", ms_prior_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
 # ggsave(filename="plots/CEATTLE/cannibalism/F.png", eff_plot, width=150, height=80, units="mm", dpi=300)
 # ggsave(filename="plots/weight-at-age.png", weight_plot, width = 180, height = 70, units = "mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/Testing/ALL_sens_popdy.png", sens_popdy, width = 170, height = 120, units = "mm", dpi = 300)
+ggsave(filename="~/Desktop/ALL_sens_popdy.tiff", sens_popdy, width = 170, height = 120, units = "mm", dpi = 500)
 # ggsave(filename="plots/CEATTLE/predicted_diet_comparison.png", predict_diet_plot, width = 230, height = 280, units = "mm", dpi = 300)

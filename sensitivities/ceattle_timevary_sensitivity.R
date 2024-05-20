@@ -231,7 +231,16 @@ M1_all <- rbind(data.frame(model = "Base Cannibalism Model",
                 data.frame(model = "Low (2005-2019)", 
                            mean = mean(run_recent_prior$model$quantities$M1[1, 1, 1:20])))
 
+# Save M2 from models (for use in hake assessment explorations)
+M2_high <- extract_byage2(run_90s_prior$model$quantities$M2, "High (1988-1999)", all_years)[, -4] %>%
+  filter(age %in% c(1:5))
+colnames(M2_high)[3] <- "M2"
+write.csv(M2_high, file = "M2/M2_high.csv", row.names = FALSE)
 
+M2_low <- extract_byage2(run_recent_prior$model$quantities$M2, "Low (2005-2019)", all_years)[, -4] %>%
+  filter(age %in% c(1:5))
+colnames(M2_low)[3] <- "M2"
+write.csv(M2_low, file = "M2/M2_low.csv", row.names = FALSE)
 
 # # Models with estimated M1 ----------------------------------------------------
 # load("models/ms_estM1.Rdata")
