@@ -66,6 +66,7 @@ data/diet/Dirichlet/plots
 old scripts/
 hake-2022-model-files/
 models/
+wtatage.xlsx
 
 # Ignore specific file types
 *.docx
