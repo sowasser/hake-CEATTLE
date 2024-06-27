@@ -1,5 +1,7 @@
-#' Script for adapting the Stock Synthesis 3 files for the 2024 hake assessment 
-#' found here (https://github.com/pacific-hake/m2/tree/main/inst/extdata/ss3)
+#' Script for adapting the Stock Synthesis 3 files (and tables from the document) 
+#' for the 2024 hake assessment found here 
+#' (https://github.com/pacific-hake/m2/tree/main/inst/extdata/ss3) and here 
+#' (https://github.com/pacific-hake/hake-assessment/tree/master/data-tables)
 #' to the format needed for the Rceattle input.
 
 library(here)
@@ -51,3 +53,30 @@ spawn_wt <- fishery_wt[, -1] * maturity[, -1]
 
 spawn_wt <- cbind.data.frame(Year = maturity$Yr, spawn_wt)
 write.csv(spawn_wt, file = here("data", "assessment", "2024", "spawn_wtatage.csv"))
+
+
+# Age transition matrix / age-length key --------------------------------------
+# Read in larger maturity table w/ length-at-age from assessment document
+matdat <- read.csv(here("data", "assessment", "2024", "maturity-samples.csv"))
+
+# Set up bins 
+hake_lbin <- c(0, seq(20, 70, by = 2), 999)
+hake_age_bin <- c(0:14 + 0.5, 99)
+hake_ages <- 1:20
+
+# Cut into bins
+matdat$BIN <- cut(matdat$length_cm, breaks = hake_lbin)
+levels(matdat$BIN) <- 1:length(hake_lbin[-1])
+
+matdat$AgeBIN <- cut(matdat$age, breaks = hake_age_bin)
+levels(matdat$AgeBIN) <- hake_ages
+
+# Set up age-length key
+mat_new <- matdat[-which(is.na(matdat$AgeBIN)),]
+mat_table <- with(mat_new,table(BIN,AgeBIN))
+alk <- prop.table(mat_table, margin=1)
+alk[is.na(alk)] <- 0
+
+# Save as age_trans_matrix in CEATTLE input excel sheet
+age_trans_matrix <- t(as.data.frame.matrix(alk))
+write.csv(age_trans_matrix, here("data", "assessment", "2024", "age_trans_matrix.csv"), row.names = FALSE)
