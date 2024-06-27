@@ -66,8 +66,6 @@ data/diet/Dirichlet/plots
 old scripts/
 hake-2022-model-files/
 models/
-wtatage.xlsx
-age_error.xlsx
 
 # Ignore specific file types
 *.docx
@@ -83,7 +81,9 @@ hake_document.log
 
 # Ignore specific data files
 BS2017SS.xlsx
-
 data/diet/other diet.xlsx
-
 data/scenarios.xlsx
+wtatage.xlsx
+age_error.xlsx
+data/assessment/2024/01-base.rds
+data/assessment/2024/hake.Rdata
