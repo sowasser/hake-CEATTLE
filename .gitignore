@@ -67,6 +67,7 @@ old scripts/
 hake-2022-model-files/
 models/
 wtatage.xlsx
+age_error.xlsx
 
 # Ignore specific file types
 *.docx
