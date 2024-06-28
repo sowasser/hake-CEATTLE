@@ -165,7 +165,7 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run, save_data = FALSE) {
+plot_models <- function(ms_run, ss_run) {
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB[, 1:length(start_yr:end_yr)]) * 2)
@@ -190,7 +190,8 @@ plot_models <- function(ms_run, ss_run, save_data = FALSE) {
   assess_bio$sb_kt <- assess_bio$sb_kt / 1000  # to millions
   assess_bio$b_kt <- assess_bio$b_kt / 1000  # to millions
   colnames(assess_bio) <- c("year", "SSB", "Total Biomass")
-  assess_bio <- melt(assess_bio, id.vars = "year", variable_name = "type")
+  assess_bio <- melt(assess_bio, id.vars = "year")
+  colnames(assess_bio)[2] <- "type"
   assess_bio$error <- 0
   assess_bio$model <- "Assessment"
   assess_bio <- assess_bio %>% filter(year %in% years)
