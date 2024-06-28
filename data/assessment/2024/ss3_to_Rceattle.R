@@ -24,22 +24,16 @@ colnames(wtatage) <- c("Yr", "Seas", "Sex", "Bio_Pattern", "BirthSeas", "Fleet",
 fishery_wt <- wtatage %>% filter(Fleet == 1 & Yr %in% 1975:2023) 
 fishery_wt <- fishery_wt[, c(1, 7:27)]
 
-# Read in maturity ogives from assessment document & filter for "null" model (at least for now).
-ogives <- read.csv(here("data", "assessment", "2024", "maturity-ogives.csv")) %>%
-  filter(model == "Null") %>%
-  select(!model)
+# Read in time-varying maturity-at-age from assessment document
+maturity <- read.csv(here("data", "assessment", "2024", "maturity-at-age.csv")) 
 
-# Reshape to wide format to match weight-at-age
-maturity <- dcast(ogives, formula = year ~ age)
-colnames(maturity) <- c("Yr", a[1:16])
-
-# Add values for years previous to 2009 & remove projection years after 2023
+# Set for years previous to 2009 to the mean & remove projection years after 2023
 for(i in 1975:2008) {
-  x <- c(i, maturity[1, 2:17])
-  maturity[nrow(maturity) +1, ] <- x
+  av <- c(i, colMeans(maturity)[-1])  
+  maturity[nrow(maturity) +1, ] <- av
 }
-maturity <- maturity[order(maturity$Yr), ] %>%
-  filter(Yr %in% 1975:2023)
+maturity <- maturity[order(maturity$Year), ] %>%
+  filter(Year %in% 1975:2023)
 
 # Add columns for a16-20 (with a15 values)
 maturity$a16 <- maturity[, 17]
@@ -51,7 +45,7 @@ maturity$a20 <- maturity[, 17]
 # Multiply together to get spawning weight & write .csv
 spawn_wt <- fishery_wt[, -1] * maturity[, -1]
 
-spawn_wt <- cbind.data.frame(Year = maturity$Yr, spawn_wt)
+spawn_wt <- cbind.data.frame(Year = maturity$Year, spawn_wt)
 write.csv(spawn_wt, file = here("data", "assessment", "2024", "spawn_wtatage.csv"))
 
 
