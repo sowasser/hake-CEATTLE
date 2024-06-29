@@ -10,14 +10,13 @@ library(Rceattle)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
-library(viridis)
 library(here)
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_input_yr24.xlsx")
+hake_data <- read_data(file = "data/hake_input_yr24_age1srv.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -95,20 +94,20 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
   
   fit <- cbind(objective, jnll, K, AIC, gradient)
   
-  # Get table of JNLL components
-  comp <- data.frame(run$quantities$jnll_comp)
-  comp$component <- rownames(comp)
-  rownames(comp) <- NULL
-  comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
-  # Separate comps for fishery & survey (in different columns originally)
-  comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
-  comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
-  comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
-  comp <- comp[, c("component", "NLL")]
-  comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
-  comp$NLL <- as.numeric(comp$NLL)
+  # # Get table of JNLL components
+  # comp <- data.frame(run$quantities$jnll_comp)
+  # comp$component <- rownames(comp)
+  # rownames(comp) <- NULL
+  # comp[nrow(comp) + 1, ] <- c(sum(comp[, 1]), sum(comp[, 2]), "Total NLL")  # add total NLL
+  # # Separate comps for fishery & survey (in different columns originally)
+  # comp[nrow(comp) + 1, ] <- c(comp[3, 1], 0, "Fishery age composition")
+  # comp[nrow(comp) + 1, ] <- c(comp[3, 2], 0, "Survey age composition")
+  # comp$NLL <- as.numeric(comp$Sp.Srv.Fsh_1) + as.numeric(comp$Sp.Srv.Fsh_2)  # combine species together
+  # comp <- comp[, c("component", "NLL")]
+  # comp <- comp %>% filter(NLL != 0)  # remove components w/ no likelihood
+  # comp$NLL <- as.numeric(comp$NLL)
   
-  return(list(model = run, fit = fit, summary = comp))
+  return(list(model = run, fit = fit))
 }
 
 # Run new model (with cannibalism)
@@ -119,7 +118,7 @@ new_ms <- run_CEATTLE(data = hake_data,
                       msm = 1, 
                       estMode = 0)
 new_ms$fit  # check convergence
-new_ms$model$quantities$M1
+# new_ms$model$quantities$M1
 
 # Run single-species model
 new_ss <- run_CEATTLE(data = hake_data, 
@@ -133,13 +132,13 @@ new_ss$fit  # check convergence
 # # Compare to base (publication) model
 # load("models/ms_priorM1.Rdata")
 # 
-# plot_biomass(Rceattle = list(new_ms$model, ms_priorM1$model), 
+# plot_biomass(Rceattle = list(new_ms$model, ms_priorM1$model),
 #              model_names = c("New Model", "Base Model"),
-#              incl_proj = TRUE, 
+#              incl_proj = TRUE,
 #              add_ci = TRUE)
-# plot_ssb(Rceattle = list(new_ns$model, ms_priorM1$model), 
+# plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
 #          model_names = c("New Model", "Base Model"),
-#          incl_proj = TRUE, 
+#          incl_proj = TRUE,
 #          add_ci = TRUE)
   
 ### Plot multi-species vs. single-species vs. assessment ----------------------
@@ -188,6 +187,7 @@ plot_models <- function(ms_run, ss_run) {
   
   assess_bio <- read.csv(here("data", "assessment", "2024", "derived_quant.csv"))[, -c(3, 5)]
   assess_bio$sb_kt <- assess_bio$sb_kt / 1000  # to millions
+  assess_bio$sb_kt <- assess_bio$sb_kt * 2 # both sexes
   assess_bio$b_kt <- assess_bio$b_kt / 1000  # to millions
   colnames(assess_bio) <- c("year", "SSB", "Total Biomass")
   assess_bio <- melt(assess_bio, id.vars = "year")
@@ -201,6 +201,7 @@ plot_models <- function(ms_run, ss_run) {
   recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
   
   assess_rec <- read.csv(here("data", "assessment", "2024", "derived_quant.csv"))[, c(1, 5)]
+  assess_rec$Year <- assess_rec$Year + 1
   assess_rec <- assess_rec %>% filter(Year %in% years)
   assess_rec <- cbind(year = assess_rec$Year,
                       type = rep("Recruitment"),
@@ -253,8 +254,6 @@ plot_models <- function(ms_run, ss_run) {
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
     geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) +
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +
     geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") + xlab("Year") +
@@ -268,3 +267,5 @@ plot_models <- function(ms_run, ss_run) {
 
 plots <- plot_models(new_ms$model, new_ss$model)
 plots
+
+plot_selectivity(new_ms$model)
