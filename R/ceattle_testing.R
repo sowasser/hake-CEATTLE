@@ -181,31 +181,35 @@ plot_models <- function(ms_run, ss_run) {
     return(all_biom2)
   }
 
-  # Pull out biomass from CEATTLE & stock assessment & remove pre-1980
+  # Pull out biomass from CEATTLE 
   biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
   nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
   
-  assess_bio <- read.csv(here("data", "assessment", "2024", "derived_quant.csv"))[, -c(3, 5)]
-  assess_bio$sb_kt <- assess_bio$sb_kt / 1000  # to millions
-  assess_bio$sb_kt <- assess_bio$sb_kt * 2 # both sexes
-  assess_bio$b_kt <- assess_bio$b_kt / 1000  # to millions
+  # Get assessment derived quantities
+  assess <- read.csv(here("data", "assessment", "2024", "median-population-estimates.csv"))
+  
+  # Pull out & format biomass
+  assess_bio <- assess[, c(1, 2, 5)]
   colnames(assess_bio) <- c("year", "SSB", "Total Biomass")
+  assess_bio[, 2] <- assess_bio[, 2] / 1000  # to millions
+  assess_bio[, 2] <- assess_bio[, 2] * 2 # both sexes
+  assess_bio[, 3] <- assess_bio[, 3] / 1000  # to millions
   assess_bio <- melt(assess_bio, id.vars = "year")
   colnames(assess_bio)[2] <- "type"
   assess_bio$error <- 0
   assess_bio$model <- "Assessment"
   assess_bio <- assess_bio %>% filter(year %in% years)
   
-  # Pull out recruitment
+  # Pull out & format recruitment
   nodiet_R <- c(ss_run$quantities$R[, 1:length(start_yr:end_yr)])
   recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
   
-  assess_rec <- read.csv(here("data", "assessment", "2024", "derived_quant.csv"))[, c(1, 5)]
+  assess_rec <- assess[, c(1, 6)]
   assess_rec$Year <- assess_rec$Year + 1
   assess_rec <- assess_rec %>% filter(Year %in% years)
   assess_rec <- cbind(year = assess_rec$Year,
                       type = rep("Recruitment"),
-                      value = assess_rec$rec_mil / 1000,  
+                      value = assess_rec[, 2] / 1000,  
                       error = 0,
                       model = "Assessment")
 
