@@ -165,6 +165,8 @@ extract_byage <- function(result, name, type) {
 }
 
 plot_models <- function(ms_run, ss_run) {
+  # ms_run <- new_ms$model
+  # ss_run <- new_ss$model
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB[, 1:length(start_yr:end_yr)]) * 2)
@@ -239,31 +241,62 @@ plot_models <- function(ms_run, ss_run) {
                  error = R_all$error / 1000000,  # to millions
                  model = as.character(R_all$variable))
   R_new <- rbind(R_new, assess_rec)
+  
+  # Combine relative SSB together
+  assess_relSSB <- assess[, c(1, 3)] %>% filter(Year %in% years)
+  relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:45],
+                                              year = years, 
+                                              model = "CEATTLE - single-species"),
+                             cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:45],
+                                              year = years, 
+                                              model = "CEATTLE - cannibalism"),
+                             cbind.data.frame(depletion = assess_relSSB[, 2] / 100, # to decimal
+                                              year = years,
+                                              model = "Assessment"))
+  
+  # Set columns to match popdy dataframe
+  relSSB$error <- 0
+  relSSB$type <- "Relative SB"
+  relSSB <- relSSB[, c(2, 5, 1, 4, 3)]
+  colnames(relSSB)[3] <- "value"
 
-  # Combine biomass & recruitment and plot
-  all_popdy <- rbind(biom_all, R_new)
+  # Combine biomass, recruitment, relative SB 
+  all_popdy <- rbind(biom_all, R_new, relSSB)
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model,
-                            levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
+                            levels = c("Assessment", 
+                                       "CEATTLE - single-species", 
+                                       "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type,
-                           labels = c("Spawning Biomass (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
-
+                           labels = c("Spawning Biomass (Mt)", 
+                                      "Total Biomass (Mt)", 
+                                      "Recruitment (millions)", 
+                                      "Relative Spawning Biomass"))
+  
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
   all_popdy$min[all_popdy$min < 0] <- 0
   all_popdy$max <- all_popdy$value + (2 * all_popdy$error)
-
-  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
-    geom_line() +
-    geom_ribbon(aes(ymin=min, ymax=max), alpha = 0.2, color = NA) +
-    geom_vline(xintercept = hind_end, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+  
+  popdy_plot <- ggplot(all_popdy, aes(x=year, y=value)) +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 1), col = "gray") +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 0.4), col = "gray") +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 0.1), col = "gray") +
+    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
+               aes(yintercept = 1.3), col = "white") +  # hack to control y-axis limits for relSSB facet
+    geom_line(aes(color = model)) +
+    geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
+    geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+    theme(strip.background = element_blank(), strip.placement = "outside") 
   
   return(popdy_plot)
 
