@@ -122,11 +122,11 @@ new_ms$fit  # check convergence
 
 # Run single-species model
 new_ss <- run_CEATTLE(data = hake_data, 
-                      M1 = 1, 
+                      M1 = 0, 
                       prior = TRUE, 
                       init = NULL, 
                       msm = 0, 
-                      estMode = 0)
+                      estMode = 1)
 new_ss$fit  # check convergence
 
 # # Compare to base (publication) model
@@ -244,10 +244,10 @@ plot_models <- function(ms_run, ss_run) {
   
   # Combine relative SSB together
   assess_relSSB <- assess[, c(1, 3)] %>% filter(Year %in% years)
-  relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:45],
+  relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:length(years)],
                                               year = years, 
                                               model = "CEATTLE - single-species"),
-                             cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:45],
+                             cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:length(years)],
                                               year = years, 
                                               model = "CEATTLE - cannibalism"),
                              cbind.data.frame(depletion = assess_relSSB[, 2] / 100, # to decimal
