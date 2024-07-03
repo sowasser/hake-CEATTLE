@@ -66,6 +66,7 @@ data/diet/Dirichlet/plots
 old scripts/
 hake-2022-model-files/
 models/
+M2/2024 assessment/*.png
 
 # Ignore specific file types
 *.docx
@@ -88,3 +89,4 @@ age_error.xlsx
 data/assessment/2024/01-base.rds
 data/assessment/2024/hake.Rdata
 data/assessment/2024/report.sso
+data/assessment/2024/mcmc/
