@@ -306,3 +306,20 @@ plots <- plot_models(new_ms$model, new_ss$model)
 plots
 
 plot_selectivity(new_ms$model)
+
+# # set up r4ss output (kinda working) ------------------------------------------
+# Dirplot <- here("data", "assessment", "2024", "mcmc", "sso")
+# 
+# replist <- r4ss::SS_output(
+#   dir = Dirplot,
+#   verbose = TRUE,
+#   printstats = FALSE,
+#   covar = FALSE
+# )
+# 
+# # plots the results (store in the 'plots' sub-directory)
+# r4ss::SS_plots(replist,
+#          dir = Dirplot,
+#          plot = 2:26,
+#          printfolder = 'plots'
+# )
