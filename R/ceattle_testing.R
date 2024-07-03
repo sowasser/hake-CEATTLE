@@ -164,7 +164,7 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run) {
+plot_models <- function(ms_run, ss_run, title = "") {
   # ms_run <- new_ms$model
   # ss_run <- new_ss$model
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
@@ -296,7 +296,8 @@ plot_models <- function(ms_run, ss_run) {
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside") 
+    theme(strip.background = element_blank(), strip.placement = "outside") +
+    ggtitle(title)
   
   return(popdy_plot)
 
@@ -304,6 +305,10 @@ plot_models <- function(ms_run, ss_run) {
 
 plots <- plot_models(new_ms$model, new_ss$model)
 plots
+
+# ggsave(plot_models(new_ms$model, new_ss$model, "with age-1 index (kinda?)"),
+#        file = here("M2", "2024 assessment", "age1-index.png"),
+#        width=140, height=180, units="mm")
 
 plot_selectivity(new_ms$model)
 
