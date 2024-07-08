@@ -119,6 +119,7 @@ new_ms <- run_CEATTLE(data = hake_data,
                       estMode = 0)
 new_ms$fit  # check convergence
 # new_ms$model$quantities$M1
+# save(new_ms, file = "models/2024/new_ms_Jul8.Rdata")
 
 # Run single-species model
 new_ss <- run_CEATTLE(data = hake_data, 
@@ -127,7 +128,8 @@ new_ss <- run_CEATTLE(data = hake_data,
                       init = NULL, 
                       msm = 0, 
                       estMode = 1)
-new_ss$fit  # check convergence
+# new_ss$fit  # check convergence
+# save(new_ss, file = "models/2024/new_ss_Jul8.Rdata")
 
 # # Compare to base (publication) model
 # load("models/ms_priorM1.Rdata")
