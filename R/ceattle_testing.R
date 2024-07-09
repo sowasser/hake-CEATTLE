@@ -16,7 +16,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_input_yr24_age1srv.xlsx")
+hake_data <- read_data(file = "data/hake_yr24_240709.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -83,7 +83,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                  #   log_phi = 5 # Suitability parameter (not used in MSVPA style)
                  # ),
                  # ------------------------------------------------------------
-                 initMode = 1,
+                 initMode = 2,
                  projection_uncertainty = TRUE,
                  random_rec = FALSE) 
   
@@ -294,7 +294,7 @@ plot_models <- function(ms_run, ss_run, title = "") {
                aes(yintercept = 1.3), col = "white") +  # hack to control y-axis limits for relSSB facet
     geom_line(aes(color = model)) +
     geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
-    geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+    geom_vline(xintercept = 2024, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
@@ -310,7 +310,7 @@ plots <- plot_models(new_ms$model, new_ss$model)
 plots
 
 ggsave(plot_models(new_ms$model, new_ss$model),
-       file = here("M2", "2024 assessment", "age1-index.png"),
+       file = here("M2", "2024 assessment", "age1-index_initMode2.png"),
        width=140, height=180, units="mm")
 
 plot_selectivity(new_ms$model)
