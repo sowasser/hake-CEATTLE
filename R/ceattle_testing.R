@@ -29,8 +29,8 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                  M1Fun = Rceattle::build_M1(M1_model = M1,
                                             updateM1 = TRUE,
                                             M1_use_prior = prior,
-                                            M1_prior_mean = 0.2,
-                                            M1_prior_sd = .1),
+                                            M1_prior_mean = 0.22,
+                                            M1_prior_sd = .31),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
                  HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
@@ -84,7 +84,8 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                  # ),
                  # ------------------------------------------------------------
                  initMode = 1,
-                 projection_uncertainty = TRUE) 
+                 projection_uncertainty = TRUE,
+                 random_rec = FALSE) 
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -308,9 +309,9 @@ plot_models <- function(ms_run, ss_run, title = "") {
 plots <- plot_models(new_ms$model, new_ss$model)
 plots
 
-# ggsave(plot_models(new_ms$model, new_ss$model, "with age-1 index (kinda?)"),
-#        file = here("M2", "2024 assessment", "age1-index.png"),
-#        width=140, height=180, units="mm")
+ggsave(plot_models(new_ms$model, new_ss$model),
+       file = here("M2", "2024 assessment", "age1-index.png"),
+       width=140, height=180, units="mm")
 
 plot_selectivity(new_ms$model)
 
