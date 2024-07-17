@@ -168,9 +168,9 @@ extract_byage <- function(result, name, type) {
 }
 
 plot_models <- function(ms_run, ss_run, title = "") {
-  ms_run <- new_ms$model
-  ss_run <- new_ss$model
-  # Pull results from CEATTLE models & assessment -----------------------------
+  # ms_run <- new_ms$model
+  # ss_run <- new_ss$model
+  # Helper function to get biomass from CEATTLE
   ceattle_biomass <- function(run, name) {
     ssb <- (c(run$quantities$biomassSSB[, 1:length(start_yr:end_yr)]) * 2)
     biom <- c(run$quantities$biomass[, 1:length(start_yr:end_yr)])
@@ -185,7 +185,7 @@ plot_models <- function(ms_run, ss_run, title = "") {
     colnames(all_biom2)[2:3] <- c("type", "value")
     return(all_biom2)
   }
-
+  # Pull results from CEATTLE models & assessment -----------------------------
   # Pull out biomass from CEATTLE 
   biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
   nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
@@ -375,40 +375,36 @@ plot_models <- function(ms_run, ss_run, title = "") {
     return(diff)
   }
   
-  diff <- rbind.data.frame(test = get_diff(all_popdy_2020, "Total Biomass", "2020 Assessment", factor(2020), new_type = "Total Biomass"),
-                           get_diff(all_popdy, "Total Biomass (Mt)", "Assessment", factor(2024), new_type = "Total Biomass"),
-                           get_diff(all_popdy_2020, "SSB", "2020 Assessment", factor(2020), new_type = "Spawning Biomass"),
-                           get_diff(all_popdy, "Spawning Biomass (Mt)", "Assessment", factor(2024), new_type = "Spawning Biomass"),
-                           get_diff(all_popdy_2020, "Recruitment", "2020 Assessment", factor(2020), new_type = "Recruitment"),
-                           get_diff(all_popdy, "Recruitment (millions)", "Assessment", factor(2024), new_type = "Recruitment")) 
-  
-  ggplot(diff, aes(x = year, y = value, color = Assessment)) +
-    geom_line() +
-    geom_hline(yintercept = 0, linetype = 2, colour = "gray") +
-    facet_wrap(~type, scales = "free_y") +
-    ylab("Assessment - single-species")
+  # Combine and plot difference -----------------------------------------------
+  diff <- rbind.data.frame(get_diff(all_popdy_2020, "Total Biomass", "2020 Assessment", factor(2020), "Total Biomass"),
+                           get_diff(all_popdy, "Total Biomass (Mt)", "Assessment", factor(2024), "Total Biomass"),
+                           get_diff(all_popdy_2020, "SSB", "2020 Assessment", factor(2020), "Spawning Biomass"),
+                           get_diff(all_popdy, "Spawning Biomass (Mt)", "Assessment", factor(2024), "Spawning Biomass"),
+                           get_diff(all_popdy_2020, "Recruitment", "2020 Assessment", factor(2020), "Recruitment"),
+                           get_diff(all_popdy, "Recruitment (millions)", "Assessment", factor(2024), "Recruitment")) %>%
+    mutate(type = factor(type, levels = c("Spawning Biomass", "Total Biomass", "Recruitment"))) %>%
+    ggplot(., aes(x = year, y = value, color = Assessment)) +
+      geom_hline(yintercept = 0, linetype = 2, colour = "gray") +
+      geom_line() +
+      facet_wrap(~type, scales = "free_y") +
+      ylab("Assessment - single-species model")
     
-  
-  
-  return(popdy_plot)
-
+  return(list(popdy = popdy_plot, diff = diff))
 }
 
 plots <- plot_models(new_ms$model, new_ss$model)
-plots
+plots$popdy
+plots$diff
 
-ggsave(plot_models(new_ms$model, new_ss$model),
+ggsave(plots$popdy,
        file = here("M2", "2024 assessment", "age1-index.png"),
        width=270, height=150, units="mm")
 
+ggsave(plots$diff,
+       file = here("M2", "2024 assessment", "assess_diff.png"),
+       width = 270, height = 90, units = "mm")
+
 plot_selectivity(new_ms$model)
-
-
-
-compare_models <- function(ms_run, ss_run) {
-
-}
-
 
 # # set up r4ss output (kinda working) ------------------------------------------
 # Dirplot <- here("data", "assessment", "2024", "mcmc", "sso")
