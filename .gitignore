@@ -48,6 +48,7 @@ vignettes/*.pdf
 
 # Ignore folders & files that don't need to be tracked on git
 *.csv
+*.rds
 Resources/
 plots/
 FB4/

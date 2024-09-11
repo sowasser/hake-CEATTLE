@@ -7,19 +7,23 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 library(ggsidekick)
+library(here)
 theme_set(theme_sleek())
 
-survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
-summer_ROMS <- read.csv("data/temperature/ROMS_summer_mean.csv")
-ROMS <- read.csv("data/temperature/ROMS_mean.csv")
+TempDir <- here("data", "temperature")  # Directory for data
+
+# Read in temperature datasets
+survey_temp <- read.csv(here(TempDir, "temp_100_sophia.csv"))[, -c(2:4)]
+summer_ROMS <- read.csv(here(TempDir, "ROMS_summer_mean.csv"))
+ROMS <- read.csv(here(TempDir, "ROMS_mean.csv"))
+
+survey_new <- readRDS(here(TempDir, "temperature_index.rds"))
 
 min(ROMS$mean_temp)
 max(ROMS$mean_temp)
 
 missing_years <- c(1996, 1997, 1999, 1999, 2000, 2002, 2002, 2004, 2006, 2008,2010, 
                    2014, 2016, 2018, 2020)
-
-
 
 # Combine summer ROMS mean with survey mean -----------------------------------
 # Only keep years that don't overlap with the survey
@@ -44,17 +48,31 @@ ROMS_surveyyears <- ROMS %>%
   mutate(ROMS_survey = survey_mean$mean_temp - mean_temp)
 mean(ROMS_surveyyears$ROMS_survey)
 
+# Get summer mean of new temp dataset 
+survey_new_summer <- survey_new %>% 
+  filter(month %in% 6:8) %>%
+  group_by(year) %>%
+  summarize(mean_temp = mean(mean_thetao)) %>%
+  mutate(source = "Survey Area Mean")
+
+write.csv(survey_new_summer, file = here(TempDir, "survey_summer_mean.csv"), row.names = FALSE)
+
+# Plot just summer survey area mean
+ggplot(survey_new_summer, aes(x = year, y = mean_temp)) +
+  geom_point() +
+  geom_line() +
+  ylab("mean temperature")
 
 # Combine together and sort by year
-CEATTLE_temp <- rbind(ROMS, survey)
+CEATTLE_temp <- rbind(ROMS, survey, survey_new_summer)
 CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 
 # Plot all mean temperatures 
-mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
+mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source, shape = source)) +
   geom_point(size=2) +
   geom_line(linewidth=1, alpha = 0.3) +
   ylim(0, NA) +
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.45) +  # invert colors
+  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.6) +  # invert colors
   ylab("temperature")
 mean_temp_plot
 
