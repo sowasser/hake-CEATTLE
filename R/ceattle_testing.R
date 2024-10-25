@@ -16,7 +16,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_240709.xlsx")
+hake_data <- read_data(file = "data/hake_yr24_241025.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
@@ -83,7 +83,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                  #   log_phi = 5 # Suitability parameter (not used in MSVPA style)
                  # ),
                  # ------------------------------------------------------------
-                 initMode = 1,
+                 initMode = 2,
                  projection_uncertainty = TRUE,
                  random_rec = FALSE) 
   
@@ -117,10 +117,10 @@ new_ms <- run_CEATTLE(data = hake_data,
                       prior = TRUE, 
                       init = NULL, 
                       msm = 1, 
-                      estMode = 0)
+                      estMode = 1)
 new_ms$fit  # check convergence
-# new_ms$model$quantities$M1
-# save(new_ms, file = "models/2024/new_ms_Jul8.Rdata")
+new_ms$model$quantities$M1
+# save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
 
 # Run single-species model
 new_ss <- run_CEATTLE(data = hake_data, 
@@ -130,7 +130,7 @@ new_ss <- run_CEATTLE(data = hake_data,
                       msm = 0, 
                       estMode = 1)
 # new_ss$fit  # check convergence
-# save(new_ss, file = "models/2024/new_ss_Jul8.Rdata")
+# save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
 
 # # Compare to base (publication) model
 # load("models/ms_priorM1.Rdata")
@@ -397,14 +397,66 @@ plots$popdy
 plots$diff
 
 ggsave(plots$popdy,
-       file = here("M2", "2024 assessment", "age1-index.png"),
+       file = here("M2", "2024 assessment", "popdy_1993.png"),
        width=270, height=150, units="mm")
 
 ggsave(plots$diff,
-       file = here("M2", "2024 assessment", "assess_diff.png"),
+       file = here("M2", "2024 assessment", "assess_diff_1993.png"),
        width = 270, height = 90, units = "mm")
 
 plot_selectivity(new_ms$model)
+
+# Pull out mortality ----------------------------------------------------------
+mortality <- function(run, type) {
+  M1 <- run$quantities$M1[1, 1, 1:max_age]
+  if(type == "single-species") {
+    return(M1)
+  }
+  
+  if(type == "multi-species") {
+    M2 <- extract_byage(run$quantities$M2, "multispecies", "M2")
+    total_mortality <- M2 %>%
+      mutate(M1_M2 = M2 + rep(M1, length(all_yrs)))
+    total_mortality$age <- as.integer(total_mortality$age)
+    total_mortality$year <- as.integer(as.character(total_mortality$year))
+    total_mortality <- total_mortality[total_mortality$year <= end_yr,]
+    
+    mortality_plot <- ggplot(total_mortality, aes(y = age, x = year, zmin = 0, zmax = 1.6)) + 
+      geom_tile(aes(fill = M1_M2)) +
+      scale_y_continuous(expand = c(0, 0), breaks=c(1, 5, 10, 15, 20)) + 
+      scale_x_continuous(expand = c(0, 0)) + 
+      scale_fill_viridis(name = "M1 + M2", limits = c(0, 1.5), breaks = c(0.21, 1, 1.5)) +
+      geom_vline(xintercept = 2020, linetype = 2, colour = "gray") +  # Add line at end of hindcast
+      coord_equal() +
+      ylab("Age") + xlab("Year") +
+      theme(panel.border = element_rect(colour = NA, fill = NA))
+    mortality_plot
+    
+    # Min, max, mean natural mortality by age, for ages 1-5
+    M_byage <- total_mortality %>%
+      filter(age < 6) %>%
+      group_by(age) %>%
+      summarize(min = min(M1_M2), max = max(M1_M2), mean = mean(M1_M2))
+    
+    return(list(M2 = M2, plot = mortality_plot, M_byage = M_byage, M1 = M1, total_M = total_mortality))
+  }
+}
+
+ms_mort <- mortality(new_ms$model, type = "multi-species")
+ms_mort$plot  # plot
+ms_mort$M_byage
+ms_M1 <- ms_mort$M1
+ms_totM <- ms_mort$total_M %>% 
+  group_by(age, year) %>%
+  summarize(M1_M2 = sum(M1_M2))
+
+ms_M2 <- ms_mort$M2[, -4]
+write.csv(ms_M2, here("M2", "M2_241025.csv"), row.names = FALSE)
+
+ms_totM_age1 <- ms_totM %>%
+  filter(age == 1)
+
+
 
 # # set up r4ss output (kinda working) ------------------------------------------
 # Dirplot <- here("data", "assessment", "2024", "mcmc", "sso")
