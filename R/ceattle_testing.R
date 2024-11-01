@@ -10,6 +10,7 @@ library(Rceattle)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
+library(viridis)
 library(here)
 library(ggsidekick)
 # Set ggplot theme
@@ -19,8 +20,9 @@ theme_set(theme_sleek())
 hake_data <- read_data(file = "data/hake_yr24_241025.xlsx")
 
 ### Run and fit the CEATTLE model ---------------------------------------------
-run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
+run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   data$est_M1 <- M1  
+  # data$styr <- 1993
   # data$endyr <- 2019
   run <- fit_mod(data_list = data,
                  inits = init,
@@ -83,7 +85,7 @@ run_CEATTLE <- function(data, M1, prior, init, msm, estMode) {
                  #   log_phi = 5 # Suitability parameter (not used in MSVPA style)
                  # ),
                  # ------------------------------------------------------------
-                 initMode = 2,
+                 initMode = initMode,
                  projection_uncertainty = TRUE,
                  random_rec = FALSE) 
   
@@ -117,7 +119,13 @@ new_ms <- run_CEATTLE(data = hake_data,
                       prior = TRUE, 
                       init = NULL, 
                       msm = 1, 
-                      estMode = 1)
+                      estMode = 1,
+                      initMode = 1)
+
+plot_biomass(Rceattle = list(new_ms_init1$model, new_ms_init2$model), 
+             model_names = c("initMode = 1", "initMode = 2"),
+             add_ci = TRUE)
+
 new_ms$fit  # check convergence
 new_ms$model$quantities$M1
 # save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
@@ -131,6 +139,26 @@ new_ss <- run_CEATTLE(data = hake_data,
                       estMode = 1)
 # new_ss$fit  # check convergence
 # save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
+
+# # Compare biomass between initModes for single-species model
+# new_ss_init1 <- run_CEATTLE(data = hake_data, 
+#                             M1 = 0, 
+#                             prior = TRUE, 
+#                             init = NULL, 
+#                             msm = 0, 
+#                             estMode = 1,
+#                             initMode = 1)
+# 
+# new_ss_init2 <- run_CEATTLE(data = hake_data, 
+#                             M1 = 0, 
+#                             prior = TRUE, 
+#                             init = NULL, 
+#                             msm = 0, 
+#                             estMode = 1,
+#                             initMode = 2)
+# plot_biomass(Rceattle = list(new_ss_init1$model, new_ss_init2$model), 
+#              model_names = c("initMode = 1", "initMode = 2"),
+#              add_ci = TRUE)
 
 # # Compare to base (publication) model
 # load("models/ms_priorM1.Rdata")
@@ -451,10 +479,24 @@ ms_totM <- ms_mort$total_M %>%
   summarize(M1_M2 = sum(M1_M2))
 
 ms_M2 <- ms_mort$M2[, -4]
-write.csv(ms_M2, here("M2", "M2_241025.csv"), row.names = FALSE)
+write.csv(ms_M2, here("M2", "M2_241025_init2.csv"), row.names = FALSE)
 
 ms_totM_age1 <- ms_totM %>%
   filter(age == 1)
+
+# Compare M2 between equilibrium & non-equilibrium models
+m2_init1 <- read.csv(here("M2", "M2_241025_init1.csv"))
+m2_init1$model <- "Eq, initMode = 1"
+m2_init2 <- read.csv(here("M2", "M2_241025_init2.csv"))
+m2_init2$model <- "Non, initMode = 2"
+
+m2_diff <- rbind.data.frame(m2_init1, m2_init2) %>%
+  filter(year <= 2024) %>%
+  filter(age == 1) %>%
+  ggplot(., aes(x = year, y = M2, color = model)) +
+  geom_line() +
+  ylab("Age 1 M2")
+m2_diff
 
 
 
