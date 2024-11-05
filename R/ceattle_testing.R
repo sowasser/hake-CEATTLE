@@ -17,12 +17,14 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_241025.xlsx")
+hake_data <- read_data(file = "data/hake_yr24_241101.xlsx")
+# start_yr <- new_ms$model$data_list$styr
+start_yr <- 1980
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   data$est_M1 <- M1  
-  # data$styr <- 1993
+  data$styr <- start_yr
   # data$endyr <- 2019
   run <- fit_mod(data_list = data,
                  inits = init,
@@ -87,7 +89,9 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  # ------------------------------------------------------------
                  initMode = initMode,
                  projection_uncertainty = TRUE,
-                 random_rec = FALSE) 
+                 random_rec = FALSE,
+                 suit_styr = 1993,
+                 suit_endyr = 2019) 
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -122,10 +126,6 @@ new_ms <- run_CEATTLE(data = hake_data,
                       estMode = 1,
                       initMode = 1)
 
-plot_biomass(Rceattle = list(new_ms_init1$model, new_ms_init2$model), 
-             model_names = c("initMode = 1", "initMode = 2"),
-             add_ci = TRUE)
-
 new_ms$fit  # check convergence
 new_ms$model$quantities$M1
 # save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
@@ -136,29 +136,12 @@ new_ss <- run_CEATTLE(data = hake_data,
                       prior = TRUE, 
                       init = NULL, 
                       msm = 0, 
-                      estMode = 1)
+                      estMode = 1,
+                      initMode = 1)
 # new_ss$fit  # check convergence
 # save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
 
-# # Compare biomass between initModes for single-species model
-# new_ss_init1 <- run_CEATTLE(data = hake_data, 
-#                             M1 = 0, 
-#                             prior = TRUE, 
-#                             init = NULL, 
-#                             msm = 0, 
-#                             estMode = 1,
-#                             initMode = 1)
-# 
-# new_ss_init2 <- run_CEATTLE(data = hake_data, 
-#                             M1 = 0, 
-#                             prior = TRUE, 
-#                             init = NULL, 
-#                             msm = 0, 
-#                             estMode = 1,
-#                             initMode = 2)
-# plot_biomass(Rceattle = list(new_ss_init1$model, new_ss_init2$model), 
-#              model_names = c("initMode = 1", "initMode = 2"),
-#              add_ci = TRUE)
+# plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 
 # # Compare to base (publication) model
 # load("models/ms_priorM1.Rdata")
@@ -173,11 +156,11 @@ new_ss <- run_CEATTLE(data = hake_data,
 #          add_ci = TRUE)
   
 ### Plot multi-species vs. single-species vs. assessment ----------------------
-start_yr <- new_ms$model$data_list$styr
 end_yr <- 2024
 years <- start_yr:end_yr
-all_yrs <- new_ms$model$data_list$styr:new_ms$model$data_list$projyr
+all_yrs <- start_yr:new_ms$model$data_list$projyr
 hind_end <- 2023
+plot_start <- 1966
 max_age <- new_ms$model$data_list$nages
 
 # Helper function for extracting -by-age data from CEATTLE
@@ -324,100 +307,14 @@ plot_models <- function(ms_run, ss_run, title = "") {
     geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
     geom_vline(xintercept = 2024, linetype = 2, colour = "gray") +  # Add line at end of hindcast
     ylim(0, NA) +
+    # xlim(plot_start, NA) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
     facet_wrap(~type, ncol = 2, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside") +
     ggtitle(title)
-  
-  
-  # Difference between single-species and assessment models -------------------
-  # Read in 2020 model runs and assessment results
-  load("models/ms_priorM1.rdata")
-  load("models/ss_priorM1.rdata")
-  assess_yr <- 2020
-  biomass_2020 <- ceattle_biomass(ms_priorM1$model, "CEATTLE - cannibalism")
-  nodiet_biomass_2020 <- ceattle_biomass(ss_priorM1$model, "CEATTLE - single-species")
-  recruitment_2020 <- c(ms_priorM1$model$quantities$R[, 1:length(start_yr:2022)])
-  
-  start <- 1966  # start year of SS3 analysis
-  ss3_ssb_2020 <- cbind(read.table(paste0("data/assessment/", assess_yr, "/ssb.txt"))[-(1:(start_yr-start)), 2:3], 
-                        type = rep("SSB"))
-  ss3_biomass_2020 <- cbind(read.table(paste0("data/assessment/", assess_yr, "/biomass.txt"))[-(1:(start_yr-start)), 2:3], 
-                            type = rep("Total Biomass"))
-  ss3_biom_2020 <- as.data.frame(cbind(year = rep(start_yr:2022, 2), 
-                                       rbind(ss3_ssb_2020, ss3_biomass_2020),
-                                       model = "2020 Assessment"))
-  colnames(ss3_biom_2020)[2:3] <- c("value", "error")
-  ss3_biom_2020 <- ss3_biom_2020[, c(1, 4, 2, 3, 5)]
-  
-  # Pull out recruitment
-  nodiet_R_2020 <- c(ss_priorM1$model$quantities$R[, 1:length(start_yr:2022)])
-  
-  # Get recruitment from SS3 files, offset by 1 year
-  ss3_R_2020 <- read.table(paste0("data/assessment/", assess_yr, "/recruitment.txt"))[-(1:((start_yr-1)-start)), ]
-  ss3_R_2020 <- ss3_R_2020[-nrow(ss3_R_2020), ]
-  
-  # Combine all biomass sources together
-  biom_all_2020 <- rbind(biomass_2020, nodiet_biomass_2020, ss3_biom_2020)
-  biom_all_2020$value <- biom_all_2020$value / 1000000  # to Mt
-  biom_all_2020$error <- biom_all_2020$error / 1000000  # to Mt
-  
-  # Put recruitment together
-  R_wide_2020 <- data.frame(year = start_yr:2022, recruitment_2020, nodiet_R_2020)
-  colnames(R_wide_2020)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
-  R_2020 <- melt(R_wide_2020, id.vars = "year")
-  # Offset the stock synthesis data by one year (min age in CEATTLE is 1; in SS3 is 0)
-  ss3_R_2020 <- as.data.frame(cbind(year = start_yr:2022, 
-                                    variable = "2020 Assessment", 
-                                    value = ss3_R_2020[, 2],
-                                    error = ss3_R_2020[, 3]))
-  R_all_2020 <- rbind(cbind(R_2020, error = c(ms_priorM1$model$sdrep$sd[which(names(ms_priorM1$model$sdrep$value) == "R")][1:length(start_yr:2022)], 
-                                              ss_priorM1$model$sdrep$sd[which(names(ss_priorM1$model$sdrep$value) == "R")][1:length(start_yr:2022)])), 
-                 ss3_R_2020)
-  R_all_2020$value <- as.numeric(R_all_2020$value)
-  R_all_2020$year <- as.numeric(R_all_2020$year)
-  R_all_2020$error <- as.numeric(R_all_2020$error)
-  # Reshape to match biomass
-  R_new_2020 <- cbind(year = R_all_2020$year, 
-                      type = rep("Recruitment"), 
-                      value = R_all_2020$value / 1000000,  # to millions
-                      error = R_all_2020$error / 1000000,  # to millions
-                      model = as.character(R_all_2020$variable))
-  
-  # Combine biomass & recruitment and plot
-  all_popdy_2020 <- rbind(biom_all_2020, R_new_2020)
-  all_popdy_2020$year <- as.numeric(all_popdy_2020$year)
-  all_popdy_2020$value <- as.numeric(all_popdy_2020$value)
-  all_popdy_2020$error <- as.numeric(all_popdy_2020$error)
-  all_popdy_2020 <- all_popdy_2020 %>% filter(year <= 2022)  # make sure everything only goes to 2022
-  
-  # Calculate difference for each assessment period
-  get_diff <- function(df, stat, assess, assess_yr, new_type) {
-    df_assess <- df %>% filter(type == stat & model == assess)
-    df_ceattle <- df %>% filter(type == stat & model == "CEATTLE - single-species")
-    diff <- cbind.data.frame(year = df$year,
-                             type = new_type,
-                             value = df_assess$value - df_ceattle$value,
-                             Assessment = rep(assess_yr))
-    return(diff)
-  }
-  
-  # Combine and plot difference -----------------------------------------------
-  diff <- rbind.data.frame(get_diff(all_popdy_2020, "Total Biomass", "2020 Assessment", factor(2020), "Total Biomass"),
-                           get_diff(all_popdy, "Total Biomass (Mt)", "Assessment", factor(2024), "Total Biomass"),
-                           get_diff(all_popdy_2020, "SSB", "2020 Assessment", factor(2020), "Spawning Biomass"),
-                           get_diff(all_popdy, "Spawning Biomass (Mt)", "Assessment", factor(2024), "Spawning Biomass"),
-                           get_diff(all_popdy_2020, "Recruitment", "2020 Assessment", factor(2020), "Recruitment"),
-                           get_diff(all_popdy, "Recruitment (millions)", "Assessment", factor(2024), "Recruitment")) %>%
-    mutate(type = factor(type, levels = c("Spawning Biomass", "Total Biomass", "Recruitment"))) %>%
-    ggplot(., aes(x = year, y = value, color = Assessment)) +
-      geom_hline(yintercept = 0, linetype = 2, colour = "gray") +
-      geom_line() +
-      facet_wrap(~type, scales = "free_y") +
-      ylab("Assessment - single-species model")
     
-  return(list(popdy = popdy_plot, diff = diff))
+  return(list(popdy = popdy_plot))
 }
 
 plots <- plot_models(new_ms$model, new_ss$model)
