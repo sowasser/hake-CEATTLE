@@ -17,9 +17,9 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_241101.xlsx")
+hake_data <- read_data(file = "data/hake_yr24_241126.xlsx")
 # start_yr <- new_ms$model$data_list$styr
-start_yr <- 1980
+start_yr <- 1966
 
 ### Run and fit the CEATTLE model ---------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
@@ -125,7 +125,6 @@ new_ms <- run_CEATTLE(data = hake_data,
                       msm = 1, 
                       estMode = 1,
                       initMode = 1)
-
 new_ms$fit  # check convergence
 new_ms$model$quantities$M1
 # save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
@@ -142,6 +141,7 @@ new_ss <- run_CEATTLE(data = hake_data,
 # save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
 
 # plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
+# plot_ssb(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 
 # # Compare to base (publication) model
 # load("models/ms_priorM1.Rdata")
@@ -155,7 +155,7 @@ new_ss <- run_CEATTLE(data = hake_data,
 #          incl_proj = TRUE,
 #          add_ci = TRUE)
   
-### Plot multi-species vs. single-species vs. assessment ----------------------
+### Plot multi-species vs. single-species -------------------------------------
 end_yr <- 2024
 years <- start_yr:end_yr
 all_yrs <- start_yr:new_ms$model$data_list$projyr
@@ -201,33 +201,9 @@ plot_models <- function(ms_run, ss_run, title = "") {
   biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
   nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
   
-  # Get assessment derived quantities
-  assess <- read.csv(here("data", "assessment", "2024", "median-population-estimates.csv"))
-  
-  # Pull out & format biomass
-  assess_bio <- assess[, c(1, 2, 5)]
-  colnames(assess_bio) <- c("year", "SSB", "Total Biomass")
-  assess_bio[, 2] <- assess_bio[, 2] / 1000  # to millions
-  assess_bio[, 2] <- assess_bio[, 2] * 2 # both sexes
-  assess_bio[, 3] <- assess_bio[, 3] / 1000  # to millions
-  assess_bio <- melt(assess_bio, id.vars = "year")
-  colnames(assess_bio)[2] <- "type"
-  assess_bio$error <- 0
-  assess_bio$model <- "Assessment"
-  assess_bio <- assess_bio %>% filter(year %in% years)
-  
   # Pull out & format recruitment
   nodiet_R <- c(ss_run$quantities$R[, 1:length(start_yr:end_yr)])
   recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
-  
-  assess_rec <- assess[, c(1, 6)]
-  assess_rec$Year <- assess_rec$Year + 1
-  assess_rec <- assess_rec %>% filter(Year %in% years)
-  assess_rec <- cbind(year = assess_rec$Year,
-                      type = rep("Recruitment"),
-                      value = assess_rec[, 2] / 1000,  
-                      error = 0,
-                      model = "Assessment")
 
   # Put biomass together
   nodiet_biom <- ceattle_biomass(ss_run, "CEATTLE - single-species")
@@ -236,7 +212,6 @@ plot_models <- function(ms_run, ss_run, title = "") {
   biom_all <- rbind(biomass, nodiet_biom)
   biom_all$value <- biom_all$value / 1000000  # to Mt
   biom_all$error <- biom_all$error / 1000000  # to Mt
-  biom_all <- rbind(biom_all, assess_bio)
 
   # Put recruitment together
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
@@ -253,34 +228,23 @@ plot_models <- function(ms_run, ss_run, title = "") {
                  value = R_all$value / 1000000,  # to millions
                  error = R_all$error / 1000000,  # to millions
                  model = as.character(R_all$variable))
-  R_new <- rbind(R_new, assess_rec)
-  
+
   # Combine relative SSB together
-  assess_relSSB <- assess[, c(1, 3)] %>% filter(Year %in% years)
   relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:length(years)],
                                               year = years, 
                                               model = "CEATTLE - single-species"),
                              cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:length(years)],
                                               year = years, 
-                                              model = "CEATTLE - cannibalism"),
-                             cbind.data.frame(depletion = assess_relSSB[, 2] / 100, # to decimal
-                                              year = years,
-                                              model = "Assessment"))
+                                              model = "CEATTLE - cannibalism"))
   
-  # Set columns to match popdy dataframe
-  relSSB$error <- 0
-  relSSB$type <- "Relative SB"
-  relSSB <- relSSB[, c(2, 5, 1, 4, 3)]
-  colnames(relSSB)[3] <- "value"
 
-  # Combine biomass, recruitment, relative SB 
+  # Combine biomass, recruitment
   all_popdy <- rbind(biom_all, R_new, relSSB)
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model,
-                            levels = c("Assessment", 
-                                       "CEATTLE - single-species", 
+                            levels = c("CEATTLE - single-species", 
                                        "CEATTLE - cannibalism"))
   all_popdy$type <- factor(all_popdy$type,
                            labels = c("Spawning Biomass (Mt)", 
@@ -322,11 +286,11 @@ plots$popdy
 plots$diff
 
 ggsave(plots$popdy,
-       file = here("M2", "2024 assessment", "popdy_1993.png"),
+       file = here("M2", "popdy_1066.png"),
        width=270, height=150, units="mm")
 
 ggsave(plots$diff,
-       file = here("M2", "2024 assessment", "assess_diff_1993.png"),
+       file = here("M2", "assess_diff_1966.png"),
        width = 270, height = 90, units = "mm")
 
 plot_selectivity(new_ms$model)
@@ -376,24 +340,24 @@ ms_totM <- ms_mort$total_M %>%
   summarize(M1_M2 = sum(M1_M2))
 
 ms_M2 <- ms_mort$M2[, -4]
-write.csv(ms_M2, here("M2", "M2_241025_init2.csv"), row.names = FALSE)
+write.csv(ms_M2, here("M2", "M2_241126.csv"), row.names = FALSE)
 
 ms_totM_age1 <- ms_totM %>%
   filter(age == 1)
 
-# Compare M2 between equilibrium & non-equilibrium models
-m2_init1 <- read.csv(here("M2", "M2_241025_init1.csv"))
-m2_init1$model <- "Eq, initMode = 1"
-m2_init2 <- read.csv(here("M2", "M2_241025_init2.csv"))
-m2_init2$model <- "Non, initMode = 2"
-
-m2_diff <- rbind.data.frame(m2_init1, m2_init2) %>%
-  filter(year <= 2024) %>%
-  filter(age == 1) %>%
-  ggplot(., aes(x = year, y = M2, color = model)) +
-  geom_line() +
-  ylab("Age 1 M2")
-m2_diff
+# # Compare M2 between equilibrium & non-equilibrium models
+# m2_init1 <- read.csv(here("M2", "M2_241025_init1.csv"))
+# m2_init1$model <- "Eq, initMode = 1"
+# m2_init2 <- read.csv(here("M2", "M2_241025_init2.csv"))
+# m2_init2$model <- "Non, initMode = 2"
+# 
+# m2_diff <- rbind.data.frame(m2_init1, m2_init2) %>%
+#   filter(year <= 2024) %>%
+#   filter(age == 1) %>%
+#   ggplot(., aes(x = year, y = M2, color = model)) +
+#   geom_line() +
+#   ylab("Age 1 M2")
+# m2_diff
 
 
 
