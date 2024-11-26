@@ -156,7 +156,7 @@ new_ss <- run_CEATTLE(data = hake_data,
 #          add_ci = TRUE)
   
 ### Plot multi-species vs. single-species -------------------------------------
-end_yr <- 2024
+end_yr <- 2027
 years <- start_yr:end_yr
 all_yrs <- start_yr:new_ms$model$data_list$projyr
 hind_end <- 2023
@@ -198,15 +198,15 @@ plot_models <- function(ms_run, ss_run, title = "") {
   }
   # Pull results from CEATTLE models & assessment -----------------------------
   # Pull out biomass from CEATTLE 
-  biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
-  nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
+  biomass <- ceattle_biomass(ms_run, "cannibalism")
+  nodiet_biomass <- ceattle_biomass(ss_run, "single-species")
   
   # Pull out & format recruitment
   nodiet_R <- c(ss_run$quantities$R[, 1:length(start_yr:end_yr)])
   recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
 
   # Put biomass together
-  nodiet_biom <- ceattle_biomass(ss_run, "CEATTLE - single-species")
+  nodiet_biom <- ceattle_biomass(ss_run, "single-species")
 
   # Combine all biomass sources together
   biom_all <- rbind(biomass, nodiet_biom)
@@ -215,7 +215,7 @@ plot_models <- function(ms_run, ss_run, title = "") {
 
   # Put recruitment together
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
-  colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
+  colnames(R_wide)[2:3] <- c("cannibalism", "single-species")
   R <- melt(R_wide, id.vars = "year")
   R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")][1:length(start_yr:end_yr)],
                                     ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")][1:length(start_yr:end_yr)])))
@@ -228,29 +228,19 @@ plot_models <- function(ms_run, ss_run, title = "") {
                  value = R_all$value / 1000000,  # to millions
                  error = R_all$error / 1000000,  # to millions
                  model = as.character(R_all$variable))
-
-  # Combine relative SSB together
-  relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:length(years)],
-                                              year = years, 
-                                              model = "CEATTLE - single-species"),
-                             cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:length(years)],
-                                              year = years, 
-                                              model = "CEATTLE - cannibalism"))
   
-
   # Combine biomass, recruitment
-  all_popdy <- rbind(biom_all, R_new, relSSB)
+  all_popdy <- rbind(biom_all, R_new)
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model,
-                            levels = c("CEATTLE - single-species", 
-                                       "CEATTLE - cannibalism"))
+                            levels = c("single-species", 
+                                       "cannibalism"))
   all_popdy$type <- factor(all_popdy$type,
                            labels = c("Spawning Biomass (Mt)", 
                                       "Total Biomass (Mt)", 
-                                      "Recruitment (millions)", 
-                                      "Relative Spawning Biomass"))
+                                      "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -259,14 +249,6 @@ plot_models <- function(ms_run, ss_run, title = "") {
   
   # Plot population dynamics --------------------------------------------------
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value)) +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 1), col = "gray") +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 0.4), col = "gray") +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 0.1), col = "gray") +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 1.3), col = "white") +  # hack to control y-axis limits for relSSB facet
     geom_line(aes(color = model)) +
     geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
     geom_vline(xintercept = 2024, linetype = 2, colour = "gray") +  # Add line at end of hindcast
@@ -274,7 +256,7 @@ plot_models <- function(ms_run, ss_run, title = "") {
     # xlim(plot_start, NA) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
-    facet_wrap(~type, ncol = 2, scales = "free_y", strip.position = "left") +
+    facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside") +
     ggtitle(title)
     
@@ -283,15 +265,10 @@ plot_models <- function(ms_run, ss_run, title = "") {
 
 plots <- plot_models(new_ms$model, new_ss$model)
 plots$popdy
-plots$diff
 
 ggsave(plots$popdy,
-       file = here("M2", "popdy_1066.png"),
-       width=270, height=150, units="mm")
-
-ggsave(plots$diff,
-       file = here("M2", "assess_diff_1966.png"),
-       width = 270, height = 90, units = "mm")
+       file = here("M2", "popdy_241126.png"),
+       width=150, height=180, units="mm")
 
 plot_selectivity(new_ms$model)
 
