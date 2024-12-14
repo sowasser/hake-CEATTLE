@@ -1,3 +1,12 @@
+#' Script for running the CEATTLE model (with important inputs explicitly listed)
+#' for testing the model through running a single- and a multispecies model and
+#' plotting the comparison. This script includes a streamlined version of the 
+#' population dynamics plots included in ceattle_cannibalism.R and the predation
+#' mortality for the multispecies model, as requested by the hake stock 
+#' assessors.
+
+# Set up ----------------------------------------------------------------------
+# Installation options for Rceattle if testing different branches 
 # remove.packages("Rceattle")
 # remove.packages("00LOCK-Rceattle")
 # devtools::install_github("grantdadams/Rceattle", ref = "dev")
@@ -21,7 +30,7 @@ hake_data <- read_data(file = "data/hake_yr24_241126.xlsx")
 # start_yr <- new_ms$model$data_list$styr
 start_yr <- 1966
 
-### Run and fit the CEATTLE model ---------------------------------------------
+# Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   data$est_M1 <- M1  
   data$styr <- start_yr
@@ -155,7 +164,7 @@ new_ss <- run_CEATTLE(data = hake_data,
 #          incl_proj = TRUE,
 #          add_ci = TRUE)
   
-### Plot multi-species vs. single-species -------------------------------------
+# Plot multispecies vs. single-species ----------------------------------------
 end_yr <- 2027
 years <- start_yr:end_yr
 all_yrs <- start_yr:new_ms$model$data_list$projyr
@@ -335,22 +344,3 @@ ms_totM_age1 <- ms_totM %>%
 #   geom_line() +
 #   ylab("Age 1 M2")
 # m2_diff
-
-
-
-# # set up r4ss output (kinda working) ------------------------------------------
-# Dirplot <- here("data", "assessment", "2024", "mcmc", "sso")
-# 
-# replist <- r4ss::SS_output(
-#   dir = Dirplot,
-#   verbose = TRUE,
-#   printstats = FALSE,
-#   covar = FALSE
-# )
-# 
-# # plots the results (store in the 'plots' sub-directory)
-# r4ss::SS_plots(replist,
-#          dir = Dirplot,
-#          plot = 2:26,
-#          printfolder = 'plots'
-# )
