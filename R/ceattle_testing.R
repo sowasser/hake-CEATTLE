@@ -9,7 +9,7 @@
 # Installation options for Rceattle if testing different branches 
 # remove.packages("Rceattle")
 # remove.packages("00LOCK-Rceattle")
-# devtools::install_github("grantdadams/Rceattle", ref = "dev")
+# devtools::install_github("grantdadams/Rceattle", ref = "dev_srr")
 
 # # Local install
 # devtools::install_local("~/Desktop/Local/Rceattle")
@@ -26,7 +26,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_241126.xlsx")
+hake_data <- read_data(file = "data/hake_yr24_241220.xlsx")
 # start_yr <- new_ms$model$data_list$styr
 start_yr <- 1966
 
@@ -39,21 +39,21 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  inits = init,
                  file = NULL, # Don't save
                  msmMode = msm, # Single-species mode - no predation mortality
-                 M1Fun = Rceattle::build_M1(M1_model = M1,
-                                            updateM1 = TRUE,
-                                            M1_use_prior = prior,
-                                            M1_prior_mean = 0.22,
-                                            M1_prior_sd = .31),
+                 M1Fun = build_M1(M1_model = M1,
+                                  updateM1 = TRUE,
+                                  M1_use_prior = prior,
+                                  M_prior = 0.22,
+                                  M_prior_sd = .31),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
-                 HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
-                                           DynamicHCR = FALSE,
-                                           FsprLimit = 0.4, # F40%
-                                           Ptarget = 0.4, # Target is 40% B0
-                                           Plimit = 0.1, # No fishing when SB<SB10
-                                           Pstar = 0.5,
-                                           Sigma = 0.5),
-                 phase = "default",
+                 HCR = build_hcr(HCR = 6, # Cat 1 HCR
+                                 DynamicHCR = FALSE,
+                                 FsprLimit = 0.4, # F40%
+                                 Ptarget = 0.4, # Target is 40% B0
+                                 Plimit = 0.1, # No fishing when SB<SB10
+                                 Pstar = 0.5,
+                                 Sigma = 0.5),
+                 phase = TRUE,
                  # Update phase to help convergence ---------------------------
                  # phase = list(
                  #   dummy = 1,
@@ -127,16 +127,16 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
 }
 
 # Run new model (with cannibalism)
-new_ms <- run_CEATTLE(data = hake_data, 
+new_ms_dev <- run_CEATTLE(data = hake_data, 
                       M1 = 1, 
                       prior = TRUE, 
                       init = NULL, 
                       msm = 1, 
                       estMode = 1,
-                      initMode = 1)
+                      initMode = 2)
 new_ms$fit  # check convergence
 new_ms$model$quantities$M1
-# save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
+# save(new_ms, file = "models/2024/new_ms_Dec24.Rdata")
 
 # Run single-species model
 new_ss <- run_CEATTLE(data = hake_data, 
@@ -145,9 +145,9 @@ new_ss <- run_CEATTLE(data = hake_data,
                       init = NULL, 
                       msm = 0, 
                       estMode = 1,
-                      initMode = 1)
+                      initMode = 2)
 # new_ss$fit  # check convergence
-# save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
+# save(new_ss, file = "models/2024/new_ss_Dec24.Rdata")
 
 # plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 # plot_ssb(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
