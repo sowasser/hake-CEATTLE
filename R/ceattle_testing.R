@@ -4,6 +4,8 @@
 #' population dynamics plots included in ceattle_cannibalism.R and the predation
 #' mortality for the multispecies model, as requested by the hake stock 
 #' assessors.
+#' 
+#' Currently, this script is set up for testing the dev_srr branch of Rceattle.
 
 # Set up ----------------------------------------------------------------------
 # Installation options for Rceattle if testing different branches 
@@ -21,12 +23,15 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 library(here)
+# devtools::install_github("seananderson/ggsidekick")
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_241220.xlsx")
+hake_data <- read_data(file = here("data", "hake_yr24_241220.xlsx"))
+# hake_data$fleet_control$Age_max_selected = NA
+hake_data$fleet_control$Comp_loglike = 0
 # start_yr <- new_ms$model$data_list$styr
 start_yr <- 1966
 
@@ -126,28 +131,34 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   return(list(model = run, fit = fit))
 }
 
-# Run new model (with cannibalism)
-new_ms_dev <- run_CEATTLE(data = hake_data, 
-                      M1 = 1, 
-                      prior = TRUE, 
-                      init = NULL, 
-                      msm = 1, 
-                      estMode = 1,
-                      initMode = 2)
-new_ms$fit  # check convergence
-new_ms$model$quantities$M1
-# save(new_ms, file = "models/2024/new_ms_Dec24.Rdata")
-
 # Run single-species model
-new_ss <- run_CEATTLE(data = hake_data, 
-                      M1 = 0, 
-                      prior = TRUE, 
-                      init = NULL, 
-                      msm = 0, 
-                      estMode = 1,
-                      initMode = 2)
+new_ss_dev <- run_CEATTLE(data = hake_data, 
+                          M1 = 0, 
+                          prior = TRUE, 
+                          init = NULL, 
+                          msm = 0, 
+                          estMode = 1,
+                          initMode = 2)
 # new_ss$fit  # check convergence
 # save(new_ss, file = "models/2024/new_ss_Dec24.Rdata")
+
+# Run new model (with cannibalism)
+new_ms_dev <- run_CEATTLE(data = hake_data, 
+                          M1 = 1, 
+                          prior = TRUE, 
+                          init = new_ss_dev$model$initial_params, 
+                          msm = 1, 
+                          estMode = 1,
+                          initMode = 2)
+# new_ms$fit  # check convergence
+# new_ms$model$quantities$M1
+# save(new_ms, file = "models/2024/new_ms_Dec24.Rdata")
+
+load(here("models", "2024", "new_ms_Dec24.Rdata"))
+load(here("models", "2024", "new_ss_Dec24.Rdata"))
+
+plot_biomass(Rceattle = list(new_ss$model, new_ss_dev$model, new_ms$model, new_ms_dev$model), 
+             model_names = c("SS", "SS dev", "MS", "MS dev"), add_ci = TRUE)
 
 # plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 # plot_ssb(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
