@@ -47,8 +47,6 @@ vignettes/*.pdf
 *.Rproj
 
 # Ignore folders & files that don't need to be tracked on git
-*.csv
-*.rds
 Resources/
 plots/
 FB4/
@@ -70,6 +68,8 @@ models/
 M2/2024 assessment/*.png
 
 # Ignore specific file types
+*.csv
+*.rds
 *.docx
 *.pdf
 hake_document.log
@@ -92,3 +92,6 @@ data/assessment/2024/01-base.rds
 data/assessment/2024/hake.Rdata
 data/assessment/2024/report.sso
 data/assessment/2024/mcmc/
+
+# Whitelist specific files
+!temperature_index.rds
