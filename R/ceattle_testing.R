@@ -4,12 +4,14 @@
 #' population dynamics plots included in ceattle_cannibalism.R and the predation
 #' mortality for the multispecies model, as requested by the hake stock 
 #' assessors.
+#' 
+#' Currently, this script is set up for testing the dev_srr branch of Rceattle.
 
 # Set up ----------------------------------------------------------------------
 # Installation options for Rceattle if testing different branches 
 # remove.packages("Rceattle")
 # remove.packages("00LOCK-Rceattle")
-# devtools::install_github("grantdadams/Rceattle", ref = "dev")
+# devtools::install_github("grantdadams/Rceattle", ref = "dev_srr")
 
 # # Local install
 # devtools::install_local("~/Desktop/Local/Rceattle")
@@ -21,14 +23,17 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 library(here)
+# devtools::install_github("seananderson/ggsidekick")
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_241126.xlsx")
+hake_data <- read_data(file = here("data", "hake_intrasp_250207.xlsx"))
+# hake_data$fleet_control$Age_max_selected = NA
+hake_data$fleet_control$Comp_loglike = 0
 # start_yr <- new_ms$model$data_list$styr
-start_yr <- 1966
+start_yr <- 1980
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
@@ -39,21 +44,21 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  inits = init,
                  file = NULL, # Don't save
                  msmMode = msm, # Single-species mode - no predation mortality
-                 M1Fun = Rceattle::build_M1(M1_model = M1,
-                                            updateM1 = TRUE,
-                                            M1_use_prior = prior,
-                                            M1_prior_mean = 0.22,
-                                            M1_prior_sd = .31),
+                 M1Fun = build_M1(M1_model = M1,
+                                  updateM1 = TRUE,
+                                  M1_use_prior = prior,
+                                  M_prior = 0.2,
+                                  M_prior_sd = .1),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
-                 HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
-                                           DynamicHCR = FALSE,
-                                           FsprLimit = 0.4, # F40%
-                                           Ptarget = 0.4, # Target is 40% B0
-                                           Plimit = 0.1, # No fishing when SB<SB10
-                                           Pstar = 0.5,
-                                           Sigma = 0.5),
-                 phase = "default",
+                 HCR = build_hcr(HCR = 6, # Cat 1 HCR
+                                 DynamicHCR = FALSE,
+                                 FsprLimit = 0.4, # F40%
+                                 Ptarget = 0.4, # Target is 40% B0
+                                 Plimit = 0.1, # No fishing when SB<SB10
+                                 Pstar = 0.5,
+                                 Sigma = 0.5),
+                 phase = TRUE,
                  # Update phase to help convergence ---------------------------
                  # phase = list(
                  #   dummy = 1,
@@ -98,9 +103,7 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  # ------------------------------------------------------------
                  initMode = initMode,
                  projection_uncertainty = TRUE,
-                 random_rec = FALSE,
-                 suit_styr = 1993,
-                 suit_endyr = 2019) 
+                 random_rec = FALSE) 
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -126,43 +129,49 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   return(list(model = run, fit = fit))
 }
 
-# Run new model (with cannibalism)
-new_ms <- run_CEATTLE(data = hake_data, 
-                      M1 = 1, 
-                      prior = TRUE, 
-                      init = NULL, 
-                      msm = 1, 
-                      estMode = 1,
-                      initMode = 1)
-new_ms$fit  # check convergence
-new_ms$model$quantities$M1
-# save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
-
 # Run single-species model
-new_ss <- run_CEATTLE(data = hake_data, 
-                      M1 = 0, 
-                      prior = TRUE, 
-                      init = NULL, 
-                      msm = 0, 
-                      estMode = 1,
-                      initMode = 1)
+new_ss_dev <- run_CEATTLE(data = hake_data, 
+                          M1 = 0, 
+                          prior = TRUE, 
+                          init = NULL, 
+                          msm = 0, 
+                          estMode = 1,
+                          initMode = 2)
 # new_ss$fit  # check convergence
-# save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
+# save(new_ss, file = "models/2024/new_ss_Dec24.Rdata")
+
+# Run new model (with cannibalism)
+new_ms_dev <- run_CEATTLE(data = hake_data, 
+                          M1 = 1, 
+                          prior = TRUE, 
+                          init = new_ss_dev$model$initial_params, 
+                          msm = 1, 
+                          estMode = 0,
+                          initMode = 2)
+# new_ms$fit  # check convergence
+# new_ms$model$quantities$M1
+# save(new_ms, file = "models/2024/new_ms_Dec24.Rdata")
+
+# load(here("models", "2024", "new_ms_Dec24.Rdata"))
+# load(here("models", "2024", "new_ss_Dec24.Rdata"))
+# 
+# plot_biomass(Rceattle = list(new_ss$model, new_ss_dev$model, new_ms$model, new_ms_dev$model), 
+#              model_names = c("SS", "SS dev", "MS", "MS dev"), add_ci = TRUE)
 
 # plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 # plot_ssb(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 
-# # Compare to base (publication) model
-# load("models/ms_priorM1.Rdata")
-# 
-# plot_biomass(Rceattle = list(new_ms$model, ms_priorM1$model),
-#              model_names = c("New Model", "Base Model"),
-#              incl_proj = TRUE,
-#              add_ci = TRUE)
-# plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
-#          model_names = c("New Model", "Base Model"),
-#          incl_proj = TRUE,
-#          add_ci = TRUE)
+# Compare to base (publication) model
+load("models/ms_priorM1.Rdata")
+
+plot_biomass(Rceattle = list(new_ms_dev$model, ms_priorM1$model),
+             model_names = c("New Model", "Base Model"),
+             incl_proj = TRUE,
+             add_ci = TRUE)
+plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
+         model_names = c("New Model", "Base Model"),
+         incl_proj = TRUE,
+         add_ci = TRUE)
   
 # Plot multispecies vs. single-species ----------------------------------------
 end_yr <- 2027
