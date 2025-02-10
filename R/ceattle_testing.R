@@ -29,11 +29,11 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = here("data", "hake_yr24_241220.xlsx"))
+hake_data <- read_data(file = here("data", "hake_intrasp_250207.xlsx"))
 # hake_data$fleet_control$Age_max_selected = NA
 hake_data$fleet_control$Comp_loglike = 0
 # start_yr <- new_ms$model$data_list$styr
-start_yr <- 1966
+start_yr <- 1980
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
@@ -47,8 +47,8 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  M1Fun = build_M1(M1_model = M1,
                                   updateM1 = TRUE,
                                   M1_use_prior = prior,
-                                  M_prior = 0.22,
-                                  M_prior_sd = .31),
+                                  M_prior = 0.2,
+                                  M_prior_sd = .1),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
                  HCR = build_hcr(HCR = 6, # Cat 1 HCR
@@ -103,9 +103,7 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  # ------------------------------------------------------------
                  initMode = initMode,
                  projection_uncertainty = TRUE,
-                 random_rec = FALSE,
-                 suit_styr = 1993,
-                 suit_endyr = 2019) 
+                 random_rec = FALSE) 
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -148,32 +146,32 @@ new_ms_dev <- run_CEATTLE(data = hake_data,
                           prior = TRUE, 
                           init = new_ss_dev$model$initial_params, 
                           msm = 1, 
-                          estMode = 1,
+                          estMode = 0,
                           initMode = 2)
 # new_ms$fit  # check convergence
 # new_ms$model$quantities$M1
 # save(new_ms, file = "models/2024/new_ms_Dec24.Rdata")
 
-load(here("models", "2024", "new_ms_Dec24.Rdata"))
-load(here("models", "2024", "new_ss_Dec24.Rdata"))
-
-plot_biomass(Rceattle = list(new_ss$model, new_ss_dev$model, new_ms$model, new_ms_dev$model), 
-             model_names = c("SS", "SS dev", "MS", "MS dev"), add_ci = TRUE)
+# load(here("models", "2024", "new_ms_Dec24.Rdata"))
+# load(here("models", "2024", "new_ss_Dec24.Rdata"))
+# 
+# plot_biomass(Rceattle = list(new_ss$model, new_ss_dev$model, new_ms$model, new_ms_dev$model), 
+#              model_names = c("SS", "SS dev", "MS", "MS dev"), add_ci = TRUE)
 
 # plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 # plot_ssb(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 
-# # Compare to base (publication) model
-# load("models/ms_priorM1.Rdata")
-# 
-# plot_biomass(Rceattle = list(new_ms$model, ms_priorM1$model),
-#              model_names = c("New Model", "Base Model"),
-#              incl_proj = TRUE,
-#              add_ci = TRUE)
-# plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
-#          model_names = c("New Model", "Base Model"),
-#          incl_proj = TRUE,
-#          add_ci = TRUE)
+# Compare to base (publication) model
+load("models/ms_priorM1.Rdata")
+
+plot_biomass(Rceattle = list(new_ms_dev$model, ms_priorM1$model),
+             model_names = c("New Model", "Base Model"),
+             incl_proj = TRUE,
+             add_ci = TRUE)
+plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
+         model_names = c("New Model", "Base Model"),
+         incl_proj = TRUE,
+         add_ci = TRUE)
   
 # Plot multispecies vs. single-species ----------------------------------------
 end_yr <- 2027
