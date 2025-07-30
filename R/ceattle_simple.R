@@ -6,6 +6,7 @@ library(Rceattle)
 
 # Read in data
 hake_data <- read_data(file = here("data", "hake_yr24_241220.xlsx"))
+hake_data$styr <- 1980
 
 # Function to collate model output & check convergence
 fit_out <- function(run) {
